@@ -295,7 +295,12 @@ async def websocket_stats():
 # WIDGET EMBED SCRIPT — Zone 6 (FR-6.1.1)
 # ═══════════════════════════════════════════════════════════════════
 
-WIDGET_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "frontend", "widget")
+# Try multiple paths: Docker (/app/frontend/widget) → Local (../../frontend/widget relative to this file)
+_possible_widget_paths = [
+    os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "frontend", "widget"),  # local dev
+    "/app/frontend/widget",  # Docker container
+]
+WIDGET_DIR = next((p for p in _possible_widget_paths if os.path.isdir(p)), _possible_widget_paths[0])
 
 @app.get("/widget/embed.js")
 async def serve_embed_js():
