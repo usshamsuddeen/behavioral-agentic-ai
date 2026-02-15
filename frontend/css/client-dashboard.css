@@ -741,9 +741,14 @@
   flex-direction: column;
   background: var(--bg-secondary);
   overflow: hidden;
-  /* Constrain so .chat-messages can scroll */
   min-height: 0;
-  /* Required for grid/flex children overflow */
+}
+
+#chatActive {
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  min-height: 0;
 }
 
 .chat-header {
@@ -826,6 +831,8 @@
 /* ── Messages ─────────────────────────────────────────── */
 .chat-messages {
   flex: 1;
+  min-height: 0;
+  /* Allow shrinking below content size in flex column — triggers overflow scroll */
   overflow-y: auto;
   padding: var(--space-lg);
   display: flex;
