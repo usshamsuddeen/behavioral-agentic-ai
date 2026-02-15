@@ -32,11 +32,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir torch==2.9.1 --index-url https://download.pytorch.org/whl/cpu
 
-COPY requirements.txt .
+COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # ── Application Code ────────────────────────────────────────────
-COPY . .
+# Build context is project root (set in docker-compose.yml)
+COPY backend/ /app/
+
+# ── Frontend (served as static files by FastAPI) ─────────────────
+COPY frontend/ /app/frontend/
 
 # ── Data Directories ────────────────────────────────────────────
 RUN mkdir -p /app/data /app/data/vector_store /app/data/chroma_db /app/logs

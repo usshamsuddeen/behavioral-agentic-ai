@@ -5,8 +5,10 @@
  */
 
 const API = {
-    // Backend URL - change if running on different port
-    BASE_URL: 'http://localhost:8000/api',
+    // Backend URL - auto-detects production vs local
+    BASE_URL: (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? 'http://localhost:8000/api'
+        : window.location.origin + '/api',
 
     /**
      * Make authenticated API request with error handling.
