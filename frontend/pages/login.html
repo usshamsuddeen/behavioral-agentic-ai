@@ -450,14 +450,16 @@
         <div class="login-card">
             <!-- Logo -->
             <div class="login-logo">
-                <div class="login-logo-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                        <path d="M2 17l10 5 10-5" />
-                        <path d="M2 12l10 5 10-5" />
-                    </svg>
-                </div>
-                <span class="login-logo-text">Behavioral AI</span>
+                <a href="/" style="display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;">
+                    <div class="login-logo-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                            <path d="M2 17l10 5 10-5" />
+                            <path d="M2 12l10 5 10-5" />
+                        </svg>
+                    </div>
+                    <span class="login-logo-text">Behavioral AI</span>
+                </a>
             </div>
 
             <!-- Header -->
@@ -487,7 +489,7 @@
                         <input type="checkbox" id="remember" name="remember">
                         <label for="remember">Remember me</label>
                     </div>
-                    <a href="#" class="forgot-link">Forgot password?</a>
+                    <a href="/pages/signup.html" class="forgot-link">Create an account</a>
                 </div>
 
                 <button type="submit" class="btn-submit" id="submitBtn">
@@ -525,7 +527,7 @@
 
             <!-- Footer -->
             <div class="login-footer">
-                Don't have an account? <a href="signup.html">Create one</a>
+                Don't have an account? <a href="/pages/signup.html">Create one</a>
             </div>
         </div>
     </div>
@@ -550,6 +552,13 @@
                 localStorage.removeItem('access_token');
                 localStorage.removeItem('refresh_token');
                 localStorage.removeItem('user');
+            }
+
+            // Remember me: auto-fill email if previously saved
+            const savedEmail = localStorage.getItem('remembered_email');
+            if (savedEmail) {
+                document.getElementById('email').value = savedEmail;
+                document.getElementById('remember').checked = true;
             }
         });
 
@@ -592,6 +601,13 @@
                     localStorage.setItem('access_token', data.access_token);
                     localStorage.setItem('refresh_token', data.refresh_token);
                     localStorage.setItem('user', JSON.stringify(data.user));
+
+                    // Remember me: save or clear email
+                    if (remember) {
+                        localStorage.setItem('remembered_email', email);
+                    } else {
+                        localStorage.removeItem('remembered_email');
+                    }
 
                     showSuccess('Login successful! Redirecting...');
 
