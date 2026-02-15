@@ -218,20 +218,27 @@ class AIAgent:
             }
     
     def _should_escalate_immediately(self, escalation: Dict, sentiment: Dict) -> bool:
-        """Determine if immediate escalation is needed."""
+        """Determine if immediate escalation is needed.
+        
+        IMPORTANT: BERT sentiment returns -1.0 for ALL negative messages,
+        even innocuous ones like "Can I cancel my order?". Therefore we
+        CANNOT use sentiment score alone as an escalation trigger.
+        We require keyword/trigger evidence alongside sentiment.
+        """
         # Very high trigger score from keywords/frustration
-        if escalation.get("trigger_score", 0.0) >= 0.75:
-            return True
-
-        # Very negative sentiment — genuinely angry customer
-        if sentiment.get("score", 0.5) < 0.15:
+        if escalation.get("trigger_score", 0.0) >= 0.85:
             return True
 
         # Legal or media threats found in matched keywords
         critical_triggers = ["legal", "lawsuit", "lawyer", "media", "attorney", "sue"]
-        for kw in escalation.get("keywords", []):
+        matched_keywords = escalation.get("keywords", []) or escalation.get("triggers", [])
+        for kw in matched_keywords:
             if any(ct in kw.lower() for ct in critical_triggers):
                 return True
+
+        # Negative sentiment + significant keyword evidence (combined signal)
+        if sentiment.get("score", 0.5) < -0.5 and escalation.get("trigger_score", 0.0) >= 0.40:
+            return True
 
         return False
     
@@ -298,12 +305,14 @@ class AIAgent:
         action = AgentAction.RESPOND
         requires_human = False
 
-        # Low confidence — suggest human review (but don't escalate)
-        if llm_response.confidence < self.escalation_threshold:
+        # Low confidence + negative sentiment — suggest human review
+        # Changed: low confidence alone is NOT enough to flag (prevents
+        # false flags on simple questions where KB has no data)
+        # NOTE: BERT scores are [-1.0, +1.0], not [0.0, 1.0]
+        if llm_response.confidence < self.escalation_threshold and sentiment.get("score", 0.5) < -0.5:
             requires_human = True
 
         # LLM truly failed (not just using fallback template) — flag for review
-        # Note: fallback templates have success=True, so this only catches real API errors
         if not llm_response.success and llm_response.confidence < 0.1:
             action = AgentAction.ESCALATE
             requires_human = True
@@ -313,8 +322,8 @@ class AIAgent:
             action = AgentAction.ESCALATE
             requires_human = True
 
-        # Very negative sentiment with low confidence
-        if sentiment.get("score", 0.5) < 0.2 and llm_response.confidence < 0.4:
+        # Extremely negative sentiment with low confidence
+        if sentiment.get("score", 0.5) < -0.7 and llm_response.confidence < 0.3:
             requires_human = True
 
         return action, requires_human

@@ -17,36 +17,42 @@ for lang, data in SENTIMENT_DICTS.items():
     if "urgent" in data:
         ESCALATION_KEYWORDS.update(data["urgent"])
 
-# Add specific escalation phrases that might not be in sentiment urgent list
+# Add specific escalation phrases — ONLY genuine anger/threats.
+# Normal e-commerce actions (cancel, refund, review) are NOT escalation triggers
+# because customers saying "Can I cancel my order?" shouldn't be escalated.
 ADDITIONAL_TRIGGERS = {
-    # Human escalation requests
+    # Human escalation requests (genuine)
     "speak to someone", "higher up", "your boss", "manager", "supervisor",
     "real person", "human agent", "talk to a human", "actual person",
     "someone in charge", "department manager", "customer service manager",
     
-    # Refund/compensation demands
-    "money back", "full refund", "want my money", "refund now", "compensation",
-    "credit my account", "reimburse", "pay me back",
-    
-    # Strong dissatisfaction
+    # Strong dissatisfaction (genuine anger, not standard requests)
     "never again", "worst ever", "terrible service", "awful experience",
     "completely unacceptable", "absolutely terrible", "disgusted",
     "fed up", "had enough", "last straw", "final warning",
     
     # Legal/formal threats
-    "consumer protection", "file a complaint", "report you", "lawyer",
-    "legal action", "sue you", "attorney", "better business bureau", "bbb",
+    "consumer protection", "file a complaint", "report you",
+    "legal action", "sue you", "better business bureau", "bbb",
     "trading standards", "consumer rights", "regulatory",
     
-    # Urgency indicators
-    "need this resolved", "urgent matter", "time sensitive", "emergency",
-    "critical issue", "need immediate", "asap", "right now", "immediately",
-    
     # Frustration expressions
-    "this is ridiculous", "unbelievable", "how dare you", "what the",
-    "are you kidding", "joke of a company", "scam", "fraud", "rip off"
+    "this is ridiculous", "how dare you",
+    "are you kidding", "joke of a company",
 }
 ESCALATION_KEYWORDS.update(ADDITIONAL_TRIGGERS)
+
+# Remove overly broad words that trigger on normal e-commerce messages
+# These are standard customer actions, NOT escalation signals
+FALSE_POSITIVE_WORDS = {
+    "cancel", "refund", "review", "money back", "full refund",
+    "want my money", "refund now", "compensation", "credit my account",
+    "reimburse", "pay me back", "scam", "fraud", "rip off",
+    "unbelievable", "what the", "asap", "right now", "immediately",
+    "need this resolved", "urgent matter", "time sensitive", "emergency",
+    "critical issue", "need immediate",
+}
+ESCALATION_KEYWORDS -= FALSE_POSITIVE_WORDS
 
 # Caps lock indicates frustration
 MIN_CAPS_RATIO = 0.4
@@ -79,7 +85,7 @@ def check_escalation_triggers(text: str, current_frustration: float = 0.0) -> Di
         for keyword in ESCALATION_KEYWORDS:
             if keyword in text_lower:
                 matched_keywords.append(keyword)
-                trigger_score += 0.30  # Strong signal per keyword
+                trigger_score += 0.20  # Moderate signal per keyword (was 0.30 — too aggressive)
 
         if matched_keywords:
             reasons.append(f"Escalation keywords: {', '.join(matched_keywords[:3])}")
@@ -115,14 +121,17 @@ def check_escalation_triggers(text: str, current_frustration: float = 0.0) -> Di
 
     # ── 5. Determine escalation recommendation ──
     # is_trigger: signals that *something* was detected (for logging/UI)
-    is_trigger = len(matched_keywords) > 0 or trigger_score > 0.25
+    is_trigger = len(matched_keywords) > 0 or trigger_score > 0.35
 
-    # should_escalate: requires strong evidence before routing to human
-    # - Score >= 0.45 alone (e.g. keyword match + caps or punctuation)
-    # - OR keyword match + elevated frustration (> 0.55)
+    # should_escalate: requires STRONG evidence before routing to human
+    # Raised from 0.45 → 0.60 to prevent false positives on normal messages.
+    # A single keyword (0.20) is NOT enough — need multiple signals:
+    #   - 3 keywords alone = 0.60 ✓
+    #   - 2 keywords + high frustration = 0.40 + 0.25 = 0.65 ✓
+    #   - 1 keyword + caps + punctuation = 0.20 + 0.20 + 0.10 = 0.50 ✗ (needs more)
     should_escalate = (
-        trigger_score >= 0.45
-        or (len(matched_keywords) > 0 and current_frustration > 0.55)
+        trigger_score >= 0.60
+        or (len(matched_keywords) > 0 and current_frustration > 0.70)
     )
 
     return {
