@@ -647,7 +647,7 @@
                     <p>Your AI support widget is ready. Copy the embed code below and paste it into your website before
                         the end of "&lt; body &gt;" tag.</p>
                     <div class="embed-code" id="embedCode">
-                        &lt;script src="https://cdn.behavioral-ai.com/widget.js"
+                        &lt;script src="https://sentimenta.snick.at/widget/embed.js"
                         data-key="YOUR_API_KEY"&gt;&lt;/script&gt;
                     </div>
                     <button class="copy-btn" onclick="copyEmbed()">📋 Copy Embed Code</button>
@@ -789,7 +789,7 @@
                     const completeData = await completeRes.json();
                     if (completeData.widget_api_key) {
                         document.getElementById('embedCode').textContent =
-                            `<script src="https://cdn.behavioral-ai.com/widget.js" data-key="${completeData.widget_api_key}"><\/script>`;
+                            `<script src="https://sentimenta.snick.at/widget/embed.js" data-key="${completeData.widget_api_key}"><\/script>`;
                     }
                 }
 
