@@ -127,10 +127,24 @@ app.include_router(widget_config_api.router) # Zone 3: Widget Config (FR-3.5)
 
 @app.get("/")
 async def root():
-    """Root endpoint"""
+    """Serve landing page at root URL"""
+    frontend_index = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "frontend", "index.html"
+    )
+    # Also check Docker path
+    if not os.path.exists(frontend_index):
+        frontend_index = "/app/frontend/index.html"
+    if os.path.exists(frontend_index):
+        return FileResponse(frontend_index)
+    return {"name": "Behavioral Agentic AI", "version": "3.1.0", "status": "running"}
+
+
+@app.get("/api/info")
+async def api_info():
+    """API info endpoint"""
     return {
         "name": "Behavioral Agentic AI",
-        "version": "1.0.0",
+        "version": "3.1.0",
         "status": "running",
         "docs": "/docs",
         "websocket": "/ws/{client_id}"
