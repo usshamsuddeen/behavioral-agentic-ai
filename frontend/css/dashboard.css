@@ -1,0 +1,426 @@
+/*
+ * =========================================================
+ * BEHAVIORAL AGENTIC AI - Dashboard Styles
+ * =========================================================
+ */
+
+/* =========================================================
+   DASHBOARD METRICS
+   ========================================================= */
+.dashboard-metrics {
+    margin-bottom: var(--space-lg);
+}
+
+/* =========================================================
+   DASHBOARD PANELS
+   ========================================================= */
+.dashboard-panel {
+    padding: var(--space-lg);
+    display: flex;
+    flex-direction: column;
+}
+
+.dashboard-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-lg);
+    padding-bottom: var(--space-md);
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.dashboard-panel-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.dashboard-select {
+    padding: 6px 12px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    font-size: 0.8125rem;
+    cursor: pointer;
+    outline: none;
+}
+
+.dashboard-select:focus {
+    border-color: var(--primary-500);
+}
+
+/* =========================================================
+   SENTIMENT CHART (Donut)
+   ========================================================= */
+.sentiment-chart {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2xl);
+    flex: 1;
+    padding: var(--space-md);
+}
+
+.sentiment-donut {
+    position: relative;
+    width: 160px;
+    height: 160px;
+}
+
+.sentiment-donut svg {
+    transform: rotate(-90deg);
+    width: 100%;
+    height: 100%;
+}
+
+.sentiment-donut-bg {
+    fill: none;
+    stroke: var(--bg-tertiary);
+    stroke-width: 12;
+}
+
+.sentiment-donut-segment {
+    fill: none;
+    stroke-width: 12;
+    stroke-linecap: round;
+    transition: stroke-dasharray 1s ease-out;
+}
+
+.sentiment-donut-positive {
+    stroke: var(--positive);
+}
+
+.sentiment-donut-neutral {
+    stroke: var(--neutral);
+}
+
+.sentiment-donut-negative {
+    stroke: var(--negative);
+}
+
+.sentiment-donut-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+.sentiment-donut-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.sentiment-donut-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.sentiment-legend {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.sentiment-legend-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+.sentiment-legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: var(--radius-full);
+    flex-shrink: 0;
+}
+
+.sentiment-legend-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    flex: 1;
+    min-width: 80px;
+}
+
+.sentiment-legend-value {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* =========================================================
+   LANGUAGE STATS
+   ========================================================= */
+.language-stats {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.language-stat-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+.language-stat-info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    min-width: 100px;
+}
+
+.language-stat-flag {
+    font-size: 1.25rem;
+}
+
+.language-stat-name {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.language-stat-bar {
+    flex: 1;
+}
+
+.language-stat-value {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    min-width: 40px;
+    text-align: right;
+}
+
+/* =========================================================
+   ESCALATION LIST
+   ========================================================= */
+.escalation-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+/* =========================================================
+   REAL-TIME INDICATOR
+   ========================================================= */
+.realtime-indicator {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.realtime-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--positive);
+    border-radius: var(--radius-full);
+    animation: pulse 2s infinite;
+}
+
+/* =========================================================
+   ACTIVITY FEED
+   ========================================================= */
+.activity-feed {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-md);
+    padding: var(--space-sm);
+    border-radius: var(--radius-md);
+    transition: background var(--transition-fast);
+}
+
+.activity-item:hover {
+    background: var(--glass-bg-hover);
+}
+
+.activity-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.activity-icon--message {
+    background: rgba(59, 130, 246, 0.15);
+    color: var(--primary-400);
+}
+
+.activity-icon--escalation {
+    background: var(--urgent-bg);
+    color: var(--urgent-light);
+}
+
+.activity-icon--resolved {
+    background: var(--positive-bg);
+    color: var(--positive-light);
+}
+
+.activity-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.activity-text {
+    font-size: 0.8125rem;
+    color: var(--text-primary);
+    line-height: 1.4;
+}
+
+.activity-text strong {
+    font-weight: 600;
+}
+
+.activity-time {
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+/* =========================================================
+   QUICK ACTIONS
+   ========================================================= */
+.quick-actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-md);
+}
+
+.quick-action-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-lg);
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.quick-action-btn:hover {
+    background: var(--glass-bg-hover);
+    border-color: var(--glass-border-hover);
+    transform: translateY(-2px);
+}
+
+.quick-action-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(59, 130, 246, 0.15);
+    color: var(--primary-400);
+}
+
+.quick-action-label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+/* =========================================================
+   SYSTEM STATUS
+   ========================================================= */
+.system-status {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-sm) 0;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.status-item:last-child {
+    border-bottom: none;
+}
+
+.status-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.status-value {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.status-value--online {
+    color: var(--positive-light);
+}
+
+.status-value--warning {
+    color: var(--urgent-light);
+}
+
+.status-value--offline {
+    color: var(--negative-light);
+}
+
+.status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: var(--radius-full);
+}
+
+.status-dot--online {
+    background: var(--positive);
+}
+
+.status-dot--warning {
+    background: var(--urgent);
+}
+
+.status-dot--offline {
+    background: var(--negative);
+}
+
+/* =========================================================
+   RESPONSIVE ADJUSTMENTS
+   ========================================================= */
+@media (max-width: 1200px) {
+    .sentiment-chart {
+        flex-direction: column;
+        gap: var(--space-lg);
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-metrics .grid-4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .dashboard-main.grid-2 {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard-metrics .grid-4 {
+        grid-template-columns: 1fr;
+    }
+}

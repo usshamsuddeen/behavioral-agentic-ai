@@ -1,0 +1,62 @@
+[
+    {
+        "title": "How do I return a product?",
+        "answer": "To return a product, please follow these steps: 1) Log into your account on our website, 2) Go to 'My Orders' and select the order containing the item, 3) Click 'Request Return' and follow the prompts, 4) Print the prepaid shipping label, 5) Pack the item securely and drop it off at any authorized shipping location. Returns must be initiated within 30 days of delivery.",
+        "category": "returns",
+        "type": "faq"
+    },
+    {
+        "title": "What is your refund policy?",
+        "answer": "Once we receive your return, we will inspect the item and process your refund within 5-7 business days. Refunds are credited to your original payment method. For credit card payments, it may take an additional 3-5 business days to appear on your statement. If you paid with store credit, your refund will be issued as store credit.",
+        "category": "returns",
+        "type": "faq"
+    },
+    {
+        "title": "How long does shipping take?",
+        "answer": "Standard shipping takes 5-7 business days. Express shipping takes 2-3 business days. Same-day delivery is available in select metropolitan areas for orders placed before 12 PM. All orders are processed within 1-2 business days before shipping. You will receive a tracking number via email once your order ships.",
+        "category": "shipping",
+        "type": "faq"
+    },
+    {
+        "title": "Do you offer international shipping?",
+        "answer": "Yes, we ship to over 50 countries worldwide. International shipping typically takes 7-14 business days depending on the destination. Please note that international orders may be subject to customs duties and taxes, which are the responsibility of the customer. Shipping costs are calculated at checkout based on your location.",
+        "category": "shipping",
+        "type": "faq"
+    },
+    {
+        "title": "How do I track my order?",
+        "answer": "You can track your order by: 1) Logging into your account and viewing 'My Orders', 2) Clicking the tracking number in your shipping confirmation email, 3) Using our 'Track Order' page with your order number and email. Tracking information is usually available within 24 hours of shipping.",
+        "category": "shipping",
+        "type": "faq"
+    },
+    {
+        "title": "What payment methods do you accept?",
+        "answer": "We accept Visa, MasterCard, American Express, Discover, PayPal, Apple Pay, Google Pay, and store gift cards. For orders over $200, we also offer PayPal Pay in 4 and Klarna for installment payments. All transactions are encrypted and secure.",
+        "category": "payment",
+        "type": "faq"
+    },
+    {
+        "title": "How do I cancel my order?",
+        "answer": "To cancel your order, please contact us within 1 hour of placing it. Once an order starts processing, it cannot be canceled. You can reach our customer service team via chat on our website, by calling 1-800-SUPPORT, or by emailing support@example.com. If your order has already shipped, you can refuse delivery or initiate a return.",
+        "category": "orders",
+        "type": "faq"
+    },
+    {
+        "title": "How do I contact customer support?",
+        "answer": "You can reach our customer support team through multiple channels: 1) Live chat on our website (available 24/7), 2) Phone at 1-800-SUPPORT (Mon-Fri 8am-8pm EST), 3) Email at support@example.com (response within 24 hours), 4) Social media @OurCompany on Twitter and Facebook. For urgent issues, live chat provides the fastest response.",
+        "category": "support",
+        "type": "faq"
+    },
+    {
+        "title": "Do you have a loyalty program?",
+        "answer": "Yes! Our Rewards Program lets you earn points on every purchase. Earn 1 point per dollar spent. 100 points = $5 reward. Members also get exclusive access to sales, birthday discounts, and free shipping on orders over $50. Sign up for free on our website or download our mobile app.",
+        "category": "rewards",
+        "type": "faq"
+    },
+    {
+        "title": "What is your warranty policy?",
+        "answer": "All products come with a 1-year manufacturer warranty against defects in materials and workmanship. Extended warranty plans are available for purchase. Warranty claims require proof of purchase. For warranty service, contact support with your order number and a description of the issue. We will arrange repair, replacement, or refund as appropriate.",
+        "category": "warranty",
+        "type": "faq"
+    }
+]

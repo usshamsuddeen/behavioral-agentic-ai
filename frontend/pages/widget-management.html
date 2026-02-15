@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Behavioral Agentic AI - Widget Management & Configuration">
+    <title>Widget Management | Behavioral Agentic AI</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="../css/design-system.css">
+    <link rel="stylesheet" href="../css/layout.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/widget-management.css">
+</head>
+
+<body>
+    <!-- Animated Gradient Background -->
+    <div class="gradient-bg">
+        <div class="gradient-orb gradient-orb--1"></div>
+        <div class="gradient-orb gradient-orb--2"></div>
+    </div>
+
+    <div class="app">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="../index.html" class="sidebar-logo">
+                    <div class="sidebar-logo-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                            <path d="M2 17l10 5 10-5" />
+                            <path d="M2 12l10 5 10-5" />
+                        </svg>
+                    </div>
+                    <span class="sidebar-logo-text">Behavioral AI</span>
+                </a>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Main</div>
+                    <a href="client-dashboard.html" class="nav-item">
+                        <span class="nav-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="7" />
+                                <rect x="14" y="3" width="7" height="7" />
+                                <rect x="14" y="14" width="7" height="7" />
+                                <rect x="3" y="14" width="7" height="7" />
+                            </svg>
+                        </span>
+                        <span class="nav-item-text">Dashboard</span>
+                    </a>
+                    <a href="chat.html" class="nav-item">
+                        <span class="nav-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                            </svg>
+                        </span>
+                        <span class="nav-item-text">Conversations</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">System</div>
+                    <a href="settings.html" class="nav-item">
+                        <span class="nav-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3" />
+                                <path
+                                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                            </svg>
+                        </span>
+                        <span class="nav-item-text">Settings</span>
+                    </a>
+                    <a href="widget-management.html" class="nav-item active">
+                        <span class="nav-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="3" width="20" height="14" rx="2" />
+                                <path d="M8 21h8" />
+                                <path d="M12 17v4" />
+                            </svg>
+                        </span>
+                        <span class="nav-item-text">Widget</span>
+                    </a>
+                    <a href="widget-management.html" class="nav-item">
+                        <span class="nav-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="16 18 22 12 16 6" />
+                                <polyline points="8 6 2 12 8 18" />
+                            </svg>
+                        </span>
+                        <span class="nav-item-text">Widget Config</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="sidebar-user">
+                    <div class="avatar">--</div>
+                    <div class="sidebar-user-info">
+                        <span class="sidebar-user-name">Loading...</span>
+                        <span class="sidebar-user-role">User</span>
+                    </div>
+                    <button class="logout-btn" title="Logout"
+                        style="background: none; border: none; color: rgba(255,255,255,0.5); cursor: pointer; padding: 8px; margin-left: auto;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                            <polyline points="16 17 21 12 16 7"></polyline>
+                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <button class="mobile-menu-toggle btn-icon btn-ghost">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <line x1="3" y1="12" x2="21" y2="12" />
+                            <line x1="3" y1="6" x2="21" y2="6" />
+                            <line x1="3" y1="18" x2="21" y2="18" />
+                        </svg>
+                    </button>
+                    <h1 class="header-title">Widget Management</h1>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <div class="page-content">
+                <div class="page-header">
+                    <h2 class="page-title">Widget Configuration</h2>
+                    <p class="page-subtitle">Customize and deploy your chat widget for your website.</p>
+                </div>
+
+                <!-- Status Toggle -->
+                <div class="glass-card widget-status-card">
+                    <div class="widget-status-left">
+                        <div class="widget-status-indicator" id="widgetStatusDot"></div>
+                        <div>
+                            <div class="widget-status-label" id="widgetStatusLabel">Widget Inactive</div>
+                            <div class="widget-status-desc" id="widgetStatusDesc">Enable the widget to start receiving
+                                customer conversations.</div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" id="widgetToggleBtn" onclick="toggleWidget()">Enable Widget</button>
+                </div>
+
+                <!-- Widget Analytics Summary (FR-3.5.6) -->
+                <div class="glass-card widget-stats-card">
+                    <div class="widget-stats-header">
+                        <h3 class="widget-section-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M3 3v18h18" />
+                                <path d="M18 17V9" />
+                                <path d="M13 17V5" />
+                                <path d="M8 17v-3" />
+                            </svg>
+                            Widget Performance
+                        </h3>
+                        <span class="badge badge-secondary">Last 7 days</span>
+                    </div>
+                    <div class="grid grid-3 widget-stats-grid" style="margin-top: 1.5rem;">
+                        <div class="stat-item">
+                            <div class="stat-icon" style="font-size: 2rem;">📊</div>
+                            <div class="stat-value" id="totalLoads"
+                                style="font-size: 2rem; font-weight: 700; color: var(--text); margin: 0.5rem 0;">--
+                            </div>
+                            <div class="stat-label" style="font-size: 0.875rem; color: var(--text-muted);">Total Loads
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-icon" style="font-size: 2rem;">💬</div>
+                            <div class="stat-value" id="conversationsStarted"
+                                style="font-size: 2rem; font-weight: 700; color: var(--text); margin: 0.5rem 0;">--
+                            </div>
+                            <div class="stat-label" style="font-size: 0.875rem; color: var(--text-muted);">Conversations
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-icon" style="font-size: 2rem;">⏱️</div>
+                            <div class="stat-value" id="avgSessionDuration"
+                                style="font-size: 2rem; font-weight: 700; color: var(--text); margin: 0.5rem 0;">--
+                            </div>
+                            <div class="stat-label" style="font-size: 0.875rem; color: var(--text-muted);">Avg Duration
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Config Grid -->
+                <div class="grid grid-2 widget-config-grid">
+
+                    <!-- Appearance Settings -->
+                    <div class="glass-card widget-section">
+                        <div class="widget-section-header">
+                            <h3 class="widget-section-title">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <path
+                                        d="M12 2C6.47 2 2 6.47 2 12a10 10 0 0 0 10 10c.93 0 1.4-1.05.82-1.68L12.07 19.56c-.55-.6-.1-1.56.72-1.56h.2C17.53 18 22 13.47 22 8a6 6 0 0 0-6-6z" />
+                                </svg>
+                                Appearance
+                            </h3>
+                        </div>
+                        <div class="widget-form">
+                            <div class="form-group">
+                                <label>Theme Color</label>
+                                <div class="color-picker-row">
+                                    <input type="color" id="themeColor" value="#6366f1" class="color-input" />
+                                    <input type="text" id="themeColorHex" value="#6366f1" class="form-input color-hex"
+                                        placeholder="#6366f1" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Widget Position</label>
+                                <select id="widgetPosition" class="form-select">
+                                    <option value="bottom-right">Bottom Right</option>
+                                    <option value="bottom-left">Bottom Left</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Bot Name</label>
+                                <input type="text" id="botName" class="form-input" value="AI Assistant"
+                                    placeholder="e.g. Support Bot" />
+                            </div>
+                            <div class="form-group">
+                                <label>Welcome Message</label>
+                                <textarea id="welcomeMessage" class="form-textarea" rows="2"
+                                    placeholder="Hello! How can I help?">Hello! How can I help you today?</textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>Placeholder Text</label>
+                                <input type="text" id="placeholderText" class="form-input" value="Type your message..."
+                                    placeholder="Input placeholder" />
+                            </div>
+                            <div class="form-group form-group--toggle">
+                                <label>Show Branding</label>
+                                <label class="toggle">
+                                    <input type="checkbox" id="showBranding" checked />
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <div class="form-group form-group--toggle">
+                                <label>Pre-Chat Form</label>
+                                <label class="toggle">
+                                    <input type="checkbox" id="preChatForm" />
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                            <button class="btn btn-primary" onclick="saveWidgetConfig()">Save Changes</button>
+                        </div>
+                    </div>
+
+                    <!-- Live Preview -->
+                    <div class="glass-card widget-section">
+                        <div class="widget-section-header">
+                            <h3 class="widget-section-title">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                    <circle cx="12" cy="12" r="3" />
+                                </svg>
+                                Live Preview
+                            </h3>
+                        </div>
+                        <div class="widget-preview-container">
+                            <div class="widget-preview-frame" id="widgetPreview">
+                                <!-- Widget Preview Header -->
+                                <div class="wp-header" id="wpHeader">
+                                    <div class="wp-header-avatar">🤖</div>
+                                    <div class="wp-header-info">
+                                        <div class="wp-header-name" id="wpBotName">AI Assistant</div>
+                                        <div class="wp-header-status">
+                                            <span class="wp-header-dot"></span> Online
+                                        </div>
+                                    </div>
+                                    <div class="wp-close">✕</div>
+                                </div>
+                                <!-- Widget Preview Messages -->
+                                <div class="wp-messages">
+                                    <div class="wp-welcome">
+                                        <div class="wp-welcome-emoji">👋</div>
+                                        <div class="wp-welcome-title" id="wpWelcome">Hello! How can I help you today?
+                                        </div>
+                                        <div class="wp-welcome-sub">Ask me anything about our products.</div>
+                                    </div>
+                                    <div class="wp-msg wp-msg--ai">How can I assist you today?</div>
+                                    <div class="wp-msg wp-msg--customer" id="wpCustomerMsg">I need help with my order
+                                    </div>
+                                    <div class="wp-msg wp-msg--ai">Sure! Let me look into that for you.</div>
+                                </div>
+                                <!-- Widget Preview Input -->
+                                <div class="wp-input-area">
+                                    <input class="wp-input" id="wpInput" placeholder="Type your message..." disabled />
+                                    <button class="wp-send" id="wpSend" disabled>
+                                        <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+                                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div class="wp-branding" id="wpBranding">Powered by Behavioral AI</div>
+                            </div>
+                            <!-- Floating Bubble Preview -->
+                            <div class="wp-bubble" id="wpBubble">
+                                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                                    <path
+                                        d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z" />
+                                    <path d="M7 9h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2z" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Embed Code Section -->
+                <div class="glass-card widget-section widget-embed-section">
+                    <div class="widget-section-header">
+                        <h3 class="widget-section-title">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <polyline points="16 18 22 12 16 6" />
+                                <polyline points="8 6 2 12 8 18" />
+                            </svg>
+                            Embed Code
+                        </h3>
+                        <span class="badge badge-info" id="embedStatus">Ready to embed</span>
+                    </div>
+                    <p class="widget-embed-desc">Copy and paste this code snippet just before the closing
+                        <code>&lt;/body&gt;</code> tag on your website.
+                    </p>
+                    <div class="embed-code-block">
+                        <div class="embed-code-header">
+                            <span>HTML</span>
+                            <button class="btn btn-ghost btn-sm" onclick="copyEmbedCode()">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" />
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                                </svg>
+                                Copy
+                            </button>
+                        </div>
+                        <pre class="embed-code-pre"><code id="embedCodeBlock">Loading embed code...</code></pre>
+                    </div>
+
+                    <!-- API Key Section -->
+                    <div class="api-key-section">
+                        <div class="api-key-row">
+                            <label>Widget API Key</label>
+                            <div class="api-key-value">
+                                <code id="apiKeyDisplay">Loading...</code>
+                                <button class="btn btn-ghost btn-sm" onclick="copyApiKey()">Copy</button>
+                            </div>
+                        </div>
+                        <button class="btn btn-secondary btn-sm" onclick="regenerateApiKey()">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <polyline points="23 4 23 10 17 10" />
+                                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+                            </svg>
+                            Regenerate Key
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Sidebar Overlay (Mobile) -->
+    <div class="sidebar-overlay"></div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Scripts -->
+    <script src="../js/auth.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/widget-management.js"></script>
+    <script>
+        Auth.initProtectedPage();
+    </script>
+</body>
+
+</html>

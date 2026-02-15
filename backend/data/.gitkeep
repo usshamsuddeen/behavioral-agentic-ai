@@ -1,0 +1,5 @@
+# This directory is created at runtime for:
+# - SQLite database (app.db)
+# - Vector store embeddings
+# - ChromaDB data
+# Contents are gitignored — only this placeholder is tracked

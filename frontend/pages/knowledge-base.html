@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Behavioral Agentic AI - Knowledge Base Management">
+    <title>Knowledge Base | Behavioral Agentic AI</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="../css/design-system.css">
+    <link rel="stylesheet" href="../css/layout.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/knowledge-base.css">
+</head>
+
+<body>
+    <!-- Animated Gradient Background -->
+    <div class="gradient-bg">
+        <div class="gradient-orb gradient-orb--1"></div>
+        <div class="gradient-orb gradient-orb--2"></div>
+    </div>
+
+    <div class="app">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="../index.html" class="sidebar-logo">
+                    <div class="sidebar-logo-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                            <path d="M2 17l10 5 10-5" />
+                            <path d="M2 12l10 5 10-5" />
+                        </svg>
+                    </div>
+                    <span class="sidebar-logo-text">Behavioral AI</span>
+                </a>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Main</div>
+                    <a href="client-dashboard.html" class="nav-item">
+                        <span class="nav-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="7" />
+                                <rect x="14" y="3" width="7" height="7" />
+                                <rect x="14" y="14" width="7" height="7" />
+                                <rect x="3" y="14" width="7" height="7" />
+                            </svg>
+                        </span>
+                        <span class="nav-item-text">Dashboard</span>
+                    </a>
+                    <a href="chat.html" class="nav-item">
+                        <span class="nav-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                            </svg>
+                        </span>
+                        <span class="nav-item-text">Conversations</span>
+                    </a>
+                    <a href="escalations.html" class="nav-item">
+                        <span class="nav-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path
+                                    d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                                <line x1="12" y1="9" x2="12" y2="13" />
+                                <line x1="12" y1="17" x2="12.01" y2="17" />
+                            </svg>
+                        </span>
+                        <span class="nav-item-text">Escalations</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">AI Agent</div>
+                    <a href="knowledge-base.html" class="nav-item active">
+                        <span class="nav-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                                <path d="M8 6h8" />
+                                <path d="M8 10h8" />
+                                <path d="M8 14h4" />
+                            </svg>
+                        </span>
+                        <span class="nav-item-text">Knowledge Base</span>
+                    </a>
+                    <a href="analytics.html" class="nav-item">
+                        <span class="nav-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="20" x2="18" y2="10" />
+                                <line x1="12" y1="20" x2="12" y2="4" />
+                                <line x1="6" y1="20" x2="6" y2="14" />
+                            </svg>
+                        </span>
+                        <span class="nav-item-text">Analytics</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">System</div>
+                    <a href="settings.html" class="nav-item">
+                        <span class="nav-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3" />
+                                <path
+                                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                            </svg>
+                        </span>
+                        <span class="nav-item-text">Settings</span>
+                    </a>
+                    <a href="widget-management.html" class="nav-item">
+                        <span class="nav-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="16 18 22 12 16 6" />
+                                <polyline points="8 6 2 12 8 18" />
+                            </svg>
+                        </span>
+                        <span class="nav-item-text">Widget Config</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="sidebar-user">
+                    <div class="avatar">--</div>
+                    <div class="sidebar-user-info">
+                        <span class="sidebar-user-name">Loading...</span>
+                        <span class="sidebar-user-role">User</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <button class="mobile-menu-toggle btn-icon btn-ghost">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <line x1="3" y1="12" x2="21" y2="12" />
+                            <line x1="3" y1="6" x2="21" y2="6" />
+                            <line x1="3" y1="18" x2="21" y2="18" />
+                        </svg>
+                    </button>
+                    <h1 class="header-title">Knowledge Base</h1>
+                </div>
+
+                <div class="header-right">
+                    <div class="ai-status" id="aiStatus">
+                        <span class="ai-status-dot"></span>
+                        <span class="ai-status-text">Checking...</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <div class="page-content">
+                <div class="page-header">
+                    <h2 class="page-title">AI Knowledge Management</h2>
+                    <p class="page-subtitle">Upload documents to power your AI agent's responses with company-specific
+                        knowledge.</p>
+                </div>
+
+                <!-- Stats Grid -->
+                <div class="grid grid-4 kb-stats">
+                    <div class="glass-card metric-card" id="statDocuments">
+                        <div class="metric-card-header">
+                            <div class="metric-card-icon metric-card-icon--blue">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                    <polyline points="14 2 14 8 20 8" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="metric-card-body">
+                            <span class="metric-card-value" id="totalDocuments">0</span>
+                            <span class="metric-card-label">Documents</span>
+                        </div>
+                    </div>
+
+                    <div class="glass-card metric-card" id="statChunks">
+                        <div class="metric-card-header">
+                            <div class="metric-card-icon metric-card-icon--green">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <rect x="3" y="3" width="7" height="7" />
+                                    <rect x="14" y="3" width="7" height="7" />
+                                    <rect x="14" y="14" width="7" height="7" />
+                                    <rect x="3" y="14" width="7" height="7" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="metric-card-body">
+                            <span class="metric-card-value" id="totalChunks">0</span>
+                            <span class="metric-card-label">Knowledge Chunks</span>
+                        </div>
+                    </div>
+
+                    <div class="glass-card metric-card" id="statSize">
+                        <div class="metric-card-header">
+                            <div class="metric-card-icon metric-card-icon--purple">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path
+                                        d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="metric-card-body">
+                            <span class="metric-card-value" id="totalSize">0 KB</span>
+                            <span class="metric-card-label">Total Size</span>
+                        </div>
+                    </div>
+
+                    <div class="glass-card metric-card" id="statTypes">
+                        <div class="metric-card-header">
+                            <div class="metric-card-icon metric-card-icon--orange">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <polygon points="12 2 2 7 12 12 22 7 12 2" />
+                                    <polyline points="2 17 12 22 22 17" />
+                                    <polyline points="2 12 12 17 22 12" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="metric-card-body">
+                            <span class="metric-card-value" id="docTypes">0</span>
+                            <span class="metric-card-label">Document Types</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Content Grid -->
+                <div class="grid grid-2 kb-main">
+                    <!-- Upload Section -->
+                    <div class="glass-card kb-panel">
+                        <div class="kb-panel-header">
+                            <h3 class="kb-panel-title">Upload Documents</h3>
+                            <span class="badge badge-neutral">PDF, DOCX, TXT, JSON, CSV</span>
+                        </div>
+
+                        <!-- Drop Zone -->
+                        <div class="drop-zone" id="dropZone">
+                            <div class="drop-zone-content">
+                                <div class="drop-zone-icon">
+                                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="1.5">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                        <polyline points="17 8 12 3 7 8" />
+                                        <line x1="12" y1="3" x2="12" y2="15" />
+                                    </svg>
+                                </div>
+                                <p class="drop-zone-text">Drag & drop files here</p>
+                                <p class="drop-zone-subtext">or click to browse</p>
+                                <input type="file" id="fileInput" multiple accept=".pdf,.docx,.doc,.txt,.json,.csv,.md"
+                                    hidden>
+                            </div>
+                        </div>
+
+                        <!-- Upload Options -->
+                        <div class="upload-options">
+                            <div class="input-group">
+                                <label class="input-label">Document Type</label>
+                                <select id="docType" class="input">
+                                    <option value="general">General</option>
+                                    <option value="product">Product Info</option>
+                                    <option value="policy">Policies</option>
+                                    <option value="faq">FAQ</option>
+                                </select>
+                            </div>
+                            <div class="input-group">
+                                <label class="input-label">Category</label>
+                                <input type="text" id="docCategory" class="input" placeholder="e.g., shipping, returns">
+                            </div>
+                        </div>
+
+                        <!-- Upload Progress -->
+                        <div class="upload-progress" id="uploadProgress" style="display: none;">
+                            <div class="upload-progress-header">
+                                <span class="upload-progress-file" id="uploadFileName">Uploading...</span>
+                                <span class="upload-progress-percent" id="uploadPercent">0%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-bar-fill progress-bar-fill--blue" id="uploadProgressBar"
+                                    style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Upload Button -->
+                        <button class="btn btn-primary w-full" id="uploadBtn" disabled>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                <polyline points="17 8 12 3 7 8" />
+                                <line x1="12" y1="3" x2="12" y2="15" />
+                            </svg>
+                            Upload Documents
+                        </button>
+                    </div>
+
+                    <!-- Search & Test Section -->
+                    <div class="glass-card kb-panel">
+                        <div class="kb-panel-header">
+                            <h3 class="kb-panel-title">Test Knowledge Base</h3>
+                            <span class="badge badge-positive">RAG Search</span>
+                        </div>
+
+                        <div class="search-section">
+                            <div class="input-group">
+                                <label class="input-label">Search Query</label>
+                                <div class="search-input-wrapper">
+                                    <input type="text" id="searchQuery" class="input"
+                                        placeholder="e.g., What is the return policy?">
+                                    <button class="btn btn-primary search-btn" id="searchBtn">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2">
+                                            <circle cx="11" cy="11" r="8" />
+                                            <path d="m21 21-4.35-4.35" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Search Results -->
+                        <div class="search-results" id="searchResults">
+                            <div class="search-placeholder">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="1.5">
+                                    <circle cx="11" cy="11" r="8" />
+                                    <path d="m21 21-4.35-4.35" />
+                                </svg>
+                                <p>Enter a query to test knowledge retrieval</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Documents List -->
+                <div class="glass-card kb-documents" style="margin-top: var(--space-lg);">
+                    <div class="kb-panel-header">
+                        <h3 class="kb-panel-title">Indexed Documents</h3>
+                        <div class="kb-panel-actions">
+                            <button class="btn btn-ghost btn-sm" id="refreshDocsBtn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <polyline points="23 4 23 10 17 10" />
+                                    <polyline points="1 20 1 14 7 14" />
+                                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+                                </svg>
+                                Refresh
+                            </button>
+                            <button class="btn btn-secondary btn-sm" id="deleteAllBtn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <polyline points="3 6 5 6 21 6" />
+                                    <path
+                                        d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                </svg>
+                                Clear All
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="documents-table-wrapper">
+                        <table class="documents-table">
+                            <thead>
+                                <tr>
+                                    <th>Document</th>
+                                    <th>Type</th>
+                                    <th>Category</th>
+                                    <th>Chunks</th>
+                                    <th>Size</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="documentsTableBody">
+                                <tr class="documents-empty">
+                                    <td colspan="7">
+                                        <div class="documents-empty-content">
+                                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none"
+                                                stroke="currentColor" stroke-width="1.5">
+                                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                                <polyline points="14 2 14 8 20 8" />
+                                            </svg>
+                                            <p>No documents indexed yet</p>
+                                            <span>Upload documents to get started</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Sidebar Overlay (Mobile) -->
+    <div class="sidebar-overlay"></div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Scripts -->
+    <script src="../js/auth.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/knowledge.js"></script>
+</body>
+
+</html>

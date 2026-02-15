@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Behavioral Agentic AI - Sentiment-Aware Escalation System for Multilingual Global Customer Support">
+    <title>Behavioral Agentic AI | Sentiment-Aware Customer Support</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/design-system.css">
+    <link rel="stylesheet" href="css/landing.css">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+</head>
+
+<body>
+    <!-- Animated Gradient Background -->
+    <div class="gradient-bg">
+        <div class="gradient-orb gradient-orb--1"></div>
+        <div class="gradient-orb gradient-orb--2"></div>
+        <div class="gradient-orb gradient-orb--3"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="landing-nav">
+        <div class="landing-nav-container">
+            <a href="#" class="landing-logo">
+                <div class="landing-logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                        <path d="M2 17l10 5 10-5" />
+                        <path d="M2 12l10 5 10-5" />
+                    </svg>
+                </div>
+                <span class="landing-logo-text">Behavioral AI</span>
+            </a>
+
+            <div class="landing-nav-links">
+                <a href="#features" class="landing-nav-link">Features</a>
+                <a href="#how-it-works" class="landing-nav-link">How it Works</a>
+                <a href="#demo" class="landing-nav-link">Demo</a>
+                <a href="#languages" class="landing-nav-link">Languages</a>
+            </div>
+
+            <div class="landing-nav-actions">
+                <a href="pages/login.html" class="btn btn-secondary" style="margin-right: 8px;">Sign In</a>
+                <a href="pages/signup.html" class="btn btn-primary">
+                    Get Started Free
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-container">
+            <div class="hero-badge">
+                <span class="hero-badge-dot"></span>
+                <span>Powered by Advanced NLP</span>
+            </div>
+
+            <h1 class="hero-title">
+                <span class="hero-title-line">AI-Powered Widget for</span>
+                <span class="hero-title-line hero-title-gradient">Smarter Customer Support</span>
+            </h1>
+
+            <p class="hero-subtitle">
+                Embed a sentiment-aware AI chat widget on your e-commerce store. Detects emotions,
+                auto-escalates critical issues, and supports 6+ languages — all from a single embed code.
+            </p>
+
+            <div class="hero-actions">
+                <a href="pages/signup.html" class="btn btn-primary btn-lg">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7" />
+                        <rect x="14" y="3" width="7" height="7" />
+                        <rect x="14" y="14" width="7" height="7" />
+                        <rect x="3" y="14" width="7" height="7" />
+                    </svg>
+                    Start Free Setup
+                </a>
+                <a href="#demo" class="btn btn-secondary btn-lg">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="5 3 19 12 5 21 5 3" />
+                    </svg>
+                    Watch Demo
+                </a>
+            </div>
+
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <span class="hero-stat-value">94%</span>
+                    <span class="hero-stat-label">Sentiment Accuracy</span>
+                </div>
+                <div class="hero-stat-divider"></div>
+                <div class="hero-stat">
+                    <span class="hero-stat-value">6</span>
+                    <span class="hero-stat-label">Languages Supported</span>
+                </div>
+                <div class="hero-stat-divider"></div>
+                <div class="hero-stat">
+                    <span class="hero-stat-value">&lt;2s</span>
+                    <span class="hero-stat-label">Response Time</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hero Visual -->
+        <div class="hero-visual">
+            <div class="hero-visual-card glass-card">
+                <div class="hero-visual-header">
+                    <div class="hero-visual-dots">
+                        <span></span><span></span><span></span>
+                    </div>
+                    <span class="hero-visual-title">Live Sentiment Analysis</span>
+                </div>
+                <div class="hero-visual-content">
+                    <div class="demo-message demo-message--customer">
+                        <div class="demo-message-avatar">M</div>
+                        <div class="demo-message-bubble">
+                            <span class="demo-message-text">This is the third time I'm asking about my order! Very
+                                frustrated.</span>
+                            <span class="demo-message-sentiment demo-message-sentiment--negative">
+                                <span class="sentiment-dot sentiment-dot--negative"></span>
+                                Frustrated - 92%
+                            </span>
+                        </div>
+                    </div>
+                    <div class="demo-message demo-message--ai">
+                        <div class="demo-message-bubble">
+                            <span class="demo-message-text">🎯 Escalation Triggered - High frustration detected</span>
+                        </div>
+                        <div class="demo-message-avatar demo-message-avatar--ai">AI</div>
+                    </div>
+                    <div class="demo-analysis">
+                        <div class="demo-analysis-item">
+                            <span class="demo-analysis-label">Emotion</span>
+                            <span class="demo-analysis-value">Frustrated</span>
+                        </div>
+                        <div class="demo-analysis-item">
+                            <span class="demo-analysis-label">Escalation Risk</span>
+                            <div class="demo-analysis-bar">
+                                <div class="demo-analysis-bar-fill" style="width: 87%"></div>
+                            </div>
+                            <span class="demo-analysis-value">87%</span>
+                        </div>
+                        <div class="demo-analysis-item">
+                            <span class="demo-analysis-label">Language</span>
+                            <span class="demo-analysis-value">English</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="section-container">
+            <div class="section-header">
+                <span class="section-badge">Features</span>
+                <h2 class="section-title">Intelligent Customer Support</h2>
+                <p class="section-subtitle">
+                    Our AI understands not just what customers say, but how they feel while saying it.
+                </p>
+            </div>
+
+            <div class="features-grid">
+                <!-- Feature 1 -->
+                <div class="feature-card glass-card">
+                    <div class="feature-icon feature-icon--blue">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+                            <line x1="9" y1="9" x2="9.01" y2="9" />
+                            <line x1="15" y1="9" x2="15.01" y2="9" />
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">Sentiment Analysis</h3>
+                    <p class="feature-description">
+                        Detect customer emotions in real-time across 6 European languages with 94% accuracy.
+                        Identify anger, frustration, satisfaction, and urgency.
+                    </p>
+                    <div class="feature-tags">
+                        <span class="feature-tag">Real-time</span>
+                        <span class="feature-tag">Multilingual</span>
+                    </div>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="feature-card glass-card">
+                    <div class="feature-icon feature-icon--purple">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">Behavior Prediction</h3>
+                    <p class="feature-description">
+                        Anticipate customer needs before they express them. Predict escalation probability
+                        and take proactive action.
+                    </p>
+                    <div class="feature-tags">
+                        <span class="feature-tag">Predictive</span>
+                        <span class="feature-tag">Proactive</span>
+                    </div>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="feature-card glass-card">
+                    <div class="feature-icon feature-icon--orange">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path
+                                d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                            <line x1="12" y1="9" x2="12" y2="13" />
+                            <line x1="12" y1="17" x2="12.01" y2="17" />
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">Smart Escalation</h3>
+                    <p class="feature-description">
+                        Automatically route high-priority cases to human agents with complete emotional
+                        context and suggested responses.
+                    </p>
+                    <div class="feature-tags">
+                        <span class="feature-tag">Intelligent</span>
+                        <span class="feature-tag">Context-Aware</span>
+                    </div>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="feature-card glass-card">
+                    <div class="feature-icon feature-icon--green">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                        </svg>
+                    </div>
+                    <h3 class="feature-title">Platform Integration</h3>
+                    <p class="feature-description">
+                        Seamlessly connect with Zendesk, Freshdesk, Intercom, and other major
+                        customer support platforms via REST APIs.
+                    </p>
+                    <div class="feature-tags">
+                        <span class="feature-tag">API-First</span>
+                        <span class="feature-tag">Plug & Play</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section id="how-it-works" class="how-it-works">
+        <div class="section-container">
+            <div class="section-header">
+                <span class="section-badge">Process</span>
+                <h2 class="section-title">How It Works</h2>
+                <p class="section-subtitle">
+                    Our five-layer architecture processes customer messages in milliseconds.
+                </p>
+            </div>
+
+            <div class="process-steps">
+                <div class="process-step">
+                    <div class="process-step-number">01</div>
+                    <div class="process-step-content glass-card">
+                        <h4 class="process-step-title">Input Processing</h4>
+                        <p class="process-step-text">
+                            Message arrives and language is detected using XLM-RoBERTa with 99.2% accuracy.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="process-step">
+                    <div class="process-step-number">02</div>
+                    <div class="process-step-content glass-card">
+                        <h4 class="process-step-title">Sentiment Analysis</h4>
+                        <p class="process-step-text">
+                            Multi-pipeline analysis detects emotional state, intent, and cultural context.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="process-step">
+                    <div class="process-step-number">03</div>
+                    <div class="process-step-content glass-card">
+                        <h4 class="process-step-title">Behavior Prediction</h4>
+                        <p class="process-step-text">
+                            Dynamic state model tracks emotional trajectory and predicts escalation probability.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="process-step">
+                    <div class="process-step-number">04</div>
+                    <div class="process-step-content glass-card">
+                        <h4 class="process-step-title">Response Generation</h4>
+                        <p class="process-step-text">
+                            AI generates contextually appropriate responses based on sentiment and predictions.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="process-step">
+                    <div class="process-step-number">05</div>
+                    <div class="process-step-content glass-card">
+                        <h4 class="process-step-title">Escalation Decision</h4>
+                        <p class="process-step-text">
+                            Smart routing to human agents with complete emotional context when needed.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Languages Section -->
+    <section id="languages" class="languages">
+        <div class="section-container">
+            <div class="section-header">
+                <span class="section-badge">Global</span>
+                <h2 class="section-title">6 European Languages Supported</h2>
+                <p class="section-subtitle">
+                    Focused on quality over quantity - exceptional accuracy across 6 major European languages.
+                </p>
+            </div>
+
+            <div class="languages-grid">
+                <div class="language-item glass-card">
+                    <span class="language-flag">🇺🇸</span>
+                    <span class="language-name">English</span>
+                </div>
+                <div class="language-item glass-card">
+                    <span class="language-flag">🇪🇸</span>
+                    <span class="language-name">Spanish</span>
+                </div>
+                <div class="language-item glass-card">
+                    <span class="language-flag">🇫🇷</span>
+                    <span class="language-name">French</span>
+                </div>
+                <div class="language-item glass-card">
+                    <span class="language-flag">🇩🇪</span>
+                    <span class="language-name">German</span>
+                </div>
+                <div class="language-item glass-card">
+                    <span class="language-flag">🇮🇹</span>
+                    <span class="language-name">Italian</span>
+                </div>
+                <div class="language-item glass-card">
+                    <span class="language-flag">🇳🇱</span>
+                    <span class="language-name">Dutch</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="section-container">
+            <div class="cta-card glass-card">
+                <div class="cta-content">
+                    <h2 class="cta-title">Ready to Transform Your Customer Support?</h2>
+                    <p class="cta-text">
+                        Experience the power of emotionally intelligent AI. Start your journey today.
+                    </p>
+                    <a href="pages/client-dashboard.html" class="btn btn-primary btn-lg">
+                        Get Started Now
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M5 12h14M12 5l7 7-7 7" />
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-brand">
+                <div class="landing-logo">
+                    <div class="landing-logo-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                            <path d="M2 17l10 5 10-5" />
+                            <path d="M2 12l10 5 10-5" />
+                        </svg>
+                    </div>
+                    <span class="landing-logo-text">Behavioral AI</span>
+                </div>
+                <p class="footer-brand-text">
+                    Sentiment-Aware Escalation System for Global Customer Support
+                </p>
+            </div>
+
+            <div class="footer-info">
+                <p class="footer-project">Final Year Project | KFUEIT</p>
+                <p class="footer-author">Usman Shams | SWEN221101044</p>
+                <p class="footer-year">© 2025 All Rights Reserved</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="js/landing.js"></script>
+</body>
+
+</html>

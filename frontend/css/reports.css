@@ -1,0 +1,157 @@
+/*
+ * =========================================================
+ * BEHAVIORAL AGENTIC AI - Reports Page Styles
+ * =========================================================
+ */
+
+/* =========================================================
+   REPORTS SECTION
+   ========================================================= */
+.reports-section {
+    margin-bottom: var(--space-2xl);
+}
+
+/* =========================================================
+   REPORT TEMPLATES GRID
+   ========================================================= */
+.report-templates-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--space-md);
+}
+
+.report-template {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-lg);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.report-template:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary-500);
+}
+
+.report-template-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.report-template-info {
+    flex: 1;
+}
+
+.report-template-info h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 4px 0;
+}
+
+.report-template-info p {
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+    margin: 0;
+    line-height: 1.4;
+}
+
+.report-template-arrow {
+    color: var(--text-muted);
+    transition: transform var(--transition-fast);
+}
+
+.report-template:hover .report-template-arrow {
+    transform: translateX(4px);
+    color: var(--primary-400);
+}
+
+/* =========================================================
+   REPORTS TABLE
+   ========================================================= */
+.reports-table {
+    padding: 0;
+    overflow: hidden;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.data-table thead {
+    background: var(--bg-tertiary);
+}
+
+.data-table th {
+    padding: var(--space-md);
+    text-align: left;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.data-table td {
+    padding: var(--space-md);
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.data-table tbody tr:hover {
+    background: var(--glass-bg-hover);
+}
+
+.data-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.report-name {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-weight: 500;
+}
+
+.report-name svg {
+    color: var(--text-muted);
+}
+
+.table-actions {
+    display: flex;
+    gap: var(--space-xs);
+}
+
+/* =========================================================
+   BADGE INFO VARIANT
+   ========================================================= */
+.badge-info {
+    background: rgba(59, 130, 246, 0.15);
+    color: var(--primary-400);
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width: 768px) {
+    .report-templates-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .reports-table {
+        overflow-x: auto;
+    }
+
+    .data-table {
+        min-width: 600px;
+    }
+}
