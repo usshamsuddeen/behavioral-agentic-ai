@@ -14,8 +14,8 @@
         rel="stylesheet">
 
     <!-- Stylesheets -->
-    <link rel="stylesheet" href="../css/design-system.css">
-    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="/css/design-system.css">
+    <link rel="stylesheet" href="/css/components.css">
 
     <style>
         * {
@@ -530,7 +530,7 @@
         </div>
     </div>
 
-    <script src="../js/api.js"></script>
+    <script src="/js/api.js"></script>
     <script>
         // DOM Elements
         const loginForm = document.getElementById('loginForm');
@@ -538,12 +538,19 @@
         const errorMessage = document.getElementById('errorMessage');
         const successMessage = document.getElementById('successMessage');
 
-        // When user arrives at login page, clear any stale session
-        // so they always see the login form (fresh start)
+        // Auto-detect API base
+        const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+            ? 'http://localhost:8000' : window.location.origin;
+
+        // Only clear tokens if user wasn't just redirected after a failed auth check
+        // (prevents clearing tokens that were just successfully saved)
         document.addEventListener('DOMContentLoaded', () => {
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('refresh_token');
-            localStorage.removeItem('user');
+            const urlParams = new URLSearchParams(window.location.search);
+            if (!urlParams.get('keep_session')) {
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('refresh_token');
+                localStorage.removeItem('user');
+            }
         });
 
         // Form Submit
@@ -566,7 +573,7 @@
             hideMessages();
 
             try {
-                const response = await fetch('http://localhost:8000/api/auth/login', {
+                const response = await fetch(`${API_BASE}/api/auth/login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -592,11 +599,11 @@
                     setTimeout(() => {
                         const role = data.user.role;
                         if (role === 'super_admin') {
-                            window.location.href = 'admin.html';
+                            window.location.href = '/pages/admin.html';
                         } else if (data.user.onboarding_completed) {
-                            window.location.href = 'client-dashboard.html';
+                            window.location.href = '/pages/client-dashboard.html';
                         } else {
-                            window.location.href = 'onboarding.html';
+                            window.location.href = '/pages/onboarding.html';
                         }
                     }, 1000);
                 } else {
