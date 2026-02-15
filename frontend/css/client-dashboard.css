@@ -568,7 +568,7 @@
   display: grid;
   grid-template-columns: 340px 1fr;
   gap: 0;
-  height: calc(100vh - 160px);
+  height: calc(100vh - 140px);
   border-radius: var(--radius-xl);
   overflow: hidden;
   border: 1px solid var(--glass-border);
@@ -741,15 +741,9 @@
   flex-direction: column;
   background: var(--bg-secondary);
   overflow: hidden;
+  /* Constrain so .chat-messages can scroll */
   min-height: 0;
-}
-
-#chatActive {
-  display: none;
-  flex-direction: column;
-  flex: 1;
-  overflow: hidden;
-  min-height: 0;
+  /* Required for grid/flex children overflow */
 }
 
 .chat-header {
