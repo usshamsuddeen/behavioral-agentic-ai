@@ -75,7 +75,7 @@ def ensure_super_admin():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan - create tables on startup"""
-    Base.metadata.create_all(bind=engine)
+    Base.metadata.create_all(bind=engine,checkfirst=True)
     ensure_super_admin()
     logger.info("🚀 Behavioral Agentic AI started")
     yield
