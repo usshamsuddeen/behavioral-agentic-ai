@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Behavioral Agentic AI - Setup Wizard">
+    <title>Setup Wizard | Behavioral Agentic AI</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="../css/design-system.css">
+    <link rel="stylesheet" href="../css/components.css">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .bg-animation::before,
+        .bg-animation::after {
+            content: '';
+            position: absolute;
+            width: 600px;
+            height: 600px;
+            border-radius: 50%;
+            filter: blur(120px);
+            opacity: 0.3;
+            animation: float 20s ease-in-out infinite;
+        }
+
+        .bg-animation::before {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            top: -200px;
+            right: -200px;
+        }
+
+        .bg-animation::after {
+            background: linear-gradient(135deg, #2ed573, #1e90ff);
+            bottom: -200px;
+            left: -200px;
+            animation-delay: -10s;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            50% {
+                transform: translate(30px, 60px) scale(1.05);
+            }
+        }
+
+        .onboarding-container {
+            position: relative;
+            z-index: 1;
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Header */
+        .onboarding-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .onboarding-header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .onboarding-header p {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* Step Progress */
+        .step-progress {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0;
+            margin-bottom: 2.5rem;
+        }
+
+        .step-dot {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.4);
+            transition: all 0.4s ease;
+            flex-shrink: 0;
+        }
+
+        .step-dot.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-color: #667eea;
+            color: #fff;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .step-dot.completed {
+            background: #2ed573;
+            border-color: #2ed573;
+            color: #fff;
+        }
+
+        .step-line {
+            width: 40px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.1);
+            transition: background 0.4s ease;
+        }
+
+        .step-line.completed {
+            background: #2ed573;
+        }
+
+        /* Card */
+        .wizard-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 2.5rem;
+            box-shadow: 0 32px 64px rgba(0, 0, 0, 0.4);
+        }
+
+        .step-panel {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .step-panel.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .step-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .step-description {
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-group select option {
+            background: #1a1a2e;
+        }
+
+        /* Color picker row */
+        .color-row {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .color-row .form-group {
+            flex: 1;
+        }
+
+        .color-input-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .color-input-wrap input[type="color"] {
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background: none;
+            padding: 0;
+        }
+
+        .color-input-wrap span {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.85rem;
+        }
+
+        /* Upload area */
+        .upload-area {
+            border: 2px dashed rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            padding: 2.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-area:hover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .upload-area svg {
+            width: 48px;
+            height: 48px;
+            color: rgba(255, 255, 255, 0.3);
+            margin-bottom: 1rem;
+        }
+
+        .upload-area p {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.9rem;
+        }
+
+        .upload-area .highlight {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .upload-list {
+            margin-top: 1rem;
+        }
+
+        .upload-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .upload-item button {
+            background: none;
+            border: none;
+            color: #f5576c;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        /* Completion */
+        .complete-section {
+            text-align: center;
+            padding: 2rem 0;
+        }
+
+        .complete-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1.5rem;
+            background: linear-gradient(135deg, #2ed573, #17c0eb);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 12px 32px rgba(46, 213, 115, 0.4);
+        }
+
+        .complete-icon svg {
+            width: 40px;
+            height: 40px;
+            color: #fff;
+        }
+
+        .complete-section h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .complete-section p {
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 1rem;
+        }
+
+        /* Widget code */
+        .embed-code {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: left;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            color: #a5b4fc;
+            word-break: break-all;
+            margin: 1rem 0;
+        }
+
+        .copy-btn {
+            background: rgba(102, 126, 234, 0.2);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            color: #a5b4fc;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+
+        .copy-btn:hover {
+            background: rgba(102, 126, 234, 0.4);
+        }
+
+        /* Actions */
+        .step-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+        }
+
+        .btn-back,
+        .btn-next,
+        .btn-finish {
+            padding: 0.875rem 2rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .btn-back {
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-next,
+        .btn-finish {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+        }
+
+        .btn-next:hover,
+        .btn-finish:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-next:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            z-index: 1000;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.4s ease;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.success {
+            background: rgba(46, 213, 115, 0.15);
+            border: 1px solid rgba(46, 213, 115, 0.3);
+            color: #2ed573;
+        }
+
+        .toast.error {
+            background: rgba(245, 87, 108, 0.15);
+            border: 1px solid rgba(245, 87, 108, 0.3);
+            color: #f5576c;
+        }
+
+        @media (max-width: 600px) {
+            .onboarding-container {
+                padding: 1rem;
+            }
+
+            .wizard-card {
+                padding: 1.5rem;
+            }
+
+            .step-line {
+                width: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-animation"></div>
+
+    <div class="onboarding-container">
+        <!-- Header -->
+        <div class="onboarding-header">
+            <h1>✨ Setup Wizard</h1>
+            <p>Let's get your AI support widget ready in minutes</p>
+        </div>
+
+        <!-- Step Progress -->
+        <div class="step-progress">
+            <div class="step-dot active" data-step="1">1</div>
+            <div class="step-line" data-line="1"></div>
+            <div class="step-dot" data-step="2">2</div>
+            <div class="step-line" data-line="2"></div>
+            <div class="step-dot" data-step="3">3</div>
+            <div class="step-line" data-line="3"></div>
+            <div class="step-dot" data-step="4">4</div>
+            <div class="step-line" data-line="4"></div>
+            <div class="step-dot" data-step="5">5</div>
+        </div>
+
+        <div class="wizard-card">
+            <!-- Step 1: Business Profile -->
+            <div class="step-panel active" id="step1">
+                <h2 class="step-title">📋 Business Profile</h2>
+                <p class="step-description">Tell us about your business so the AI can represent you perfectly.</p>
+                <div class="form-group">
+                    <label for="bizName">Business Name</label>
+                    <input type="text" id="bizName" placeholder="e.g. Stellar Electronics">
+                </div>
+                <div class="form-group">
+                    <label for="bizIndustry">Industry</label>
+                    <select id="bizIndustry">
+                        <option value="">Select industry…</option>
+                        <option value="electronics">Electronics</option>
+                        <option value="fashion">Fashion & Apparel</option>
+                        <option value="health">Health & Beauty</option>
+                        <option value="food">Food & Beverage</option>
+                        <option value="home">Home & Garden</option>
+                        <option value="sports">Sports & Outdoors</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="bizDesc">Brief Description</label>
+                    <textarea id="bizDesc"
+                        placeholder="What does your business do? This helps the AI craft better responses."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="bizTimezone">Timezone</label>
+                    <select id="bizTimezone">
+                        <option value="UTC">UTC</option>
+                        <option value="US/Eastern">US Eastern</option>
+                        <option value="US/Pacific">US Pacific</option>
+                        <option value="Europe/London">Europe/London</option>
+                        <option value="Europe/Berlin">Europe/Berlin</option>
+                        <option value="Asia/Dubai">Asia/Dubai</option>
+                        <option value="Asia/Kolkata">Asia/Kolkata</option>
+                        <option value="Asia/Shanghai">Asia/Shanghai</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Step 2: Connect Store -->
+            <div class="step-panel" id="step2">
+                <h2 class="step-title">🔗 Connect Your Store</h2>
+                <p class="step-description">Provide your store URL. We'll use it to link the chat widget.</p>
+                <div class="form-group">
+                    <label for="storeUrl">Store URL</label>
+                    <input type="url" id="storeUrl" placeholder="https://your-store.com">
+                </div>
+                <div class="form-group">
+                    <label for="storePlatform">Platform (Optional)</label>
+                    <select id="storePlatform">
+                        <option value="">Select platform…</option>
+                        <option value="shopify">Shopify</option>
+                        <option value="woocommerce">WooCommerce</option>
+                        <option value="alibaba">Alibaba / AliExpress</option>
+                        <option value="custom">Custom Website</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Step 3: Configure Widget -->
+            <div class="step-panel" id="step3">
+                <h2 class="step-title">🎨 Configure Widget</h2>
+                <p class="step-description">Customize how the chat widget looks on your site.</p>
+                <div class="form-group">
+                    <label for="widgetTitle">Widget Title</label>
+                    <input type="text" id="widgetTitle" placeholder="e.g. Chat with us">
+                </div>
+                <div class="form-group">
+                    <label for="widgetGreeting">Greeting Message</label>
+                    <input type="text" id="widgetGreeting" placeholder="Hi! How can we help you today?">
+                </div>
+                <div class="color-row">
+                    <div class="form-group">
+                        <label>Primary Color</label>
+                        <div class="color-input-wrap">
+                            <input type="color" id="widgetColor" value="#667eea">
+                            <span id="colorLabel">#667eea</span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Position</label>
+                        <select id="widgetPosition">
+                            <option value="bottom-right">Bottom Right</option>
+                            <option value="bottom-left">Bottom Left</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="widgetLang">Default Language</label>
+                    <select id="widgetLang">
+                        <option value="en">English</option>
+                        <option value="es">Spanish</option>
+                        <option value="fr">French</option>
+                        <option value="de">German</option>
+                        <option value="pt">Portuguese</option>
+                        <option value="it">Italian</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Step 4: Upload Knowledge Base -->
+            <div class="step-panel" id="step4">
+                <h2 class="step-title">📚 Upload Knowledge Base</h2>
+                <p class="step-description">Upload your FAQs, product guides, or policies so the AI knows your business.
+                </p>
+                <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" y1="3" x2="12" y2="15" />
+                    </svg>
+                    <p>Drop files here or <span class="highlight">browse</span></p>
+                    <p style="font-size: 0.75rem; margin-top: 4px;">PDF, TXT, CSV, DOCX — up to 10 MB each</p>
+                </div>
+                <input type="file" id="fileInput" multiple accept=".pdf,.txt,.csv,.docx" style="display:none">
+                <div class="upload-list" id="uploadList"></div>
+                <p style="color: rgba(255,255,255,0.4); font-size: 0.85rem; margin-top: 0.5rem;">
+                    You can skip this step and upload documents later from your dashboard.
+                </p>
+            </div>
+
+            <!-- Step 5: Complete -->
+            <div class="step-panel" id="step5">
+                <div class="complete-section">
+                    <div class="complete-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                            <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                    </div>
+                    <h2>You're All Set! 🎉</h2>
+                    <p>Your AI support widget is ready. Copy the embed code below and paste it into your website.</p>
+                    <div class="embed-code" id="embedCode">
+                        &lt;script src="https://cdn.behavioral-ai.com/widget.js"
+                        data-key="YOUR_API_KEY"&gt;&lt;/script&gt;
+                    </div>
+                    <button class="copy-btn" onclick="copyEmbed()">📋 Copy Embed Code</button>
+                </div>
+            </div>
+
+            <!-- Navigation Actions -->
+            <div class="step-actions">
+                <button class="btn-back" id="btnBack" onclick="prevStep()" style="visibility: hidden;">← Back</button>
+                <button class="btn-next" id="btnNext" onclick="nextStep()">Continue →</button>
+                <button class="btn-finish" id="btnFinish" onclick="goToDashboard()" style="display:none;">Go to
+                    Dashboard →</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/sidebar.js"></script>
+    <script>
+        const API_BASE = 'http://localhost:8000';
+
+        // Auth guard — redirect to login if not authenticated
+        if (!Auth.isAuthenticated()) {
+            Auth.redirectToLogin();
+        }
+        const token = Auth.getAccessToken();
+
+        let currentStep = 1;
+        const totalSteps = 5;
+        const uploadedFiles = [];
+
+        // Color picker sync
+        document.getElementById('widgetColor').addEventListener('input', e => {
+            document.getElementById('colorLabel').textContent = e.target.value;
+        });
+
+        // File upload
+        document.getElementById('fileInput').addEventListener('change', e => {
+            for (const file of e.target.files) {
+                uploadedFiles.push(file);
+                renderUploadList();
+            }
+        });
+
+        function renderUploadList() {
+            const list = document.getElementById('uploadList');
+            list.innerHTML = uploadedFiles.map((f, i) =>
+                `<div class="upload-item">
+                    <span>📄 ${f.name} (${(f.size / 1024).toFixed(1)} KB)</span>
+                    <button onclick="removeFile(${i})">✕</button>
+                </div>`
+            ).join('');
+        }
+
+        function removeFile(index) {
+            uploadedFiles.splice(index, 1);
+            renderUploadList();
+        }
+
+        function updateProgress() {
+            document.querySelectorAll('.step-dot').forEach(dot => {
+                const s = parseInt(dot.dataset.step);
+                dot.classList.toggle('active', s === currentStep);
+                dot.classList.toggle('completed', s < currentStep);
+            });
+            document.querySelectorAll('.step-line').forEach(line => {
+                const l = parseInt(line.dataset.line);
+                line.classList.toggle('completed', l < currentStep);
+            });
+            document.querySelectorAll('.step-panel').forEach(panel => {
+                panel.classList.toggle('active', panel.id === `step${currentStep}`);
+            });
+
+            document.getElementById('btnBack').style.visibility = currentStep > 1 ? 'visible' : 'hidden';
+            document.getElementById('btnNext').style.display = currentStep < totalSteps ? 'block' : 'none';
+            document.getElementById('btnFinish').style.display = currentStep === totalSteps ? 'block' : 'none';
+        }
+
+        async function nextStep() {
+            // Save current step via API
+            try {
+                const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
+
+                if (currentStep === 1) {
+                    await fetch(`${API_BASE}/api/onboarding/step/1`, {
+                        method: 'POST', headers,
+                        body: JSON.stringify({
+                            business_name: document.getElementById('bizName').value,
+                            industry: document.getElementById('bizIndustry').value,
+                            description: document.getElementById('bizDesc').value,
+                            timezone: document.getElementById('bizTimezone').value
+                        })
+                    });
+                } else if (currentStep === 2) {
+                    await fetch(`${API_BASE}/api/onboarding/step/2`, {
+                        method: 'POST', headers,
+                        body: JSON.stringify({
+                            store_url: document.getElementById('storeUrl').value,
+                            platform: document.getElementById('storePlatform').value
+                        })
+                    });
+                } else if (currentStep === 3) {
+                    await fetch(`${API_BASE}/api/onboarding/step/3`, {
+                        method: 'POST', headers,
+                        body: JSON.stringify({
+                            widget_title: document.getElementById('widgetTitle').value,
+                            greeting_message: document.getElementById('widgetGreeting').value,
+                            primary_color: document.getElementById('widgetColor').value,
+                            position: document.getElementById('widgetPosition').value,
+                            language: document.getElementById('widgetLang').value
+                        })
+                    });
+                } else if (currentStep === 4) {
+                    // Upload files
+                    if (uploadedFiles.length > 0) {
+                        for (const file of uploadedFiles) {
+                            const formData = new FormData();
+                            formData.append('file', file);
+                            await fetch(`${API_BASE}/api/onboarding/step/4`, {
+                                method: 'POST',
+                                headers: { 'Authorization': `Bearer ${token}` },
+                                body: formData
+                            });
+                        }
+                    } else {
+                        // Skip upload step
+                        await fetch(`${API_BASE}/api/onboarding/step/4`, {
+                            method: 'POST', headers,
+                            body: JSON.stringify({ skip: true })
+                        });
+                    }
+
+                    // Finalize onboarding
+                    const completeRes = await fetch(`${API_BASE}/api/onboarding/complete`, { method: 'POST', headers });
+                    const completeData = await completeRes.json();
+                    if (completeData.widget_api_key) {
+                        document.getElementById('embedCode').textContent =
+                            `<script src="https://cdn.behavioral-ai.com/widget.js" data-key="${completeData.widget_api_key}"><\/script>`;
+                    }
+                }
+
+                showToast('Step saved!', 'success');
+            } catch (err) {
+                console.error('Step save error:', err);
+                showToast('Could not save, continuing anyway.', 'error');
+            }
+
+            if (currentStep < totalSteps) {
+                currentStep++;
+                updateProgress();
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 1) { currentStep--; updateProgress(); }
+        }
+
+        function goToDashboard() {
+            window.location.href = 'client-dashboard.html';
+        }
+
+        function copyEmbed() {
+            const code = document.getElementById('embedCode').textContent;
+            navigator.clipboard.writeText(code).then(() => showToast('Copied!', 'success'));
+        }
+
+        function showToast(msg, type) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.className = `toast ${type} show`;
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // Init — pre-populate from user data
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            if (user.company_name) document.getElementById('bizName').value = user.company_name;
+            // Resume from saved step
+            if (user.onboarding_step && user.onboarding_step > 0) {
+                currentStep = Math.min(user.onboarding_step + 1, totalSteps);
+                updateProgress();
+            }
+        });
+    </script>
+</body>
+
+</html>

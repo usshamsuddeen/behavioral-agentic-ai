@@ -1,0 +1,64 @@
+# ═══════════════════════════════════════════════════════════════════
+# Behavioral Agentic AI — .gitignore
+# ═══════════════════════════════════════════════════════════════════
+
+# ── Environment & Secrets ────────────────────────────────────────
+.env
+.env.local
+.env.production
+
+# ── Python ───────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+
+# ── Virtual Environments ─────────────────────────────────────────
+venv/
+.venv/
+env/
+ENV/
+
+# ── Database Files ───────────────────────────────────────────────
+*.db
+*.db-journal
+*.sqlite3
+
+# ── Data Directories (generated at runtime) ──────────────────────
+data/vector_store/
+data/chroma_db/
+data/*.db
+data/*.db-journal
+
+# ── Logs ─────────────────────────────────────────────────────────
+logs/
+*.log
+
+# ── IDE / Editor ─────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ── OS Files ─────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ── Testing ──────────────────────────────────────────────────────
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# ── HuggingFace Model Cache ─────────────────────────────────────
+.cache/
+
+# ── Node (if any frontend tooling) ──────────────────────────────
+node_modules/

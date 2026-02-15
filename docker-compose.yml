@@ -1,0 +1,31 @@
+# ═══════════════════════════════════════════════════════════════════
+# Behavioral Agentic AI — Docker Compose (Production)
+# Run: docker-compose up -d
+# ═══════════════════════════════════════════════════════════════════
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: behavioral-ai-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    volumes:
+      - backend-data:/app/data
+      - backend-logs:/app/logs
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/" ]
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 3
+
+volumes:
+  backend-data:
+    driver: local
+  backend-logs:
+    driver: local

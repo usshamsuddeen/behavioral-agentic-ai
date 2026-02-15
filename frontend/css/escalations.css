@@ -1,0 +1,385 @@
+/*
+ * =========================================================
+ * BEHAVIORAL AGENTIC AI - Escalations Page Styles
+ * =========================================================
+ */
+
+/* =========================================================
+   ESCALATION STATS (HEADER)
+   ========================================================= */
+.escalation-stats {
+    display: flex;
+    gap: var(--space-lg);
+}
+
+.escalation-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--space-xs) var(--space-md);
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+}
+
+.escalation-stat-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.escalation-stat-label {
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+/* =========================================================
+   ESCALATION FILTERS
+   ========================================================= */
+.escalation-filters {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-md);
+    margin-bottom: var(--space-lg);
+}
+
+.filter-group {
+    display: flex;
+    gap: var(--space-sm);
+}
+
+.escalation-filters .filter-btn {
+    padding: 8px 16px;
+    background: transparent;
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.escalation-filters .filter-btn:hover {
+    background: var(--glass-bg-hover);
+}
+
+.escalation-filters .filter-btn.active {
+    background: var(--primary-500);
+    border-color: var(--primary-500);
+    color: white;
+}
+
+.escalation-filters .filter-btn--urgent {
+    border-color: var(--negative);
+    color: var(--negative-light);
+}
+
+.escalation-filters .filter-btn--urgent.active {
+    background: var(--negative);
+    border-color: var(--negative);
+    color: white;
+}
+
+.filter-actions {
+    display: flex;
+    gap: var(--space-sm);
+}
+
+.form-select {
+    padding: 8px 32px 8px 12px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    font-size: 0.8125rem;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+}
+
+/* =========================================================
+   ESCALATION GRID
+   ========================================================= */
+.escalation-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: var(--space-lg);
+}
+
+/* =========================================================
+   ESCALATION CARDS
+   ========================================================= */
+.escalation-card {
+    display: flex;
+    flex-direction: column;
+    border-left: 4px solid transparent;
+}
+
+.escalation-card--urgent {
+    border-left-color: var(--negative);
+}
+
+.escalation-card--high {
+    border-left-color: var(--urgent);
+}
+
+.escalation-card--medium {
+    border-left-color: var(--neutral);
+}
+
+.escalation-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-md);
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.escalation-priority {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+.priority-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: var(--radius-sm);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.priority-badge--urgent {
+    background: var(--negative-bg);
+    color: var(--negative-light);
+}
+
+.priority-badge--high {
+    background: var(--urgent-bg);
+    color: var(--urgent-light);
+}
+
+.priority-badge--medium {
+    background: rgba(156, 163, 175, 0.15);
+    color: var(--neutral-light);
+}
+
+.wait-time {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.escalation-id {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    font-family: monospace;
+}
+
+.escalation-card-body {
+    padding: var(--space-md);
+    flex: 1;
+}
+
+/* =========================================================
+   ESCALATION CUSTOMER
+   ========================================================= */
+.escalation-customer {
+    display: flex;
+    gap: var(--space-md);
+    margin-bottom: var(--space-md);
+    padding-bottom: var(--space-md);
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.customer-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.customer-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.customer-email {
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+}
+
+.customer-tags {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-top: 4px;
+}
+
+.customer-status {
+    padding: 2px 8px;
+    background: rgba(245, 158, 11, 0.15);
+    border-radius: var(--radius-full);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: var(--urgent-light);
+}
+
+/* =========================================================
+   ESCALATION REASON
+   ========================================================= */
+.escalation-reason {
+    margin-bottom: var(--space-md);
+}
+
+.escalation-reason h4 {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    margin-bottom: var(--space-sm);
+}
+
+.trigger-list-compact {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.trigger-list-compact li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-size: 0.8125rem;
+    color: var(--text-secondary);
+}
+
+.trigger-icon {
+    font-size: 1rem;
+}
+
+/* =========================================================
+   ESCALATION PREVIEW
+   ========================================================= */
+.escalation-preview {
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+    padding: var(--space-md);
+    margin-bottom: var(--space-md);
+}
+
+.preview-label {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: var(--space-xs);
+}
+
+.preview-text {
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    line-height: 1.5;
+    margin: 0;
+    font-style: italic;
+}
+
+/* =========================================================
+   ESCALATION CONTEXT
+   ========================================================= */
+.escalation-context {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-md);
+}
+
+.context-item {
+    display: flex;
+    gap: var(--space-xs);
+    font-size: 0.8125rem;
+}
+
+.context-label {
+    color: var(--text-muted);
+}
+
+.context-value {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+/* =========================================================
+   ESCALATION CARD FOOTER
+   ========================================================= */
+.escalation-card-footer {
+    display: flex;
+    gap: var(--space-sm);
+    padding: var(--space-md);
+    border-top: 1px solid var(--border-subtle);
+    background: var(--bg-tertiary);
+}
+
+.escalation-card-footer .btn {
+    flex: 1;
+}
+
+.escalation-card-footer .btn-ghost {
+    flex: 0;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width: 768px) {
+    .escalation-filters {
+        flex-direction: column;
+        gap: var(--space-md);
+    }
+
+    .filter-group {
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: var(--space-xs);
+    }
+
+    .filter-actions {
+        width: 100%;
+    }
+
+    .filter-actions .form-select {
+        width: 100%;
+    }
+
+    .escalation-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .escalation-card-footer {
+        flex-wrap: wrap;
+    }
+
+    .escalation-card-footer .btn {
+        flex: 1 1 100%;
+    }
+
+    .escalation-card-footer .btn-ghost {
+        flex: 1 1 100%;
+    }
+
+    .escalation-stats {
+        display: none;
+    }
+}

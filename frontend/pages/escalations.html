@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Behavioral Agentic AI - Escalation Management">
+    <title>Escalations | Behavioral Agentic AI</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="../css/design-system.css">
+    <link rel="stylesheet" href="../css/layout.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <link rel="stylesheet" href="../css/escalations.css">
+</head>
+
+<body>
+    <!-- Animated Gradient Background -->
+    <div class="gradient-bg">
+        <div class="gradient-orb gradient-orb--1"></div>
+        <div class="gradient-orb gradient-orb--2"></div>
+    </div>
+
+    <div class="app">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="../index.html" class="sidebar-logo">
+                    <div class="sidebar-logo-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                            <path d="M2 17l10 5 10-5" />
+                            <path d="M2 12l10 5 10-5" />
+                        </svg>
+                    </div>
+                    <span class="sidebar-logo-text">Behavioral AI</span>
+                </a>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Main</div>
+                    <a href="client-dashboard.html" class="nav-item">
+                        <span class="nav-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="7" height="7" />
+                                <rect x="14" y="3" width="7" height="7" />
+                                <rect x="14" y="14" width="7" height="7" />
+                                <rect x="3" y="14" width="7" height="7" />
+                            </svg>
+                        </span>
+                        <span class="nav-item-text">Dashboard</span>
+                    </a>
+                    <a href="chat.html" class="nav-item">
+                        <span class="nav-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                            </svg>
+                        </span>
+                        <span class="nav-item-text">Conversations</span>
+                        <span class="nav-item-badge" id="sidebar-conv-badge" style="display:none"></span>
+                    </a>
+                    <a href="escalations.html" class="nav-item active">
+                        <span class="nav-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path
+                                    d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                                <line x1="12" y1="9" x2="12" y2="13" />
+                                <line x1="12" y1="17" x2="12.01" y2="17" />
+                            </svg>
+                        </span>
+                        <span class="nav-item-text">Escalations</span>
+                        <span class="nav-item-badge" id="sidebar-esc-badge" style="display:none"></span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Analytics</div>
+                    <a href="analytics.html" class="nav-item">
+                        <span class="nav-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="20" x2="18" y2="10" />
+                                <line x1="12" y1="20" x2="12" y2="4" />
+                                <line x1="6" y1="20" x2="6" y2="14" />
+                            </svg>
+                        </span>
+                        <span class="nav-item-text">Analytics</span>
+                    </a>
+                    <a href="reports.html" class="nav-item">
+                        <span class="nav-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                <polyline points="14 2 14 8 20 8" />
+                            </svg>
+                        </span>
+                        <span class="nav-item-text">Reports</span>
+                    </a>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">System</div>
+                    <a href="settings.html" class="nav-item">
+                        <span class="nav-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3" />
+                                <path
+                                    d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                            </svg>
+                        </span>
+                        <span class="nav-item-text">Settings</span>
+                    </a>
+                    <a href="widget-management.html" class="nav-item">
+                        <span class="nav-item-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="3" width="20" height="14" rx="2" />
+                                <line x1="8" y1="21" x2="16" y2="21" />
+                                <line x1="12" y1="17" x2="12" y2="21" />
+                            </svg>
+                        </span>
+                        <span class="nav-item-text">Widget Config</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="sidebar-user">
+                    <div class="avatar">--</div>
+                    <div class="sidebar-user-info">
+                        <span class="sidebar-user-name">Loading...</span>
+                        <span class="sidebar-user-role">User</span>
+                        <button class="logout-btn" title="Logout"
+                            style="background:none;border:none;color:rgba(255,255,255,0.5);cursor:pointer;padding:8px;margin-left:auto;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                <polyline points="16 17 21 12 16 7"></polyline>
+                                <line x1="21" y1="12" x2="9" y2="12"></line>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <button class="mobile-menu-toggle btn-icon btn-ghost">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <line x1="3" y1="12" x2="21" y2="12" />
+                            <line x1="3" y1="6" x2="21" y2="6" />
+                            <line x1="3" y1="18" x2="21" y2="18" />
+                        </svg>
+                    </button>
+                    <h1 class="header-title">Escalations</h1>
+                </div>
+
+                <div class="header-right">
+                    <div class="escalation-stats">
+                        <span class="escalation-stat">
+                            <span class="escalation-stat-value">3</span>
+                            <span class="escalation-stat-label">Pending</span>
+                        </span>
+                        <span class="escalation-stat">
+                            <span class="escalation-stat-value">12</span>
+                            <span class="escalation-stat-label">Today</span>
+                        </span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <div class="page-content">
+                <div class="page-header">
+                    <h2 class="page-title">Escalation Queue</h2>
+                    <p class="page-subtitle">Conversations requiring human intervention.</p>
+                </div>
+
+                <!-- Escalation Filters -->
+                <div class="escalation-filters glass-card">
+                    <div class="filter-group">
+                        <button class="filter-btn active" data-filter="all">All (15)</button>
+                        <button class="filter-btn filter-btn--urgent" data-filter="urgent">Urgent (3)</button>
+                        <button class="filter-btn" data-filter="high">High (5)</button>
+                        <button class="filter-btn" data-filter="medium">Medium (7)</button>
+                    </div>
+                    <div class="filter-actions">
+                        <select class="form-select">
+                            <option>Sort by: Newest</option>
+                            <option>Sort by: Priority</option>
+                            <option>Sort by: Wait Time</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Escalation Cards -->
+                <div class="escalation-grid">
+                    <!-- Dynamic content loaded by escalations.js -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Sidebar Overlay (Mobile) -->
+    <div class="sidebar-overlay"></div>
+
+    <!-- Scripts -->
+    <script src="../js/auth.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/sidebar.js"></script>
+    <script src="../js/app.js"></script>
+    <script src="../js/escalations.js"></script>
+</body>
+
+</html>

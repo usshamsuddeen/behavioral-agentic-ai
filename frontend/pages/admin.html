@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Admin | Behavioral Agentic AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../css/design-system.css">
+    <link rel="stylesheet" href="../css/components.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0f;
+            color: #fff;
+            min-height: 100vh;
+        }
+
+        /* Admin Layout */
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .admin-sidebar {
+            width: 260px;
+            background: rgba(255, 255, 255, 0.02);
+            border-right: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 2rem;
+        }
+
+        .sidebar-logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #f5576c, #ff6b81);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .sidebar-logo-text {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+
+        .sidebar-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(255, 255, 255, 0.3);
+            margin: 1rem 0 0.5rem;
+        }
+
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0.7rem 0.8rem;
+            border-radius: 10px;
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            margin-bottom: 2px;
+        }
+
+        .sidebar-link:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+        }
+
+        .sidebar-link.active {
+            background: rgba(245, 87, 108, 0.15);
+            color: #f5576c;
+            font-weight: 600;
+        }
+
+        .sidebar-link svg {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-bottom {
+            margin-top: auto;
+        }
+
+        .sidebar-user {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0.8rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .sidebar-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f5576c, #ff6b81);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .sidebar-username {
+            font-size: 0.85rem;
+        }
+
+        .sidebar-role {
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* Main */
+        .admin-main {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .admin-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .admin-header-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            border-color: rgba(255, 255, 255, 0.12);
+            transform: translateY(-2px);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+        }
+
+        .stat-value.green {
+            color: #2ed573;
+        }
+
+        .stat-value.blue {
+            color: #667eea;
+        }
+
+        .stat-value.orange {
+            color: #ffa726;
+        }
+
+        .stat-value.red {
+            color: #f5576c;
+        }
+
+        .stat-change {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.4);
+            margin-top: 0.25rem;
+        }
+
+        /* Panels */
+        .panel {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .panel-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .panel-body {
+            padding: 1.5rem;
+        }
+
+        /* Table */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            text-align: left;
+            padding: 0.75rem 1rem;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: rgba(255, 255, 255, 0.4);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .data-table td {
+            padding: 0.875rem 1rem;
+            font-size: 0.9rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .data-table tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.7rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-active {
+            background: rgba(46, 213, 115, 0.15);
+            color: #2ed573;
+        }
+
+        .badge-suspended {
+            background: rgba(245, 87, 108, 0.15);
+            color: #f5576c;
+        }
+
+        .badge-trial {
+            background: rgba(255, 167, 38, 0.15);
+            color: #ffa726;
+        }
+
+        .action-btn {
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .action-btn.danger {
+            border-color: rgba(245, 87, 108, 0.3);
+            color: #f5576c;
+        }
+
+        .action-btn.danger:hover {
+            background: rgba(245, 87, 108, 0.15);
+        }
+
+        /* Section visibility */
+        .admin-section {
+            display: none;
+        }
+
+        .admin-section.active {
+            display: block;
+        }
+
+        /* Logout */
+        .btn-logout {
+            background: none;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.6);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .btn-logout:hover {
+            border-color: #f5576c;
+            color: #f5576c;
+        }
+
+        /* Audit log */
+        .log-entry {
+            display: flex;
+            gap: 1rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .log-time {
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 0.8rem;
+            min-width: 140px;
+        }
+
+        .log-action {
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .admin-sidebar {
+                display: none;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="sidebar-logo">
+                <div class="sidebar-logo-icon">🛡️</div>
+                <span class="sidebar-logo-text">Admin Panel</span>
+            </div>
+
+            <span class="sidebar-label">Management</span>
+            <a href="#" class="sidebar-link active" data-section="overview">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7" />
+                    <rect x="14" y="3" width="7" height="7" />
+                    <rect x="14" y="14" width="7" height="7" />
+                    <rect x="3" y="14" width="7" height="7" />
+                </svg>
+                Overview
+            </a>
+            <a href="#" class="sidebar-link" data-section="clients">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+                Client Accounts
+            </a>
+            <a href="#" class="sidebar-link" data-section="analytics">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="20" x2="18" y2="10" />
+                    <line x1="12" y1="20" x2="12" y2="4" />
+                    <line x1="6" y1="20" x2="6" y2="14" />
+                </svg>
+                System Analytics
+            </a>
+            <a href="#" class="sidebar-link" data-section="audit">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                </svg>
+                Audit Logs
+            </a>
+
+            <div class="sidebar-bottom">
+                <div class="sidebar-user">
+                    <div class="sidebar-avatar" id="sidebarAvatar">SA</div>
+                    <div>
+                        <div class="sidebar-username" id="sidebarName">Super Admin</div>
+                        <div class="sidebar-role">Administrator</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="admin-main">
+            <!-- OVERVIEW -->
+            <div class="admin-section active" id="section-overview">
+                <div class="admin-header">
+                    <h1>📊 System Overview</h1>
+                    <div class="admin-header-actions">
+                        <button class="btn-logout" onclick="logout()">Sign Out</button>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Total Clients</div>
+                        <div class="stat-value blue" id="statClients">—</div>
+                        <div class="stat-change">Active accounts</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Conversations Today</div>
+                        <div class="stat-value green" id="statConversations">—</div>
+                        <div class="stat-change">Across all tenants</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Messages Today</div>
+                        <div class="stat-value orange" id="statMessages">—</div>
+                        <div class="stat-change">AI + Human</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Escalations</div>
+                        <div class="stat-value red" id="statEscalations">—</div>
+                        <div class="stat-change">Requiring attention</div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <span class="panel-title">Recent Client Activity</span>
+                    </div>
+                    <div class="panel-body" id="recentActivity">
+                        <p style="color: rgba(255,255,255,0.4);">Loading…</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CLIENTS -->
+            <div class="admin-section" id="section-clients">
+                <div class="admin-header">
+                    <h1>👥 Client Accounts</h1>
+                </div>
+                <!-- FR-4.1.2: Client Search -->
+                <div style="margin-bottom: 1rem;">
+                    <input type="text" id="clientSearchInput" placeholder="Search by name, email, or store URL..."
+                        oninput="filterClients()"
+                        style="width: 100%; padding: 0.7rem 1rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); color: #fff; font-size: 0.9rem; font-family: 'Inter', sans-serif; outline: none; transition: border-color 0.2s;"
+                        onfocus="this.style.borderColor='rgba(102,126,234,0.5)'"
+                        onblur="this.style.borderColor='rgba(255,255,255,0.1)'" />
+                </div>
+                <div class="panel">
+                    <div class="panel-body" style="overflow-x: auto;">
+                        <table class="data-table" id="clientsTable">
+                            <thead>
+                                <tr>
+                                    <th>Business</th>
+                                    <th>Owner</th>
+                                    <th>Status</th>
+                                    <th>Conversations</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="clientsBody">
+                                <tr>
+                                    <td colspan="6" style="color: rgba(255,255,255,0.4);">Loading…</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ANALYTICS -->
+            <div class="admin-section" id="section-analytics">
+                <div class="admin-header">
+                    <h1>📈 System Analytics</h1>
+                </div>
+                <div class="stats-grid" id="analyticsGrid">
+                    <div class="stat-card">
+                        <div class="stat-label">Total Conversations</div>
+                        <div class="stat-value blue" id="analyticConvos">—</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Avg Satisfaction</div>
+                        <div class="stat-value green" id="analyticSat">—</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Escalation Rate</div>
+                        <div class="stat-value orange" id="analyticEsc">—</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">KB Documents</div>
+                        <div class="stat-value blue" id="analyticDocs">—</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AUDIT -->
+            <div class="admin-section" id="section-audit">
+                <div class="admin-header">
+                    <h1>📝 Audit Logs</h1>
+                </div>
+                <!-- FR-4.3.4: Audit Log Filters -->
+                <div style="display: flex; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap;">
+                    <select id="auditActionFilter" onchange="applyAuditFilters()"
+                        style="padding: 0.6rem 0.9rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); color: #fff; font-size: 0.85rem; font-family: 'Inter', sans-serif; outline: none; min-width: 160px;">
+                        <option value="">All Actions</option>
+                        <option value="login">Login</option>
+                        <option value="signup">Signup</option>
+                        <option value="escalation">Escalation</option>
+                        <option value="settings">Settings Change</option>
+                        <option value="widget">Widget Config</option>
+                        <option value="conversation">Conversation</option>
+                    </select>
+                    <select id="auditDateFilter" onchange="applyAuditFilters()"
+                        style="padding: 0.6rem 0.9rem; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); color: #fff; font-size: 0.85rem; font-family: 'Inter', sans-serif; outline: none; min-width: 140px;">
+                        <option value="">All Time</option>
+                        <option value="today">Today</option>
+                        <option value="week">This Week</option>
+                        <option value="month">This Month</option>
+                    </select>
+                    <button onclick="applyAuditFilters()"
+                        style="padding: 0.6rem 1rem; border-radius: 10px; border: 1px solid rgba(102,126,234,0.3); background: rgba(102,126,234,0.15); color: #667eea; font-size: 0.85rem; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s;"
+                        onmouseover="this.style.background='rgba(102,126,234,0.25)'"
+                        onmouseout="this.style.background='rgba(102,126,234,0.15)'">Apply</button>
+                </div>
+                <div class="panel">
+                    <div class="panel-body" id="auditLogsBody">
+                        <p style="color: rgba(255,255,255,0.4);">Loading…</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Client Detail Modal -->
+    <div id="clientModal"
+        style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.7); backdrop-filter:blur(8px); align-items:center; justify-content:center;"
+        onclick="if(event.target===this)this.style.display='none'">
+        <div
+            style="background: linear-gradient(145deg, #1a1a2e, #16213e); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 2rem; max-width: 520px; width: 90%; position: relative; box-shadow: 0 25px 50px rgba(0,0,0,0.5);">
+            <button onclick="document.getElementById('clientModal').style.display='none'"
+                style="position:absolute; top:1rem; right:1rem; background:none; border:none; color:rgba(255,255,255,0.5); cursor:pointer; font-size:1.5rem;">&times;</button>
+            <h2 style="margin: 0 0 1.5rem; font-size: 1.25rem;">📋 Client Details</h2>
+            <div id="clientModalBody" style="display: grid; gap: 0.75rem;">
+                <p style="color:rgba(255,255,255,0.4);">Loading...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/api.js"></script>
+    <script src="../js/sidebar.js"></script>
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        const token = localStorage.getItem('access_token');
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+        if (!token || user.role !== 'super_admin') {
+            window.location.href = 'login.html';
+        }
+
+        // Sidebar name
+        document.getElementById('sidebarName').textContent = user.full_name || user.name || 'Admin';
+        document.getElementById('sidebarAvatar').textContent = (user.full_name || 'SA').substring(0, 2).toUpperCase();
+
+        // Navigation
+        document.querySelectorAll('.sidebar-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const section = link.dataset.section;
+                document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+                document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
+                document.getElementById(`section-${section}`).classList.add('active');
+
+                if (section === 'clients') loadClients();
+                if (section === 'analytics') loadAnalytics();
+                if (section === 'audit') loadAuditLogs();
+            });
+        });
+
+        const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+
+        // Load overview stats
+        async function loadOverview() {
+            try {
+                const res = await fetch(`${API_BASE}/api/admin/analytics`, { headers });
+                const data = await res.json();
+                document.getElementById('statClients').textContent = data.total_tenants || 0;
+                document.getElementById('statConversations').textContent = data.total_conversations || 0;
+                document.getElementById('statMessages').textContent = data.total_messages || 0;
+                document.getElementById('statEscalations').textContent = data.escalated_conversations || 0;
+            } catch (e) {
+                console.error('Failed to load stats:', e);
+            }
+        }
+
+        let allClients = [];
+
+        async function loadClients() {
+            try {
+                const res = await fetch(`${API_BASE}/api/admin/clients`, { headers });
+                const data = await res.json();
+                allClients = data.clients || [];
+                renderClients(allClients);
+            } catch (e) {
+                console.error('Failed to load clients:', e);
+            }
+        }
+
+        // FR-4.1.2: Client-side search by name, email, store URL
+        function filterClients() {
+            const q = (document.getElementById('clientSearchInput')?.value || '').toLowerCase();
+            if (!q) { renderClients(allClients); return; }
+            const filtered = allClients.filter(c =>
+                (c.business_name || c.name || '').toLowerCase().includes(q) ||
+                (c.owner_email || '').toLowerCase().includes(q) ||
+                (c.store_url || '').toLowerCase().includes(q)
+            );
+            renderClients(filtered);
+        }
+
+        function renderClients(clients) {
+            const tbody = document.getElementById('clientsBody');
+            if (!clients || clients.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="color:rgba(255,255,255,0.4);">No clients found.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = clients.map(c => `
+                <tr>
+                    <td><strong>${c.business_name || c.name || '—'}</strong></td>
+                    <td>${c.owner_email || '—'}</td>
+                    <td><span class="badge ${c.is_active ? 'badge-active' : 'badge-suspended'}">${c.is_active ? 'Active' : 'Suspended'}</span></td>
+                    <td>${c.conversation_count || 0}</td>
+                    <td>${c.created_at ? new Date(c.created_at).toLocaleDateString() : '—'}</td>
+                    <td>
+                        <button class="action-btn" onclick="viewClient(${c.id})">View</button>
+                        <button class="action-btn danger" onclick="toggleClient(${c.id}, ${c.is_active})">${c.is_active ? 'Suspend' : 'Activate'}</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function loadAnalytics() {
+            try {
+                const res = await fetch(`${API_BASE}/api/admin/analytics`, { headers });
+                const data = await res.json();
+                document.getElementById('analyticConvos').textContent = data.total_conversations || 0;
+                document.getElementById('analyticSat').textContent = data.avg_satisfaction ? data.avg_satisfaction.toFixed(1) + '%' : '—';
+                document.getElementById('analyticEsc').textContent = data.escalation_rate ? data.escalation_rate.toFixed(1) + '%' : '—';
+                document.getElementById('analyticDocs').textContent = data.total_documents || 0;
+            } catch (e) {
+                console.error('Failed to load analytics:', e);
+            }
+        }
+
+        // FR-4.3.4: Apply audit log filters
+        function applyAuditFilters() {
+            const action = document.getElementById('auditActionFilter')?.value || '';
+            const dateRange = document.getElementById('auditDateFilter')?.value || '';
+            loadAuditLogs(action, dateRange);
+        }
+
+        async function loadAuditLogs(actionFilter = '', dateFilter = '') {
+            try {
+                let url = `${API_BASE}/api/admin/audit-logs?limit=50`;
+                if (actionFilter) url += `&action=${encodeURIComponent(actionFilter)}`;
+                if (dateFilter) url += `&period=${encodeURIComponent(dateFilter)}`;
+
+                const res = await fetch(url, { headers });
+                const data = await res.json();
+                const body = document.getElementById('auditLogsBody');
+                let logs = data.logs || [];
+
+                // Client-side date filtering as fallback
+                if (dateFilter && logs.length > 0) {
+                    const now = new Date();
+                    let cutoff;
+                    if (dateFilter === 'today') cutoff = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                    else if (dateFilter === 'week') cutoff = new Date(now - 7 * 86400000);
+                    else if (dateFilter === 'month') cutoff = new Date(now - 30 * 86400000);
+                    if (cutoff) logs = logs.filter(l => new Date(l.timestamp) >= cutoff);
+                }
+
+                // Client-side action filtering as fallback
+                if (actionFilter && logs.length > 0) {
+                    logs = logs.filter(l => (l.action || '').toLowerCase().includes(actionFilter.toLowerCase()));
+                }
+
+                if (logs.length === 0) {
+                    body.innerHTML = '<p style="color: rgba(255,255,255,0.4);">No audit logs match the current filters.</p>';
+                    return;
+                }
+                body.innerHTML = logs.map(log => `
+                    <div class="log-entry">
+                        <span class="log-time">${new Date(log.timestamp).toLocaleString()}</span>
+                        <span class="log-action">${log.action} — ${log.details || ''}</span>
+                    </div>
+                `).join('');
+            } catch (e) {
+                console.error('Failed to load audit logs:', e);
+            }
+        }
+
+        async function viewClient(id) {
+            try {
+                const res = await fetch(`${API_BASE}/api/admin/clients/${id}`, { headers });
+                const data = await res.json();
+                const modal = document.getElementById('clientModal');
+                const body = document.getElementById('clientModalBody');
+                const d = data.tenant || data;
+                body.innerHTML = `
+                    <div style="display:grid; grid-template-columns: 120px 1fr; gap: 0.5rem 1rem; font-size: 0.9rem;">
+                        <span style="color:rgba(255,255,255,0.5);">Business</span><span style="font-weight:600;">${d.business_name || d.name || '—'}</span>
+                        <span style="color:rgba(255,255,255,0.5);">Owner</span><span>${d.owner_name || '—'}</span>
+                        <span style="color:rgba(255,255,255,0.5);">Email</span><span>${d.owner_email || d.support_email || '—'}</span>
+                        <span style="color:rgba(255,255,255,0.5);">Status</span><span><span class="badge ${d.is_active !== false ? 'badge-active' : 'badge-suspended'}">${d.is_active !== false ? 'Active' : 'Suspended'}</span></span>
+                        <span style="color:rgba(255,255,255,0.5);">Store URL</span><span>${d.store_url || '—'}</span>
+                        <span style="color:rgba(255,255,255,0.5);">Platform</span><span style="text-transform:capitalize;">${d.store_platform || '—'}</span>
+                        <span style="color:rgba(255,255,255,0.5);">Conversations</span><span>${d.conversation_count || 0}</span>
+                        <span style="color:rgba(255,255,255,0.5);">Team Size</span><span>${d.team_count || d.member_count || 1}</span>
+                        <span style="color:rgba(255,255,255,0.5);">Joined</span><span>${d.created_at ? new Date(d.created_at).toLocaleDateString() : '—'}</span>
+                    </div>
+                `;
+                modal.style.display = 'flex';
+            } catch (e) {
+                console.error(e);
+                alert('Failed to load client details.');
+            }
+        }
+
+        async function toggleClient(id, isActive) {
+            const action = isActive ? 'suspend' : 'activate';
+            if (!confirm(`Are you sure you want to ${action} this client?`)) return;
+            try {
+                await fetch(`${API_BASE}/api/admin/clients/${id}/${action}`, { method: 'POST', headers });
+                loadClients();
+            } catch (e) { console.error(e); }
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'login.html';
+        }
+
+        // Init
+        loadOverview();
+    </script>
+</body>
+
+</html>

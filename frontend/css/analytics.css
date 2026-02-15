@@ -1,0 +1,374 @@
+/*
+ * =========================================================
+ * BEHAVIORAL AGENTIC AI - Analytics Page Styles
+ * =========================================================
+ */
+
+/* =========================================================
+   ANALYTICS METRICS
+   ========================================================= */
+.analytics-metrics {
+    margin-bottom: var(--space-lg);
+}
+
+.analytics-charts {
+    margin-bottom: var(--space-lg);
+}
+
+/* =========================================================
+   CHART CARD
+   ========================================================= */
+.chart-card {
+    padding: var(--space-lg);
+}
+
+.chart-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-lg);
+}
+
+.chart-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.chart-legend {
+    display: flex;
+    gap: var(--space-md);
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.chart-body {
+    min-height: 200px;
+}
+
+/* =========================================================
+   LINE CHART - Improved
+   ========================================================= */
+.line-chart {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.chart-y-axis {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+    padding: 0 var(--space-sm);
+}
+
+.chart-y-axis span {
+    padding: 0 var(--space-xs);
+}
+
+.chart-area {
+    width: 100%;
+    height: 180px;
+    position: relative;
+    background:
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 100% 25%, 14.28% 100%;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.chart-area svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.chart-x-axis {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+    padding: 0 var(--space-sm);
+}
+
+/* =========================================================
+   BAR CHART HORIZONTAL
+   ========================================================= */
+.bar-chart-horizontal {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.bar-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+.bar-label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    min-width: 100px;
+}
+
+.bar-flag {
+    font-size: 1.25rem;
+}
+
+.bar-name {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.bar-track {
+    flex: 1;
+    height: 8px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-500), var(--secondary-500));
+    border-radius: var(--radius-full);
+    transition: width 1s ease-out;
+}
+
+.bar-value {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    min-width: 40px;
+    text-align: right;
+}
+
+/* =========================================================
+   ACTIVITY HEATMAP
+   ========================================================= */
+.activity-heatmap {
+    padding: var(--space-sm);
+}
+
+.heatmap-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-xs);
+}
+
+.heatmap-label {
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+    width: 30px;
+}
+
+.heatmap-cells {
+    display: flex;
+    gap: 4px;
+    flex: 1;
+}
+
+.heatmap-cell {
+    flex: 1;
+    height: 24px;
+    background: var(--primary-500);
+    border-radius: 4px;
+    min-width: 20px;
+}
+
+.heatmap-times {
+    display: flex;
+    justify-content: space-between;
+    margin-top: var(--space-sm);
+    padding-left: 38px;
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+}
+
+/* =========================================================
+   TRIGGER STATS
+   ========================================================= */
+.trigger-stats {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.trigger-stat-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+.trigger-stat-icon {
+    font-size: 1.25rem;
+    width: 32px;
+    text-align: center;
+}
+
+.trigger-stat-info {
+    flex: 1;
+}
+
+.trigger-stat-name {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.trigger-stat-count {
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+}
+
+.trigger-stat-bar {
+    width: 80px;
+    height: 6px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.trigger-stat-fill {
+    height: 100%;
+    background: var(--urgent);
+    border-radius: var(--radius-full);
+}
+
+/* =========================================================
+   SENTIMENT BY LANGUAGE
+   ========================================================= */
+.sentiment-by-lang {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.lang-sentiment-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+.lang-flag {
+    font-size: 1.25rem;
+    width: 28px;
+}
+
+.lang-sentiment-bars {
+    flex: 1;
+    display: flex;
+    height: 20px;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+
+.lang-bar {
+    height: 100%;
+    transition: width 1s ease-out;
+}
+
+.lang-bar--positive {
+    background: var(--positive);
+}
+
+.lang-bar--neutral {
+    background: var(--neutral);
+}
+
+.lang-bar--negative {
+    background: var(--negative);
+}
+
+.lang-sentiment-legend {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-lg);
+    margin-top: var(--space-md);
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+.lang-sentiment-legend span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* =========================================================
+   DATE RANGE PICKER
+   ========================================================= */
+.date-range-picker .btn {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+/* =========================================================
+   GRID ADJUSTMENTS
+   ========================================================= */
+.grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-lg);
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width: 1200px) {
+    .grid-3 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .grid-3>*:last-child {
+        grid-column: span 2;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .grid-2,
+    .grid-3,
+    .grid-4 {
+        grid-template-columns: 1fr;
+    }
+
+    .grid-3>*:last-child {
+        grid-column: span 1;
+    }
+
+    .chart-legend {
+        display: none;
+    }
+
+    .line-chart {
+        flex-direction: column;
+    }
+
+    .chart-y-axis {
+        display: none;
+    }
+
+    .chart-x-axis {
+        padding-left: 0;
+    }
+}

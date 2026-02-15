@@ -1,0 +1,410 @@
+/*
+ * =========================================================
+ * BEHAVIORAL AGENTIC AI - Settings Page Styles
+ * =========================================================
+ */
+
+/* =========================================================
+   SETTINGS LAYOUT
+   ========================================================= */
+.settings-layout {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: var(--space-lg);
+    min-height: calc(100vh - 200px);
+}
+
+/* =========================================================
+   SETTINGS NAV (Tabs)
+   ========================================================= */
+.settings-nav {
+    padding: var(--space-sm);
+    position: sticky;
+    top: var(--space-lg);
+    height: fit-content;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.settings-nav-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-md);
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all var(--transition-fast);
+    border-left: 3px solid transparent;
+}
+
+.settings-nav-item svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.settings-nav-item:hover {
+    background: var(--glass-bg-hover);
+    color: var(--text-primary);
+    border-left-color: var(--text-muted);
+}
+
+.settings-nav-item.active {
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--primary-400);
+    border-left-color: var(--primary-500);
+}
+
+.settings-nav-item.active svg {
+    color: var(--primary-400);
+}
+
+/* =========================================================
+   SETTINGS CONTENT
+   ========================================================= */
+.settings-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+}
+
+.settings-section {
+    padding: var(--space-xl);
+}
+
+.settings-section-header {
+    margin-bottom: var(--space-xl);
+    padding-bottom: var(--space-md);
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.settings-section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: var(--space-xs);
+}
+
+.settings-section-desc {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+/* =========================================================
+   SETTINGS GROUPS
+   ========================================================= */
+.settings-group {
+    margin-bottom: var(--space-lg);
+}
+
+.settings-group:last-child {
+    margin-bottom: 0;
+}
+
+.settings-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: var(--space-xs);
+}
+
+.settings-hint {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: var(--space-sm);
+}
+
+.settings-group--toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-md);
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+}
+
+.settings-group--toggle .settings-label {
+    margin-bottom: 0;
+}
+
+.settings-group--toggle .settings-hint {
+    margin-bottom: 0;
+}
+
+.settings-group-info {
+    flex: 1;
+}
+
+/* =========================================================
+   FORM ELEMENTS
+   ========================================================= */
+.form-input {
+    width: 100%;
+    padding: var(--space-sm) var(--space-md);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    transition: all var(--transition-fast);
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--primary-500);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.settings-content .form-select {
+    width: 100%;
+    padding: var(--space-sm) var(--space-xl) var(--space-sm) var(--space-md);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+}
+
+.settings-content .form-select:focus {
+    outline: none;
+    border-color: var(--primary-500);
+}
+
+/* =========================================================
+   TOGGLE SWITCH
+   ========================================================= */
+.toggle {
+    position: relative;
+    display: inline-block;
+    width: 48px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-full);
+    transition: all var(--transition-fast);
+}
+
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 2px;
+    bottom: 2px;
+    background: var(--text-muted);
+    border-radius: 50%;
+    transition: all var(--transition-fast);
+}
+
+.toggle input:checked+.toggle-slider {
+    background: var(--primary-500);
+    border-color: var(--primary-500);
+}
+
+.toggle input:checked+.toggle-slider:before {
+    transform: translateX(24px);
+    background: white;
+}
+
+/* =========================================================
+   RANGE SLIDER
+   ========================================================= */
+.range-group {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+.form-range {
+    flex: 1;
+    height: 6px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-full);
+    appearance: none;
+    cursor: pointer;
+}
+
+.form-range::-webkit-slider-thumb {
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    background: var(--primary-500);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform var(--transition-fast);
+}
+
+.form-range::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+}
+
+.range-value {
+    min-width: 45px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-align: right;
+}
+
+/* =========================================================
+   TAG INPUT
+   ========================================================= */
+.tag-input {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    padding: var(--space-sm);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+}
+
+.tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    background: var(--primary-500);
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: white;
+}
+
+.tag-remove {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+}
+
+.tag-remove:hover {
+    color: white;
+}
+
+.tag-input-field {
+    flex: 1;
+    min-width: 100px;
+    padding: 4px 8px;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+}
+
+.tag-input-field:focus {
+    outline: none;
+}
+
+.tag-input-field::placeholder {
+    color: var(--text-muted);
+}
+
+/* =========================================================
+   SETTINGS ACTIONS
+   ========================================================= */
+.settings-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-md);
+    padding: var(--space-lg);
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-lg);
+    backdrop-filter: var(--glass-blur);
+}
+
+/* =========================================================
+   LANGUAGE GRID
+   ========================================================= */
+.language-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: var(--space-sm);
+}
+
+.language-check {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.language-check:hover {
+    border-color: var(--primary-500);
+}
+
+.language-check input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--primary-500);
+}
+
+.language-check input[type="checkbox"]:checked+* {
+    color: var(--text-primary);
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+@media (max-width: 768px) {
+    .settings-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .settings-nav {
+        position: static;
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-xs);
+    }
+
+    .settings-nav-item {
+        margin-bottom: 0;
+    }
+
+    .settings-actions {
+        flex-direction: column;
+    }
+
+    .settings-actions .btn {
+        width: 100%;
+    }
+}

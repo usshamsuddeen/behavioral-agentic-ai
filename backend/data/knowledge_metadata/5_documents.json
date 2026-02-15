@@ -1,0 +1,16 @@
+[
+  {
+    "id": "274b88e6-02a1-4b00-bd9e-6b6209152ac9",
+    "client_id": "5",
+    "filename": "document.docx",
+    "doc_type": "general",
+    "category": "general",
+    "chunk_count": 0,
+    "chunk_ids": [],
+    "file_size": 46850,
+    "created_at": "2026-02-14T18:32:49.931201",
+    "status": "failed",
+    "error": "File is not a zip file",
+    "metadata": {}
+  }
+]
