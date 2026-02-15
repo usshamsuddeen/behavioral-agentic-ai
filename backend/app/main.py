@@ -305,9 +305,14 @@ async def serve_embed_js():
 # MUST be mounted LAST so API routes take priority
 # ═══════════════════════════════════════════════════════════════════
 
-FRONTEND_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "frontend")
+# Try multiple paths: Docker (/app/frontend) → Local (../../frontend relative to this file)
+_possible_frontend_paths = [
+    os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "frontend"),  # local dev
+    "/app/frontend",  # Docker container
+]
+FRONTEND_DIR = next((p for p in _possible_frontend_paths if os.path.isdir(p)), None)
 
-if os.path.isdir(FRONTEND_DIR):
+if FRONTEND_DIR:
     # Serve static assets (CSS, JS, images)
     app.mount("/css", StaticFiles(directory=os.path.join(FRONTEND_DIR, "css")), name="css")
     app.mount("/js", StaticFiles(directory=os.path.join(FRONTEND_DIR, "js")), name="js")
