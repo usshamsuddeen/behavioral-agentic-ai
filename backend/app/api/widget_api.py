@@ -271,13 +271,17 @@ async def send_chat_message(
 
     # ══════════════════════════════════════════════════════════════
     # Step 3: Update frustration level (moving average)
-    # Frustration = 1.0 - sentiment_score, averaged with history
+    # Frustration = 1.0 - normalized_score, averaged with history
     # ══════════════════════════════════════════════════════════════
     current_frustration = conversation.frustration_level or 0.0
-    msg_sentiment = customer_msg.sentiment_score or 0.5
+    raw_score = customer_msg.sentiment_score if customer_msg.sentiment_score is not None else 0.5
+    # Normalize: BERT returns [-1, +1], but frustration needs [0, 1].
+    # Map: -1 → 0, 0 → 0.5, +1 → 1.0
+    normalized_score = (raw_score + 1.0) / 2.0 if raw_score < 0 else raw_score
+    normalized_score = min(1.0, max(0.0, normalized_score))
     # Exponential moving average: weight recent messages more heavily
     alpha = 0.4  # smoothing factor — higher = more weight on current message
-    new_frustration = alpha * (1.0 - msg_sentiment) + (1.0 - alpha) * current_frustration
+    new_frustration = alpha * (1.0 - normalized_score) + (1.0 - alpha) * current_frustration
     conversation.frustration_level = round(min(1.0, max(0.0, new_frustration)), 4)
 
     db.add(customer_msg)
@@ -288,85 +292,11 @@ async def send_chat_message(
     db.refresh(customer_msg)
 
     # ══════════════════════════════════════════════════════════════
-    # Step 4: Escalation Check (FR-5.3)
-    # Keyword triggers, sentiment threshold, repeated negativity,
-    # profanity detection, caps-lock frustration, human request
-    # ══════════════════════════════════════════════════════════════
-    should_escalate = False
-    escalation_info = {}
-    try:
-        from app.services.escalation import check_escalation_triggers, calculate_escalation_priority
-        esc_result = check_escalation_triggers(
-            data.message,
-            current_frustration=conversation.frustration_level or 0.0
-        )
-        should_escalate = esc_result.get("should_escalate", False)
-        if should_escalate:
-            escalation_info = esc_result
-            # Calculate priority using dedicated function
-            priority = calculate_escalation_priority(
-                sentiment_score=customer_msg.sentiment_score or 0.5,
-                frustration_level=conversation.frustration_level or 0.0,
-                message_count=conversation.message_count or 1,
-                has_triggers=esc_result.get("is_trigger", False)
-            )
-            conversation.is_escalated = True
-            conversation.escalation_reason = str(esc_result.get("reasons", []))
-            conversation.escalated_at = datetime.utcnow()
-            conversation.status = ConversationStatus.ESCALATED.value
-            conversation.priority = priority
-            customer_msg.is_escalation_trigger = True
-            customer_msg.trigger_keywords = str(esc_result.get("keywords", []))
-
-            # ── Create dedicated Escalation record (FRD §12) ──
-            try:
-                from app.models.escalation import Escalation
-                import json as _json
-
-                escalation_record = Escalation(
-                    conversation_id=conversation.id,
-                    tenant_id=tenant.id,
-                    priority=priority,
-                    trigger_score=esc_result.get("trigger_score", 0.0),
-                    sentiment_at_escalation=customer_msg.sentiment,
-                    sentiment_score_at_escalation=customer_msg.sentiment_score,
-                    frustration_at_escalation=conversation.frustration_level,
-                    status="open",
-                )
-                escalation_record.set_trigger_reasons(esc_result.get("reasons", []))
-
-                # Build handoff package (FR-5.3.10)
-                handoff = {
-                    "conversation_id": conversation.id,
-                    "session_id": data.session_id,
-                    "customer_name": conversation.customer_name,
-                    "customer_email": conversation.customer_email,
-                    "message_count": conversation.message_count,
-                    "current_sentiment": customer_msg.sentiment,
-                    "frustration_level": conversation.frustration_level,
-                    "trigger_message": data.message,
-                    "trigger_reasons": esc_result.get("reasons", []),
-                    "priority": priority,
-                    "recent_messages": conversation_history[-5:] if conversation_history else [],
-                }
-                escalation_record.set_handoff_package(handoff)
-
-                db.add(escalation_record)
-            except Exception as esc_err:
-                logger.warning(f"Failed to create Escalation record: {esc_err}")
-
-            db.commit()
-
-            logger.warning(
-                f"ESCALATION: tenant={tenant.name} session={data.session_id} "
-                f"priority={conversation.priority} reasons={escalation_info.get('reasons', [])}"
-            )
-    except Exception as e:
-        logger.warning(f"Escalation check failed: {e}")
-
-    # ══════════════════════════════════════════════════════════════
-    # Step 5: Load conversation history for AI context
+    # Step 4: Load conversation history for AI context
     # Gives the LLM memory of the conversation so far
+    # MUST be loaded before the AI agent call (Step 5) — previously
+    # this was Step 5 and caused a NameError when escalation tried
+    # to reference conversation_history before it was defined.
     # ══════════════════════════════════════════════════════════════
     conversation_history = []
     try:
@@ -387,28 +317,27 @@ async def send_chat_message(
         logger.warning(f"Failed to load conversation history: {e}")
 
     # ══════════════════════════════════════════════════════════════
-    # Step 6: Generate AI Response (FR-5.2 RAG + LLM)
-    # Retrieves KB chunks → injects as context → LLM generates response
-    # If human takeover is active, skip AI response
+    # Step 5: Generate AI Response via Agent (FR-5.2 + FR-5.3)
+    # The AI agent internally handles:
+    #   - RAG retrieval (knowledge base context)
+    #   - LLM response generation
+    #   - Escalation detection (keywords, sentiment, frustration)
+    # This is the SINGLE source of truth for escalation decisions.
+    # Previously, escalation was checked twice (here AND in agent.py)
+    # which caused false triggers on normal messages.
     # ══════════════════════════════════════════════════════════════
     ai_response_text = "I'm here to help! Let me look into that for you."
     confidence = 0.5
+    should_escalate = False
+    escalation_info = {}
 
     if is_human_takeover:
         # Human agent has taken over — don't auto-respond with AI
         ai_response_text = None
-    elif should_escalate:
-        # Escalated — send empathetic holding response (FR-5.3)
-        ai_response_text = (
-            "I understand your concern, and I want to make sure you get the best help possible. "
-            "I'm connecting you with a team member who can assist you directly. "
-            "They'll have full context of our conversation."
-        )
-        confidence = 0.9
     else:
-        # Normal flow — RAG + LLM
+        # Unified flow — agent handles RAG + LLM + escalation internally
         try:
-            from app.ai.agent import get_ai_agent, AgentContext
+            from app.ai.agent import get_ai_agent, AgentContext, AgentAction
             agent = get_ai_agent()
             agent_context = AgentContext(
                 client_id=str(tenant.id),
@@ -422,6 +351,76 @@ async def send_chat_message(
             result = agent.process_message(agent_context)
             ai_response_text = result.response
             confidence = result.confidence
+
+            # Use agent's escalation decision (single source of truth)
+            # IMPORTANT: Only use the hard ESCALATE action for full escalation flow.
+            # requires_human is a SOFT flag (human review recommended) — it should NOT
+            # trigger escalation records, WebSocket alerts, or status changes.
+            # It was causing false escalations when confidence was low (no KB docs).
+            if result.action == AgentAction.ESCALATE:
+                should_escalate = True
+                escalation_info = result.escalation
+
+                # Calculate priority
+                from app.services.escalation import calculate_escalation_priority
+                priority = calculate_escalation_priority(
+                    sentiment_score=customer_msg.sentiment_score or 0.5,
+                    frustration_level=conversation.frustration_level or 0.0,
+                    message_count=conversation.message_count or 1,
+                    has_triggers=bool(result.escalation.get("triggers"))
+                )
+
+                # Update conversation state
+                conversation.is_escalated = True
+                conversation.escalation_reason = str(result.escalation.get("reason", "Agent-determined escalation"))
+                conversation.escalated_at = datetime.utcnow()
+                conversation.status = ConversationStatus.ESCALATED.value
+                conversation.priority = priority
+                customer_msg.is_escalation_trigger = True
+                customer_msg.trigger_keywords = str(result.escalation.get("triggers", []))
+
+                # Create dedicated Escalation record (FRD §12)
+                try:
+                    from app.models.escalation import Escalation
+
+                    escalation_record = Escalation(
+                        conversation_id=conversation.id,
+                        tenant_id=tenant.id,
+                        priority=priority,
+                        trigger_score=result.escalation.get("priority_score", 0.0),
+                        sentiment_at_escalation=customer_msg.sentiment,
+                        sentiment_score_at_escalation=customer_msg.sentiment_score,
+                        frustration_at_escalation=conversation.frustration_level,
+                        status="open",
+                    )
+                    escalation_record.set_trigger_reasons(result.escalation.get("triggers", []))
+
+                    # Build handoff package (FR-5.3.10)
+                    handoff = {
+                        "conversation_id": conversation.id,
+                        "session_id": data.session_id,
+                        "customer_name": conversation.customer_name,
+                        "customer_email": conversation.customer_email,
+                        "message_count": conversation.message_count,
+                        "current_sentiment": customer_msg.sentiment,
+                        "frustration_level": conversation.frustration_level,
+                        "trigger_message": data.message,
+                        "trigger_reasons": result.escalation.get("triggers", []),
+                        "priority": priority,
+                        "recent_messages": conversation_history[-5:] if conversation_history else [],
+                    }
+                    escalation_record.set_handoff_package(handoff)
+
+                    db.add(escalation_record)
+                except Exception as esc_err:
+                    logger.warning(f"Failed to create Escalation record: {esc_err}")
+
+                db.commit()
+
+                logger.warning(
+                    f"ESCALATION: tenant={tenant.name} session={data.session_id} "
+                    f"priority={priority} reasons={result.escalation.get('reason', 'N/A')}"
+                )
         except Exception as e:
             logger.warning(f"AI agent failed, using fallback: {e}")
 

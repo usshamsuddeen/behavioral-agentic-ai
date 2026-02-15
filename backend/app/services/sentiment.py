@@ -78,11 +78,13 @@ SENTIMENT_DICTS = {
     }
 }
 
-# Universal Urgent Keywords (English + Common Brands)
+# Universal Urgent Keywords (English + Common threats)
+# Note: removed "cancel", "refund", "review" — these are normal e-commerce
+# actions, NOT urgency signals. Only keep genuine threat/escalation words.
 URGENT_KEYWORDS = {
     "lawyer", "sue", "legal", "court", "attorney", "lawsuit",
-    "social media", "twitter", "facebook", "instagram", "tiktok", "linkedin", "review",
-    "cancel", "refund", "scam", "fraud", "police", "fbi", "better business bureau", "bbb"
+    "social media", "twitter", "facebook", "instagram", "tiktok", "linkedin",
+    "police", "fbi", "better business bureau", "bbb"
 }
 
 def get_sentiment_label(sentiment: str, score: float) -> str:
@@ -286,17 +288,20 @@ def analyze_sentiment(text: str, language: str = "en") -> Dict:
     # POST-PROCESSING: Apply modifiers (urgency, shouting)
     # ═══════════════════════════════════════════════════════════════════
     
-    # Urgency override
+    # Urgency override — push score toward negative (LOW score = negative)
     if is_urgent:
         if sentiment == "positive": 
             sentiment = "neutral"
         if sentiment == "neutral": 
             sentiment = "negative"
-        score = max(score, 0.85) if sentiment == "negative" else score
+        # For negative sentiment, score should be LOW (close to 0, not 0.85!)
+        # Previous bug: score = max(score, 0.85) made negative look positive
+        if sentiment == "negative":
+            score = min(score, 0.15)  # Clamp to low value for negative+urgent
         
-    # Shouting amplifier
+    # Shouting amplifier — push score even lower for negative sentiment
     if is_shouting and sentiment == "negative":
-        score = min(score + 0.15, 0.99)
+        score = max(score - 0.15, 0.01)  # Push further toward 0 (very negative)
         
     # ═══════════════════════════════════════════════════════════════════
     # FORMAT OUTPUT
