@@ -298,3 +298,73 @@ async def serve_embed_js():
             "Cache-Control": "public, max-age=3600"
         }
     )
+
+
+# ═══════════════════════════════════════════════════════════════════
+# FRONTEND STATIC FILES — Serve dashboard UI
+# MUST be mounted LAST so API routes take priority
+# ═══════════════════════════════════════════════════════════════════
+
+FRONTEND_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "frontend")
+
+if os.path.isdir(FRONTEND_DIR):
+    # Serve static assets (CSS, JS, images)
+    app.mount("/css", StaticFiles(directory=os.path.join(FRONTEND_DIR, "css")), name="css")
+    app.mount("/js", StaticFiles(directory=os.path.join(FRONTEND_DIR, "js")), name="js")
+    app.mount("/widget", StaticFiles(directory=os.path.join(FRONTEND_DIR, "widget")), name="widget-static")
+
+    # Serve HTML pages
+    @app.get("/login")
+    @app.get("/pages/login.html")
+    async def serve_login():
+        return FileResponse(os.path.join(FRONTEND_DIR, "pages", "login.html"))
+
+    @app.get("/signup")
+    @app.get("/pages/signup.html")
+    async def serve_signup():
+        return FileResponse(os.path.join(FRONTEND_DIR, "pages", "signup.html"))
+
+    @app.get("/dashboard")
+    @app.get("/pages/client-dashboard.html")
+    async def serve_dashboard():
+        return FileResponse(os.path.join(FRONTEND_DIR, "pages", "client-dashboard.html"))
+
+    @app.get("/onboarding")
+    @app.get("/pages/onboarding.html")
+    async def serve_onboarding():
+        return FileResponse(os.path.join(FRONTEND_DIR, "pages", "onboarding.html"))
+
+    @app.get("/escalations")
+    @app.get("/pages/escalations.html")
+    async def serve_escalations():
+        return FileResponse(os.path.join(FRONTEND_DIR, "pages", "escalations.html"))
+
+    @app.get("/knowledge")
+    @app.get("/pages/knowledge-base.html")
+    async def serve_knowledge():
+        return FileResponse(os.path.join(FRONTEND_DIR, "pages", "knowledge-base.html"))
+
+    @app.get("/admin")
+    @app.get("/pages/admin.html")
+    async def serve_admin():
+        return FileResponse(os.path.join(FRONTEND_DIR, "pages", "admin.html"))
+
+    @app.get("/widget-management")
+    @app.get("/pages/widget-management.html")
+    async def serve_widget_management():
+        return FileResponse(os.path.join(FRONTEND_DIR, "pages", "widget-management.html"))
+
+    @app.get("/widget-test")
+    @app.get("/widget-test.html")
+    async def serve_widget_test():
+        return FileResponse(os.path.join(FRONTEND_DIR, "widget-test.html"))
+
+    @app.get("/ui")
+    async def serve_landing():
+        """Serve the main landing / index page"""
+        return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
+
+    logger.info(f"📁 Frontend served from: {FRONTEND_DIR}")
+else:
+    logger.warning(f"⚠️ Frontend directory not found: {FRONTEND_DIR}")
+

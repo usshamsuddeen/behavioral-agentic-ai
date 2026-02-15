@@ -7,8 +7,12 @@
 
 // Configuration
 const CONFIG = {
-    API_BASE_URL: 'http://localhost:8000/api',
-    WS_URL: 'ws://localhost:8000/ws',
+    API_BASE_URL: (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? 'http://localhost:8000/api'
+        : window.location.origin + '/api',
+    WS_URL: (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? 'ws://localhost:8000/ws'
+        : (window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host + '/ws',
     REFRESH_INTERVAL: 30000, // 30 seconds
 };
 

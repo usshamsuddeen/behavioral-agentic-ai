@@ -5,7 +5,9 @@
 
 const Auth = {
     // API Base URL
-    API_BASE: 'http://localhost:8000',
+    API_BASE: (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? 'http://localhost:8000'
+        : window.location.origin,
 
     /**
      * Get stored access token
