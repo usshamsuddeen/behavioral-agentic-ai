@@ -568,7 +568,7 @@
   display: grid;
   grid-template-columns: 340px 1fr;
   gap: 0;
-  height: calc(100vh - 140px);
+  /* height: calc(100vh - 140px); */
   border-radius: var(--radius-xl);
   overflow: hidden;
   border: 1px solid var(--glass-border);
