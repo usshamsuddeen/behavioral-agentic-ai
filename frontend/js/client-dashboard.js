@@ -24,7 +24,7 @@ const TAB_META = {
 document.addEventListener('DOMContentLoaded', () => {
     // Auth guard
     const token = localStorage.getItem('access_token');
-    if (!token) { window.location.href = 'login.html'; return; }
+    if (!token) { window.location.href = '/pages/login.html'; return; }
 
     loadUserInfo();
     setupTabNavigation();
@@ -862,7 +862,7 @@ function setupLogout() {
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
         localStorage.removeItem('user');
-        window.location.href = 'login.html';
+        window.location.href = '/pages/login.html';
     });
 }
 
