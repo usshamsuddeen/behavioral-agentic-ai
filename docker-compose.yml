@@ -15,17 +15,17 @@ services:
     environment:
       # ── Database ────────────────
       - DATABASE_URL=sqlite:///./data/app.db
-      # ── LLM — OpenRouter (set keys in Coolify → Environment Variables) ──
-      - LLM_API_KEY=${LLM_API_KEY}
-      - LLM_BASE_URL=${LLM_BASE_URL:-https://openrouter.ai/api/v1}
-      - LLM_MODEL=${LLM_MODEL:-anthropic/claude-3.5-sonnet}
-      - LLM_FALLBACK_MODEL=${LLM_FALLBACK_MODEL:-anthropic/claude-3-haiku}
-      - OPENROUTER_API_KEY=${LLM_API_KEY}
+      # ── LLM — OpenRouter + Claude Sonnet 3.5 ────────────────
+      - LLM_API_KEY=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
+      - LLM_BASE_URL=https://openrouter.ai/api/v1
+      - LLM_MODEL=anthropic/claude-3.5-sonnet
+      - LLM_FALLBACK_MODEL=anthropic/claude-3-haiku
+      - OPENROUTER_API_KEY=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
       # ── Vector Store ────────────
       - VECTOR_STORE_DIR=/app/data/vector_store
-      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-all-MiniLM-L6-v2}
+      - EMBEDDING_MODEL=all-MiniLM-L6-v2
       # ── Security ────────────────
-      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - JWT_SECRET_KEY=bhai-production-jwt-secret-change-me-to-random-64-chars
       # ── Application ─────────────
       - ENVIRONMENT=production
       - LOG_LEVEL=INFO
