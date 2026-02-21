@@ -97,7 +97,7 @@ class RetrievalService:
             raw_results = self.vector_store.search(
                 query=query,
                 collection_name=collection_name,
-                n_results=top_k * 2,  # Fetch more for filtering
+                n_results=top_k + 2,  # Fetch slightly more for filtering
                 min_similarity=min_sim
             )
             

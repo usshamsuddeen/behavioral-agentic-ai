@@ -238,22 +238,46 @@ async def upload_text(
         raise HTTPException(status_code=400, detail="Text content is required")
     
     try:
-        from app.knowledge.indexer import get_knowledge_indexer
+        manager = get_knowledge_manager()
         
-        indexer = get_knowledge_indexer()
-        result = indexer.index_text(
+        # Convert text to bytes (manager.upload_document expects bytes)
+        content = request.text.encode("utf-8")
+        filename = f"{request.source}.txt" if request.source else "manual_entry.txt"
+        
+        result = manager.upload_document(
             client_id=client_id,
-            text=request.text,
-            source=request.source,
+            content=content,
+            filename=filename,
             doc_type=request.doc_type,
             category=request.category
         )
-        
+
+        # ── Track in SQL (FRD §12: knowledge_documents table) ──
+        if result["success"]:
+            try:
+                tenant = get_tenant_for_user(current_user, db)
+                doc_record = KnowledgeDocument(
+                    tenant_id=tenant.id if tenant else None,
+                    filename=filename,
+                    doc_type=request.doc_type,
+                    category=request.category,
+                    file_size=len(content),
+                    chunk_count=result.get("chunks_created", 0),
+                    chromadb_doc_id=result.get("document_id"),
+                    status="indexed",
+                    uploaded_by=current_user.id,
+                )
+                db.add(doc_record)
+                db.commit()
+            except Exception as track_err:
+                logger.warning(f"KB text tracking failed (non-blocking): {track_err}")
+
         return UploadResponse(
-            success=result.success,
-            document_id=result.document_ids[0] if result.document_ids else None,
-            chunks_created=result.chunks_indexed,
-            error=result.error
+            success=result["success"],
+            document_id=result.get("document_id"),
+            filename=filename,
+            chunks_created=result.get("chunks_created", 0),
+            error=result.get("error")
         )
         
     except Exception as e:

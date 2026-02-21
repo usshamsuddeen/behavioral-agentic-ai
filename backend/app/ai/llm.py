@@ -163,18 +163,17 @@ class LLMService:
             # Build messages
             messages = [{"role": "system", "content": system_prompt}]
             
-            # Add conversation history
-            # widget_api.py builds history as {"role": "user"/"assistant", "content": ...}
+            # Add conversation history (last 6 messages, each truncated to save tokens)
             if conversation_history:
                 for msg in conversation_history[-6:]:
-                    # Support both formats: "role" (from widget_api) or "sender_type" (legacy)
                     if "role" in msg:
-                        role = msg["role"]  # Already "user" or "assistant"
+                        role = msg["role"]
                     else:
                         role = "user" if msg.get("sender_type") == "customer" else "assistant"
                     content = msg.get("content", "")
-                    if content:  # Skip empty messages
-                        messages.append({"role": role, "content": content})
+                    if content:
+                        # Truncate long messages to save input tokens
+                        messages.append({"role": role, "content": content[:200]})
             
             # Add current user message
             messages.append({"role": "user", "content": user_message})
@@ -287,45 +286,26 @@ class LLMService:
 
         if has_context:
             # ── RAG MODE: Context documents available → answer from them ──
-            context_str = self._format_context(context_documents)
-            prompt = f"""You are a helpful, friendly, and professional customer support agent for {company_name}.
-
-RULES:
-1. Prefer information from the CONTEXT DOCUMENTS provided below when answering
-2. If the answer is NOT in the context, you may still help with general knowledge but let the customer know you can connect them with a specialist for specifics
-3. NEVER invent product names, prices, or policies — only state what's in the context
-4. Be warm, empathetic, and concise — use natural conversational language
-5. If the customer seems frustrated, acknowledge their feelings first
-6. Vary your responses — never repeat the same phrasing
+            prompt = f"""You are a friendly customer support agent for {company_name}.
+Answer from the CONTEXT DOCUMENTS below. Never invent product names, prices, or policies.
+If the answer isn't in the context, say so and offer to connect with a specialist.
+Keep answers concise (1-3 sentences).
 
 """
         else:
             # ── GENERAL MODE: No context documents → honest assistant ──
-            prompt = f"""You are a helpful, friendly, and professional customer support agent for {company_name}.
-
-IMPORTANT: This client has NOT uploaded any product, policy, or FAQ documents to the knowledge base yet.
-You do NOT have any specific information about their products, services, prices, or policies.
-
-RULES:
-1. Be warm and conversational — greet the customer naturally
-2. For general questions (greetings, how are you, etc.), respond naturally and helpfully
-3. If asked about SPECIFIC products, prices, policies, or services, be HONEST:
-   - Say something like "I don't have detailed product/policy information available yet, but I can connect you with our team who can help with that specific question."
-   - Do NOT invent or guess product names, prices, or policies
-4. Keep answers concise — 1-3 sentences is ideal
-5. Vary your responses — never repeat the same opening phrase
-6. If the customer seems frustrated, acknowledge their feelings first
-7. For greetings, respond naturally ("Hi there! How can I help you today?", "Hello! What can I do for you?", etc.)
-8. You CAN still help with general customer service topics like order tracking guidance, general shopping advice, etc.
+            prompt = f"""You are a friendly customer support agent for {company_name}.
+No product/policy documents have been uploaded yet — you have no specific info about their catalog.
+For general questions, respond helpfully. For specific product/price/policy questions, honestly say you don't have that info and offer to connect with the team.
+Keep answers concise (1-3 sentences).
 
 """
 
-        if sentiment == "negative" or is_urgent:
-            prompt += """IMPORTANT - CUSTOMER SENTIMENT: The customer appears frustrated or upset.
-- Start by acknowledging their frustration
-- Use empathetic language
-- Prioritize quick resolution
-- Offer to escalate if you cannot fully resolve their issue
+        # Only add empathy instructions when there's keyword-verified urgency.
+        # Raw BERT sentiment scores info queries ("what's the price?") as negative,
+        # so using sentiment == "negative" here caused false frustration responses.
+        if is_urgent:
+            prompt += """NOTE: Customer seems upset — acknowledge their concern, prioritize resolution, offer to escalate if needed.
 
 """
 
@@ -352,9 +332,9 @@ Remember: Prefer the context documents above. If unsure, offer to connect to a h
         formatted = []
         for i, doc in enumerate(documents, 1):
             text = doc[:1500] if len(doc) > 1500 else doc
-            formatted.append(f"---\nDocument {i}:\n{text}\n---")
+            formatted.append(f"[{i}] {text}")
         
-        return "\n".join(formatted)
+        return "\n\n".join(formatted)
     
     def _calculate_confidence(self, response: str, context: List[str]) -> float:
         """Calculate response confidence score."""

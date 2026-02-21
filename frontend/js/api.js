@@ -403,6 +403,13 @@ const API = {
         return this.request('/knowledge?confirm=true', {
             method: 'DELETE'
         });
+    },
+
+    async addKnowledgeText(text, source = 'manual_entry', docType = 'general', category = 'general') {
+        return this.request('/knowledge/text', {
+            method: 'POST',
+            body: JSON.stringify({ text, source, doc_type: docType, category })
+        });
     }
 };
 

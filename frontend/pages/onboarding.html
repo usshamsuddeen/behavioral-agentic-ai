@@ -614,24 +614,35 @@
                 </div>
             </div>
 
-            <!-- Step 4: Upload Knowledge Base -->
+            <!-- Step 4: Knowledge Base (Text Input) -->
             <div class="step-panel" id="step4">
-                <h2 class="step-title">📚 Upload Knowledge Base</h2>
-                <p class="step-description">Upload your FAQs, product guides, or policies so the AI knows your business.
-                </p>
-                <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-                        <polyline points="17 8 12 3 7 8" />
-                        <line x1="12" y1="3" x2="12" y2="15" />
-                    </svg>
-                    <p>Drop files here or <span class="highlight">browse</span></p>
-                    <p style="font-size: 0.75rem; margin-top: 4px;">PDF, TXT, CSV, DOCX — up to 10 MB each</p>
+                <h2 class="step-title">📚 Add Product Knowledge</h2>
+                <p class="step-description">Paste your product details, FAQs, return policies, or any info you want the
+                    AI to know about your business.</p>
+                <div class="form-group">
+                    <label for="kbTitle">Knowledge Title</label>
+                    <input type="text" id="kbTitle" placeholder="e.g. Product Catalog, Return Policy, FAQ">
                 </div>
-                <input type="file" id="fileInput" multiple accept=".pdf,.txt,.csv,.docx" style="display:none">
-                <div class="upload-list" id="uploadList"></div>
+                <div class="form-group">
+                    <label for="kbDocType">Type</label>
+                    <select id="kbDocType">
+                        <option value="general">General</option>
+                        <option value="product">Product Info</option>
+                        <option value="policy">Policies</option>
+                        <option value="faq">FAQ</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="kbText">Knowledge Content</label>
+                    <textarea id="kbText" rows="10" placeholder="Paste your product details, FAQs, policies here...
+
+Example:
+Our store sells premium wireless headphones ($49.99), Bluetooth speakers ($29.99), and USB-C cables ($9.99).
+Return policy: 30-day returns with receipt. Free shipping on orders over $50.
+Support hours: Mon-Fri 9am-5pm EST."></textarea>
+                </div>
                 <p style="color: rgba(255,255,255,0.4); font-size: 0.85rem; margin-top: 0.5rem;">
-                    You can skip this step and upload documents later from your dashboard.
+                    You can skip this step and add knowledge later from your dashboard.
                 </p>
             </div>
 
@@ -736,7 +747,7 @@
                 const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
 
                 if (currentStep === 1) {
-                    await fetch(`${API_BASE}/api/onboarding/step/1`, {
+                    await fetch(`${API_BASE}/api/onboarding/business-profile`, {
                         method: 'POST', headers,
                         body: JSON.stringify({
                             business_name: document.getElementById('bizName').value,
@@ -746,7 +757,7 @@
                         })
                     });
                 } else if (currentStep === 2) {
-                    await fetch(`${API_BASE}/api/onboarding/step/2`, {
+                    await fetch(`${API_BASE}/api/onboarding/connect-store`, {
                         method: 'POST', headers,
                         body: JSON.stringify({
                             store_url: document.getElementById('storeUrl').value,
@@ -754,7 +765,7 @@
                         })
                     });
                 } else if (currentStep === 3) {
-                    await fetch(`${API_BASE}/api/onboarding/step/3`, {
+                    await fetch(`${API_BASE}/api/onboarding/configure-widget`, {
                         method: 'POST', headers,
                         body: JSON.stringify({
                             widget_title: document.getElementById('widgetTitle').value,
@@ -765,24 +776,28 @@
                         })
                     });
                 } else if (currentStep === 4) {
-                    // Upload files
-                    if (uploadedFiles.length > 0) {
-                        for (const file of uploadedFiles) {
-                            const formData = new FormData();
-                            formData.append('file', file);
-                            await fetch(`${API_BASE}/api/onboarding/step/4`, {
-                                method: 'POST',
-                                headers: { 'Authorization': `Bearer ${token}` },
-                                body: formData
-                            });
-                        }
-                    } else {
-                        // Skip upload step
-                        await fetch(`${API_BASE}/api/onboarding/step/4`, {
+                    // Send knowledge text to the knowledge pipeline
+                    const kbText = document.getElementById('kbText').value.trim();
+                    if (kbText) {
+                        const kbTitle = document.getElementById('kbTitle').value.trim() || 'Onboarding Knowledge';
+                        const kbDocType = document.getElementById('kbDocType').value || 'general';
+                        const textRes = await fetch(`${API_BASE}/api/knowledge/text`, {
                             method: 'POST', headers,
-                            body: JSON.stringify({ skip: true })
+                            body: JSON.stringify({
+                                text: kbText,
+                                source: kbTitle,
+                                doc_type: kbDocType,
+                                category: 'general'
+                            })
                         });
+                        const textData = await textRes.json();
+                        if (!textData.success) {
+                            console.error('KB text indexing failed:', textData.error);
+                        }
                     }
+
+                    // Mark KB step as complete
+                    await fetch(`${API_BASE}/api/onboarding/upload-kb-complete`, { method: 'POST', headers });
 
                     // Finalize onboarding
                     const completeRes = await fetch(`${API_BASE}/api/onboarding/complete`, { method: 'POST', headers });

@@ -45,6 +45,7 @@ class AgentContext:
     company_name: str = "Our Company"
     company_guidelines: Optional[str] = None
     current_frustration: float = 0.0
+    pre_sentiment: Optional[Dict] = None  # Reuse sentiment from widget_api
 
 
 @dataclass
@@ -102,8 +103,11 @@ class AIAgent:
         """
         logger.info(f"🤖 Processing message for client: {context.client_id}")
         
-        # Step 1: Analyze sentiment
-        sentiment_result = self._analyze_sentiment(context.user_message)
+        # Step 1: Reuse pre-computed sentiment if available, else analyze
+        if context.pre_sentiment:
+            sentiment_result = context.pre_sentiment
+        else:
+            sentiment_result = self._analyze_sentiment(context.user_message)
         
         # Step 2: Check for escalation triggers
         escalation_result = self._check_escalation(

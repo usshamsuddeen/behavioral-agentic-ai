@@ -1,0 +1,18 @@
+[
+  {
+    "id": "00930c98-339f-4c43-a5ce-b461eb637f7e",
+    "client_id": "system",
+    "filename": "Store Info.txt",
+    "doc_type": "product",
+    "category": "general",
+    "chunk_count": 1,
+    "chunk_ids": [
+      "a9d78a233f807014"
+    ],
+    "file_size": 215,
+    "created_at": "2026-02-21T18:35:35.625782",
+    "status": "indexed",
+    "error": null,
+    "metadata": {}
+  }
+]
