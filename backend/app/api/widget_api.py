@@ -347,6 +347,13 @@ async def send_chat_message(
                 company_name=tenant.name or "Our Store",
                 company_guidelines=tenant.description,
                 current_frustration=conversation.frustration_level or 0.0,
+                pre_sentiment={
+                    "sentiment": sentiment_result.get("sentiment", "neutral"),
+                    "score": sentiment_result.get("score", 0.5),
+                    "confidence": sentiment_result.get("confidence", 0.5),
+                    "label": sentiment_result.get("label", "neutral"),
+                    "is_urgent": sentiment_result.get("is_urgent", False),
+                },
             )
             result = agent.process_message(agent_context)
             ai_response_text = result.response

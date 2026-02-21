@@ -89,6 +89,11 @@ function initializeEventListeners() {
         loadDocuments();
     });
     elements.deleteAllBtn.addEventListener('click', handleDeleteAll);
+
+    // Add text knowledge
+    if (document.getElementById('addTextBtn')) {
+        document.getElementById('addTextBtn').addEventListener('click', handleAddKnowledge);
+    }
 }
 
 // =========================================================
@@ -338,14 +343,14 @@ async function loadDocuments() {
                         ${escapeHtml(doc.filename || doc.source || 'Unknown')}
                     </div>
                 </td>
-                <td>${doc.doc_type || 'general'}</td>
+                <td>${doc.type || 'general'}</td>
                 <td>${doc.category || 'general'}</td>
                 <td>${doc.chunks || '-'}</td>
                 <td>${formatFileSize(doc.size || 0)}</td>
                 <td><span class="badge badge-positive">Indexed</span></td>
                 <td>
                     <div class="doc-actions">
-                        <button class="btn-icon btn-ghost" onclick="deleteDocument('${doc.document_id}')">
+                        <button class="btn-icon btn-ghost" onclick="deleteDocument('${doc.id}')">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <polyline points="3 6 5 6 21 6" />
                                 <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
@@ -396,6 +401,38 @@ async function handleDeleteAll() {
     } catch (err) {
         console.error('Delete all error:', err);
         showToast('error', 'Clear Failed', 'Network error occurred');
+    }
+}
+
+async function handleAddKnowledge() {
+    const titleEl = document.getElementById('textKbTitle');
+    const contentEl = document.getElementById('textKbContent');
+    const text = contentEl ? contentEl.value.trim() : '';
+    const title = titleEl ? titleEl.value.trim() : 'Manual Entry';
+
+    if (!text) {
+        showToast('error', 'Missing Content', 'Please enter some text to add to the knowledge base.');
+        return;
+    }
+
+    const docType = elements.docType ? elements.docType.value : 'general';
+    const category = elements.docCategory ? elements.docCategory.value || 'general' : 'general';
+
+    try {
+        const result = await API.addKnowledgeText(text, title || 'manual_entry', docType, category);
+
+        if (result.success) {
+            showToast('success', 'Knowledge Added', `Text indexed successfully (${result.chunks_created || 0} chunks created)`);
+            if (contentEl) contentEl.value = '';
+            if (titleEl) titleEl.value = '';
+            loadStats();
+            loadDocuments();
+        } else {
+            showToast('error', 'Add Failed', result.error || 'Could not index text');
+        }
+    } catch (err) {
+        console.error('Add knowledge error:', err);
+        showToast('error', 'Add Failed', 'Network error occurred');
     }
 }
 

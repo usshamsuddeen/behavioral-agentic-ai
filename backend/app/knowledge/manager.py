@@ -273,7 +273,8 @@ class KnowledgeManager:
         vs = get_vector_store()
         
         try:
-            vs.delete_documents(client_id, ids=doc_to_delete.chunk_ids)
+            collection_name = f"client_{client_id}" if client_id else "default"
+            vs.delete_documents(ids=doc_to_delete.chunk_ids, collection_name=collection_name)
         except Exception as e:
             logger.warning(f"⚠️ Could not delete vector chunks: {e}")
         
