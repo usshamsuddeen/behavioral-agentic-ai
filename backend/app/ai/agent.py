@@ -241,7 +241,7 @@ class AIAgent:
                 return True
 
         # Negative sentiment + significant keyword evidence (combined signal)
-        if sentiment.get("score", 0.5) < -0.5 and escalation.get("trigger_score", 0.0) >= 0.40:
+        if sentiment.get("score", 0.5) < 0.25 and escalation.get("trigger_score", 0.0) >= 0.40:
             return True
 
         return False
@@ -312,8 +312,8 @@ class AIAgent:
         # Low confidence + negative sentiment — suggest human review
         # Changed: low confidence alone is NOT enough to flag (prevents
         # false flags on simple questions where KB has no data)
-        # NOTE: BERT scores are [-1.0, +1.0], not [0.0, 1.0]
-        if llm_response.confidence < self.escalation_threshold and sentiment.get("score", 0.5) < -0.5:
+        # NOTE: Scores are on [0.0, 1.0] scale (neutral=0.5)
+        if llm_response.confidence < self.escalation_threshold and sentiment.get("score", 0.5) < 0.25:
             requires_human = True
 
         # LLM truly failed (not just using fallback template) — flag for review
@@ -327,7 +327,7 @@ class AIAgent:
             requires_human = True
 
         # Extremely negative sentiment with low confidence
-        if sentiment.get("score", 0.5) < -0.7 and llm_response.confidence < 0.3:
+        if sentiment.get("score", 0.5) < 0.15 and llm_response.confidence < 0.3:
             requires_human = True
 
         return action, requires_human

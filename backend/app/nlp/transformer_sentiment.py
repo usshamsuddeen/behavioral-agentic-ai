@@ -160,7 +160,7 @@ def analyze_sentiment_transformer(text: str) -> Dict:
         Dict with sentiment analysis results:
         {
             "sentiment": "positive" | "neutral" | "negative",
-            "score": float (-1.0 to 1.0),
+            "score": float (0.0 to 1.0, neutral=0.5),
             "confidence": float (0.0 to 1.0),
             "star_rating": int (1-5),
             "model": "bert-multilingual",
@@ -171,7 +171,7 @@ def analyze_sentiment_transformer(text: str) -> Dict:
     if not text or not text.strip():
         return {
             "sentiment": "neutral",
-            "score": 0.0,
+            "score": 0.5,
             "confidence": 0.0,
             "star_rating": 3,
             "model": "none",
@@ -186,7 +186,7 @@ def analyze_sentiment_transformer(text: str) -> Dict:
     if not is_model_available():
         return {
             "sentiment": "neutral",
-            "score": 0.0,
+            "score": 0.5,
             "confidence": 0.0,
             "star_rating": 3,
             "model": "none",
@@ -204,9 +204,9 @@ def analyze_sentiment_transformer(text: str) -> Dict:
         # neutral conversational text as 1-star (extremely negative).
         #
         # Examples of misclassification:
-        #   "Do you have any info about products?" → 1 star (-100%)
-        #   "What is the price?"                   → 1 star (-100%)
-        #   "Can I return this?"                   → 1 star (-100%)
+        #   "Do you have any info about products?" → 1 star (10%)
+        #   "What is the price?"                   → 1 star (10%)
+        #   "Can I return this?"                   → 1 star (10%)
         #   "Hello, I need help"                   → 1-2 stars
         #
         # Fix: detect questions, greetings, and short neutral text,
@@ -241,26 +241,35 @@ def analyze_sentiment_transformer(text: str) -> Dict:
             
             if is_question or is_greeting or is_info_seeking:
                 logger.info(
-                    f"🛡️ Chat guard: BERT gave {star_rating}★ to chat text "
+                    f"Chat guard: BERT gave {star_rating} stars to chat text "
                     f"(question={is_question}, greeting={is_greeting}, "
-                    f"info={is_info_seeking}), overriding to 3★ (neutral)"
+                    f"info={is_info_seeking}), overriding to 3 stars (neutral)"
                 )
                 star_rating = 3
                 confidence = 0.6  # Lower confidence since we overrode
         
-        # Map star rating to sentiment and score
-        # 1-2 stars = negative, 3 = neutral, 4-5 = positive
+        # ── STAR-TO-SCORE MAPPING (0.0 to 1.0 scale) ────────────────
+        # Matches BERT's original 1-5 star scale:
+        #   1★ = 0.10 (very negative)
+        #   2★ = 0.30 (negative)
+        #   3★ = 0.50 (neutral)
+        #   4★ = 0.70 (positive)
+        #   5★ = 0.90 (very positive)
+        #
+        # This aligns with VADER/keywords which also use [0, 1] scale
+        # where neutral = 0.5. Dashboard displays score * 100 as %.
+        # ─────────────────────────────────────────────────────────────
         if star_rating <= 2:
             sentiment = "negative"
-            # Map 1-2 to -1.0 to -0.5
-            score = -1.0 + (star_rating - 1) * 0.5
+            # 1★ → 0.10, 2★ → 0.30
+            score = 0.1 + (star_rating - 1) * 0.2
         elif star_rating == 3:
             sentiment = "neutral"
-            score = 0.0
+            score = 0.5
         else:
             sentiment = "positive"
-            # Map 4-5 to 0.5 to 1.0
-            score = 0.5 + (star_rating - 4) * 0.5
+            # 4★ → 0.70, 5★ → 0.90
+            score = 0.5 + (star_rating - 3) * 0.2
         
         return {
             "sentiment": sentiment,
@@ -272,10 +281,10 @@ def analyze_sentiment_transformer(text: str) -> Dict:
         }
         
     except Exception as e:
-        logger.error(f"❌ Transformer inference failed: {e}")
+        logger.error(f"Transformer inference failed: {e}")
         return {
             "sentiment": "neutral",
-            "score": 0.0,
+            "score": 0.5,
             "confidence": 0.0,
             "star_rating": 3,
             "model": "bert-multilingual",

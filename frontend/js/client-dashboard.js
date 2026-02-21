@@ -332,7 +332,7 @@ function renderMessages(messages) {
 
         let sentimentBadge = '';
         if (m.sentiment_label || m.sentiment_score != null) {
-            const sl = m.sentiment_label || (m.sentiment_score > 0.3 ? 'positive' : m.sentiment_score < -0.3 ? 'negative' : 'neutral');
+            const sl = m.sentiment_label || (m.sentiment_score > 0.6 ? 'positive' : m.sentiment_score < 0.4 ? 'negative' : 'neutral');
             sentimentBadge = `<span class="msg-sentiment msg-sentiment--${sl}">${sl} ${m.sentiment_score != null ? (m.sentiment_score * 100).toFixed(0) + '%' : ''}</span>`;
         }
 
@@ -488,31 +488,11 @@ async function loadKnowledge() {
     // Document list
     await loadDocumentList();
 
-    // Upload zone
-    setupUploadZone();
-
-    // Search
-    document.getElementById('kbSearchBtn').onclick = async () => {
-        const query = document.getElementById('kbSearchInput').value.trim();
-        if (!query) return;
-        const results = document.getElementById('kbSearchResults');
-        results.innerHTML = '<div class="loading-state"><div class="spinner"></div></div>';
-        try {
-            const data = await API.searchKnowledge(query, 5);
-            const chunks = data.results || data || [];
-            if (chunks.length === 0) {
-                results.innerHTML = '<div class="empty-state" style="padding:var(--space-lg)"><p>No matching chunks found</p></div>';
-            } else {
-                results.innerHTML = chunks.map(c => `<div class="doc-item" style="margin-bottom:var(--space-sm)">
-                    <div class="doc-info">
-                        <div class="doc-name">${esc(c.document_name || c.source || 'Chunk')}</div>
-                        <div class="doc-meta" style="white-space:normal;margin-top:4px;color:var(--text-secondary)">${esc((c.content || c.text || '').substring(0, 200))}…</div>
-                        <div class="doc-meta">Score: ${(c.score || c.similarity || 0).toFixed(3)}</div>
-                    </div>
-                </div>`).join('');
-            }
-        } catch { results.innerHTML = '<div class="empty-state"><p>Search failed</p></div>'; }
-    };
+    // Add Knowledge button
+    const addBtn = document.getElementById('addKnowledgeBtn');
+    if (addBtn) {
+        addBtn.onclick = handleAddKnowledge;
+    }
 
     // Delete all
     document.getElementById('deleteAllKbBtn').onclick = async () => {
@@ -526,6 +506,64 @@ async function loadKnowledge() {
     };
 }
 
+async function handleAddKnowledge() {
+    const titleEl = document.getElementById('kbTitle');
+    const contentEl = document.getElementById('kbTextContent');
+    const categoryEl = document.getElementById('kbCategory');
+    const submitBtn = document.getElementById('addKnowledgeBtn');
+
+    const text = contentEl ? contentEl.value.trim() : '';
+    const title = titleEl ? titleEl.value.trim() : 'Manual Entry';
+    const category = categoryEl ? categoryEl.value : 'general';
+
+    if (!text) {
+        showToast('Please enter some text to add', 'error');
+        return;
+    }
+
+    // Disable button to prevent duplicate submissions
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<div class="spinner" style="width:14px;height:14px;border-width:2px;margin-right:6px;"></div> Adding...';
+    }
+
+    try {
+        const result = await API.addKnowledgeText(text, title || 'manual_entry', 'general', category);
+
+        if (result.success) {
+            showToast(`Knowledge added — ${result.chunks_created || 0} chunks created`, 'success');
+            if (contentEl) contentEl.value = '';
+            if (titleEl) titleEl.value = '';
+            // Clear edit mode if active
+            if (submitBtn) {
+                submitBtn.setAttribute('data-edit-id', '');
+                submitBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px;">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg> Add to Knowledge Base`;
+            }
+            loadedTabs['knowledge'] = false;
+            loadKnowledge();
+        } else {
+            showToast(result.error || 'Could not index text', 'error');
+        }
+    } catch (err) {
+        console.error('Add knowledge error:', err);
+        showToast('Network error occurred', 'error');
+    } finally {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            // If not already reset above (error path)
+            if (submitBtn.innerHTML.includes('Adding')) {
+                submitBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px;">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg> Add to Knowledge Base`;
+            }
+        }
+    }
+}
+
 async function loadDocumentList() {
     const container = document.getElementById('docList');
     try {
@@ -535,7 +573,11 @@ async function loadDocumentList() {
             container.innerHTML = '<div class="empty-state"><p>No documents uploaded yet</p></div>';
             return;
         }
-        container.innerHTML = docs.map(d => `<div class="doc-item">
+        container.innerHTML = docs.map(d => {
+            const docId = d.id || d.document_id;
+            const docName = (d.filename || d.name || 'Document').replace(/'/g, "\\'");
+            const docCat = (d.category || 'general').replace(/'/g, "\\'");
+            return `<div class="doc-item">
             <div class="doc-icon">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
             </div>
@@ -543,10 +585,16 @@ async function loadDocumentList() {
                 <div class="doc-name">${esc(d.filename || d.name || 'Document')}</div>
                 <div class="doc-meta">${d.chunk_count || 0} chunks · ${formatFileSize(d.size || 0)} · ${d.created_at ? new Date(d.created_at).toLocaleDateString() : ''}</div>
             </div>
-            <button class="doc-delete" onclick="deleteDocument('${d.id || d.document_id}')" title="Delete">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-            </button>
-        </div>`).join('');
+            <div class="doc-actions-row">
+                <button class="doc-edit" onclick="editDocument('${docId}', '${docName}', '${docCat}')" title="Edit">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                </button>
+                <button class="doc-delete" onclick="deleteDocument('${docId}')" title="Delete">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </button>
+            </div>
+        </div>`;
+        }).join('');
     } catch { container.innerHTML = '<div class="empty-state"><p>Failed to load documents</p></div>'; }
 }
 
@@ -560,42 +608,50 @@ async function deleteDocument(docId) {
     } catch { showToast('Delete failed', 'error'); }
 }
 
-function setupUploadZone() {
-    const zone = document.getElementById('uploadZone');
-    const input = document.getElementById('fileInput');
+function editDocument(docId, title, category) {
+    // Scroll to the add section and populate fields for editing
+    const titleEl = document.getElementById('kbTitle');
+    const contentEl = document.getElementById('kbTextContent');
+    const categoryEl = document.getElementById('kbCategory');
+    const submitBtn = document.getElementById('addKnowledgeBtn');
 
-    zone.onclick = () => input.click();
-
-    zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('drag-over'); });
-    zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
-    zone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        zone.classList.remove('drag-over');
-        handleFiles(e.dataTransfer.files);
-    });
-
-    input.addEventListener('change', () => handleFiles(input.files));
-}
-
-async function handleFiles(files) {
-    for (const file of files) {
-        if (file.size > 10 * 1024 * 1024) {
-            showToast(`${file.name} exceeds 10MB limit`, 'error');
-            continue;
-        }
-        const formData = new FormData();
-        formData.append('file', file);
-        try {
-            showToast(`Uploading ${file.name}…`, 'info');
-            await API.upload('/knowledge/upload', formData);
-            showToast(`${file.name} uploaded!`, 'success');
-        } catch {
-            showToast(`Failed to upload ${file.name}`, 'error');
-        }
+    if (titleEl) titleEl.value = title || '';
+    if (categoryEl) categoryEl.value = category || 'general';
+    if (contentEl) {
+        contentEl.value = '';
+        contentEl.placeholder = 'Enter the updated content for "' + (title || 'Document') + '".\n\nThe old version will be replaced when you click "Update Knowledge".';
+        contentEl.focus();
     }
-    // Refresh
-    loadedTabs['knowledge'] = false;
-    loadKnowledge();
+
+    // Change button to "Update" mode
+    if (submitBtn) {
+        submitBtn.setAttribute('data-edit-id', docId);
+        submitBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px;">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+        </svg> Update Knowledge`;
+
+        // Override click to delete old + add new
+        submitBtn.onclick = async () => {
+            const editId = submitBtn.getAttribute('data-edit-id');
+            if (editId) {
+                // Delete old document first
+                try {
+                    await API.deleteKnowledgeDocument(editId);
+                } catch (err) {
+                    console.warn('Could not delete old document during edit:', err);
+                }
+            }
+            // Then add new
+            await handleAddKnowledge();
+            // Reset button back to add mode
+            submitBtn.onclick = handleAddKnowledge;
+        };
+    }
+
+    // Scroll into view
+    const section = document.querySelector('.kb-add-section');
+    if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -704,8 +760,6 @@ async function loadSettings() {
 
         // Preferences (from settings sub-object)
         if (prefs) {
-            document.getElementById('prefEmailEscalation').checked = prefs.email_notifications !== false;
-            document.getElementById('prefSoundNotif').checked = !!prefs.push_notifications;
             document.getElementById('prefSensitivity').value = prefs.auto_escalation_threshold ? (prefs.auto_escalation_threshold / 100) : 0.7;
             document.getElementById('sensitivityValue').textContent = prefs.auto_escalation_threshold ? (prefs.auto_escalation_threshold / 100).toFixed(2) : '0.70';
         }
@@ -748,7 +802,7 @@ async function loadSettings() {
         if (!data.email) { showToast('Email is required', 'error'); return; }
         try {
             await API.inviteTeamMember(data);
-            showToast('Invite sent!', 'success');
+            showToast('Team member added!', 'success');
             document.getElementById('inviteName').value = '';
             document.getElementById('inviteEmail').value = '';
             loadedTabs['settings'] = false;
@@ -780,9 +834,7 @@ async function loadSettings() {
     // Save preferences
     document.getElementById('savePrefsBtn').onclick = async () => {
         const data = {
-            email_escalation: document.getElementById('prefEmailEscalation').checked,
-            sound_notifications: document.getElementById('prefSoundNotif').checked,
-            escalation_sensitivity: parseFloat(document.getElementById('prefSensitivity').value),
+            auto_escalation_threshold: Math.round(parseFloat(document.getElementById('prefSensitivity').value) * 100),
         };
         try { await API.updatePreferences(data); showToast('Preferences saved!', 'success'); }
         catch { showToast('Update failed', 'error'); }

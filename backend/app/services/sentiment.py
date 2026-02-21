@@ -88,68 +88,70 @@ URGENT_KEYWORDS = {
 }
 
 def get_sentiment_label(sentiment: str, score: float) -> str:
-    """Get human readable sentiment label"""
+    """Get human readable sentiment label.
+    Score is on 0.0-1.0 scale: low=negative, 0.5=neutral, high=positive.
+    """
     if sentiment == "positive":
-        if score > 0.8: return "Delighted"
-        if score > 0.6: return "Happy"
+        if score > 0.85: return "Delighted"
+        if score > 0.70: return "Happy"
         return "Satisfied"
     elif sentiment == "negative":
-        if score > 0.8: return "Furious"
-        if score > 0.6: return "Frustrated"
-        if score > 0.4: return "Upset"
+        if score < 0.10: return "Furious"
+        if score < 0.20: return "Frustrated"
+        if score < 0.30: return "Upset"
         return "Disappointed"
     return "Neutral"
 
 def get_sentiment_emoji(sentiment: str, score: float) -> str:
-    """Get emoji for sentiment"""
+    """Get emoji for sentiment (score: 0.0-1.0, low=neg, high=pos)"""
     if sentiment == "positive":
-        return "🤩" if score > 0.85 else "😊" if score > 0.65 else "🙂"
+        return "\U0001f929" if score > 0.85 else "\U0001f60a" if score > 0.70 else "\U0001f642"
     elif sentiment == "negative":
-        return "🤬" if score > 0.85 else "😡" if score > 0.65 else "😞"
-    return "😐"
+        return "\U0001f92c" if score < 0.10 else "\U0001f621" if score < 0.20 else "\U0001f61e"
+    return "\U0001f610"
 
 def analyze_english_vader(text: str) -> Tuple[str, float]:
-    """Analyze English text using VADER"""
+    """Analyze English text using VADER.
+    Returns (sentiment, score) on [0, 1] scale: low=negative, 0.5=neutral, high=positive.
+    """
     if not HAS_VADER:
         return analyze_english_textblob(text)
         
     scores = vader_analyzer.polarity_scores(text)
     compound = scores['compound']
     
-    # Normalize compound (-1 to 1) to our 0-1 scale for positive/negative buckets
-    # But keep the sentiment classification logic consistent
+    # Map VADER compound (-1 to 1) directly to our 0-1 scale
+    # -1.0 → 0.0, 0.0 → 0.5, 1.0 → 1.0
+    score = (compound + 1.0) / 2.0
     
     if compound >= 0.05:
         sentiment = "positive"
-        # Map 0.05->1.0 to 0.5->1.0
-        score = 0.5 + (compound * 0.5) 
     elif compound <= -0.05:
         sentiment = "negative"
-        # Map -1.0->-0.05 to 1.0->0.5 (inverted for negative intensity)
-        score = 0.5 + (abs(compound) * 0.5)
     else:
         sentiment = "neutral"
-        score = 0.5
         
     return sentiment, score
 
 def analyze_english_textblob(text: str) -> Tuple[str, float]:
-    """Analyze English text using TextBlob"""
+    """Analyze English text using TextBlob.
+    Returns (sentiment, score) on [0, 1] scale: low=negative, 0.5=neutral, high=positive.
+    """
     if not HAS_TEXTBLOB:
         return "neutral", 0.5
         
     blob = TextBlob(text)
-    polarity = blob.sentiment.polarity
+    polarity = blob.sentiment.polarity  # -1.0 to 1.0
+    
+    # Map polarity directly: -1→0, 0→0.5, 1→1.0
+    score = (polarity + 1.0) / 2.0
     
     if polarity > 0.1:
         sentiment = "positive"
-        score = 0.5 + (polarity * 0.5)
     elif polarity < -0.1:
         sentiment = "negative"
-        score = 0.5 + (abs(polarity) * 0.5)
     else:
         sentiment = "neutral"
-        score = 0.5
         
     return sentiment, score
 
@@ -189,12 +191,15 @@ def analyze_multilingual(text: str, lang_code: str) -> Tuple[str, float]:
         return "neutral", 0.5
         
     # Normalize score
-    normalized_score = score_sum / matches
+    normalized_score = score_sum / matches  # Range: -1.0 to 1.0
+    
+    # Map to [0, 1] scale: -1→0, 0→0.5, 1→1.0
+    mapped_score = (normalized_score + 1.0) / 2.0
     
     if normalized_score > 0.1:
-        return "positive", 0.5 + min(normalized_score * 0.5, 0.5)
+        return "positive", mapped_score
     elif normalized_score < -0.1:
-        return "negative", 0.5 + min(abs(normalized_score) * 0.5, 0.5)
+        return "negative", mapped_score
     else:
         return "neutral", 0.5
 
@@ -244,7 +249,7 @@ def analyze_sentiment(text: str, language: str = "en") -> Dict:
                 
                 if result.get("success", False):
                     sentiment = result["sentiment"]
-                    # Convert star rating to -1 to 1 scale for consistency
+                    # Use BERT score directly (already on 0-1 scale)
                     score = result["score"]
                     confidence = result["confidence"]
                     model_used = "bert-multilingual"

@@ -67,6 +67,7 @@ ENV VECTOR_STORE_DIR="/app/data/vector_store"
 ENV EMBEDDING_MODEL="all-MiniLM-L6-v2"
 ENV LOG_LEVEL="INFO"
 ENV CORS_ORIGINS="*"
+ENV BACKEND_URL="https://sentimenta.snick.at"
 
 # ── Run ──────────────────────────────────────────────────────────
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
