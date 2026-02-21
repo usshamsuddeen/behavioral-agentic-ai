@@ -407,6 +407,7 @@ async function handleDeleteAll() {
 async function handleAddKnowledge() {
     const titleEl = document.getElementById('textKbTitle');
     const contentEl = document.getElementById('textKbContent');
+    const submitBtn = document.getElementById('addKnowledgeBtn');
     const text = contentEl ? contentEl.value.trim() : '';
     const title = titleEl ? titleEl.value.trim() : 'Manual Entry';
 
@@ -417,6 +418,12 @@ async function handleAddKnowledge() {
 
     const docType = elements.docType ? elements.docType.value : 'general';
     const category = elements.docCategory ? elements.docCategory.value || 'general' : 'general';
+
+    // Disable button to prevent duplicate submissions
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Adding...';
+    }
 
     try {
         const result = await API.addKnowledgeText(text, title || 'manual_entry', docType, category);
@@ -433,6 +440,12 @@ async function handleAddKnowledge() {
     } catch (err) {
         console.error('Add knowledge error:', err);
         showToast('error', 'Add Failed', 'Network error occurred');
+    } finally {
+        // Re-enable button
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Add to Knowledge Base';
+        }
     }
 }
 

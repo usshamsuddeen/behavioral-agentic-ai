@@ -138,11 +138,19 @@ async def start_chat_session(
     """
     tenant = get_tenant_by_api_key(api_key, db)
 
+    # Auto-number anonymous visitors: "Visitor" → "Visitor #N"
+    visitor_name = data.customer_name
+    if not visitor_name or visitor_name.strip().lower() == "visitor":
+        existing_count = db.query(Conversation).filter(
+            Conversation.tenant_id == tenant.id
+        ).count()
+        visitor_name = f"Visitor #{existing_count + 1}"
+
     # Create conversation record
     conversation = Conversation(
         tenant_id=tenant.id,
         session_id=Conversation.generate_session_id(),
-        customer_name=data.customer_name,
+        customer_name=visitor_name,
         customer_email=data.customer_email,
         status=ConversationStatus.ACTIVE.value,
     )
