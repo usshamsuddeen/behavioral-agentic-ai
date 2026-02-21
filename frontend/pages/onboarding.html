@@ -736,40 +736,44 @@
                 const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
 
                 if (currentStep === 1) {
-                    await fetch(`${API_BASE}/api/onboarding/step/1`, {
+                    // Bug fix: backend expects `company_name`, endpoint is /business-profile
+                    await fetch(`${API_BASE}/api/onboarding/business-profile`, {
                         method: 'POST', headers,
                         body: JSON.stringify({
-                            business_name: document.getElementById('bizName').value,
+                            company_name: document.getElementById('bizName').value,
                             industry: document.getElementById('bizIndustry').value,
                             description: document.getElementById('bizDesc').value,
                             timezone: document.getElementById('bizTimezone').value
                         })
                     });
                 } else if (currentStep === 2) {
-                    await fetch(`${API_BASE}/api/onboarding/step/2`, {
+                    // Bug fix: endpoint is /connect-store
+                    await fetch(`${API_BASE}/api/onboarding/connect-store`, {
                         method: 'POST', headers,
                         body: JSON.stringify({
-                            store_url: document.getElementById('storeUrl').value,
-                            platform: document.getElementById('storePlatform').value
+                            store_url: document.getElementById('storeUrl').value || 'https://example.com',
+                            platform: document.getElementById('storePlatform').value || 'custom'
                         })
                     });
                 } else if (currentStep === 3) {
-                    await fetch(`${API_BASE}/api/onboarding/step/3`, {
+                    // Bug fix: endpoint is /configure-widget; field names match ConfigureWidgetRequest schema
+                    await fetch(`${API_BASE}/api/onboarding/configure-widget`, {
                         method: 'POST', headers,
                         body: JSON.stringify({
-                            widget_title: document.getElementById('widgetTitle').value,
-                            greeting_message: document.getElementById('widgetGreeting').value,
-                            primary_color: document.getElementById('widgetColor').value,
-                            position: document.getElementById('widgetPosition').value,
-                            language: document.getElementById('widgetLang').value
+                            bot_name: document.getElementById('widgetTitle').value || 'AI Assistant',
+                            welcome_message: document.getElementById('widgetGreeting').value || 'Hi! How can I help you today?',
+                            theme_color: document.getElementById('widgetColor').value || '#667eea',
+                            position: document.getElementById('widgetPosition').value || 'bottom-right'
                         })
                     });
                 } else if (currentStep === 4) {
-                    // Upload files
+                    // Bug fix: Upload each file to the actual KB upload step endpoint
                     if (uploadedFiles.length > 0) {
                         for (const file of uploadedFiles) {
                             const formData = new FormData();
                             formData.append('file', file);
+                            formData.append('doc_type', 'general');
+                            formData.append('category', 'general');
                             await fetch(`${API_BASE}/api/onboarding/step/4`, {
                                 method: 'POST',
                                 headers: { 'Authorization': `Bearer ${token}` },
@@ -777,10 +781,9 @@
                             });
                         }
                     } else {
-                        // Skip upload step
-                        await fetch(`${API_BASE}/api/onboarding/step/4`, {
-                            method: 'POST', headers,
-                            body: JSON.stringify({ skip: true })
+                        // Skip upload — just mark the step complete
+                        await fetch(`${API_BASE}/api/onboarding/upload-kb-complete`, {
+                            method: 'POST', headers
                         });
                     }
 

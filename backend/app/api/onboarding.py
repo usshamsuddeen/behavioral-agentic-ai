@@ -10,9 +10,9 @@ Steps:
   5. Test & Deploy / Complete (FR-2.5)
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form
 from sqlalchemy.orm import Session
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 from typing import Optional, List
 
 from app.database import get_db
@@ -125,8 +125,8 @@ async def connect_store(
     tenant = get_user_tenant(current_user, db)
 
     # Validate platform
-    valid_platforms = ["shopify", "woocommerce", "wix", "squarespace", "custom"]
-    if data.platform.lower() not in valid_platforms:
+    valid_platforms = ["shopify", "woocommerce", "wix", "squarespace", "custom", "alibaba", "other"]
+    if data.platform and data.platform.lower() not in valid_platforms:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Invalid platform. Must be one of: {', '.join(valid_platforms)}"
@@ -201,9 +201,70 @@ async def configure_widget(
 
 # ═══════════════════════════════════════════════════════════════════
 # STEP 4: Upload Knowledge Base (FR-2.4)
-# NOTE: Uses existing /api/knowledge/upload endpoint
-# This step just advances the onboarding counter
+# Accepts an optional file upload and indexes it into the knowledge
+# base via KnowledgeManager. Also advances the onboarding counter.
 # ═══════════════════════════════════════════════════════════════════
+
+import logging as _logging
+_logger = _logging.getLogger(__name__)
+
+@router.post("/step/4")
+async def upload_kb_step(
+    file: Optional[UploadFile] = File(None),
+    doc_type: str = Form("general"),
+    category: str = Form("general"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Step 4: Upload knowledge base documents during onboarding.
+    Accepts a file upload, indexes it via KnowledgeManager, then
+    advances the onboarding step counter.
+    If no file is provided (skip), only advances the step.
+    """
+    from app.knowledge.manager import get_knowledge_manager
+    from app.api.knowledge import resolve_client_id
+
+    tenant = get_user_tenant(current_user, db)
+    client_id = resolve_client_id(current_user, db)
+
+    result = {"success": True, "skipped": True, "chunks_created": 0}
+
+    if file and file.filename:
+        try:
+            content = await file.read()
+            if content:
+                manager = get_knowledge_manager()
+                result = manager.upload_document(
+                    client_id=client_id,
+                    content=content,
+                    filename=file.filename,
+                    doc_type=doc_type,
+                    category=category
+                )
+                _logger.info(
+                    f"Onboarding KB upload: {file.filename} -> "
+                    f"{result.get('chunks_created', 0)} chunks for client {client_id}"
+                )
+        except Exception as e:
+            _logger.error(f"Onboarding KB upload failed: {e}")
+            # Non-blocking — still advance the step
+            result = {"success": False, "error": str(e), "chunks_created": 0}
+
+    # Advance onboarding step
+    if tenant.onboarding_step < 4:
+        tenant.onboarding_step = 4
+        current_user.onboarding_step = 4
+    db.commit()
+
+    return {
+        "message": "Knowledge base step completed",
+        "step": 4,
+        "file_indexed": bool(file and file.filename),
+        "chunks_created": result.get("chunks_created", 0),
+        "success": result.get("success", True)
+    }
+
 
 @router.post("/upload-kb-complete")
 async def mark_kb_upload_complete(
@@ -211,9 +272,8 @@ async def mark_kb_upload_complete(
     db: Session = Depends(get_db)
 ):
     """
-    Step 4: Mark KB upload step as complete.
-    Actual file upload uses /api/knowledge/upload separately.
-    This endpoint just advances the onboarding step.
+    Legacy: Mark KB upload step as complete (no file).
+    Used for skip flows and backward-compat.
     """
     tenant = get_user_tenant(current_user, db)
 
