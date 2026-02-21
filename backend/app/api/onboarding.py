@@ -14,6 +14,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, EmailStr
 from typing import Optional, List
+import os
 
 from app.database import get_db
 from app.models.tenant import Tenant
@@ -22,6 +23,7 @@ from app.models.user import User
 from app.middleware.jwt import get_current_user
 
 router = APIRouter(prefix="/api/onboarding", tags=["Onboarding Wizard"])
+BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -262,7 +264,7 @@ async def complete_onboarding(
     db.commit()
 
     # Generate embed code
-    embed_code = f'<script src="/widget/embed.js" data-widget-key="{tenant.widget_api_key}"></script>'
+    embed_code = f'<script src="{BACKEND_URL}/widget/embed.js" data-widget-key="{tenant.widget_api_key}"></script>'
 
     return {
         "message": "Onboarding complete! Your widget is now active.",

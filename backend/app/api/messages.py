@@ -164,13 +164,18 @@ async def send_message(
     should_escalate = False
     escalation_reason = None
     
+    # Get user's configured escalation threshold (stored as 0-100 integer, default 85)
+    user_escalation_threshold = ESCALATION_THRESHOLD  # fallback
+    if current_user.settings and current_user.settings.auto_escalation_threshold is not None:
+        user_escalation_threshold = current_user.settings.auto_escalation_threshold / 100.0
+    
     if sentiment == "negative" and sentiment_score < 0.25:
         should_escalate = True
         escalation_reason = "Critical negative sentiment (score < 0.25)"
     elif is_trigger:
         should_escalate = True
         escalation_reason = f"Escalation keywords detected: {', '.join(found_keywords)}"
-    elif conversation.frustration_level and conversation.frustration_level >= ESCALATION_THRESHOLD:
+    elif conversation.frustration_level and conversation.frustration_level >= user_escalation_threshold:
         should_escalate = True
         escalation_reason = f"Frustration level exceeded threshold ({conversation.frustration_level:.0%})"
     
