@@ -35,7 +35,7 @@ logger = logging.getLogger(__name__)
 DEFAULT_BASE_URL = "https://fal.ai/api/v1"  # fal.ai OpenAI-compatible endpoint
 DEFAULT_MODEL = "deepseek-r1"               # DeepSeek R1 on fal.ai
 FALLBACK_MODEL = os.getenv("LLM_FALLBACK_MODEL", "deepseek-v3")  # Fallback model
-MAX_TOKENS = 500
+MAX_TOKENS = 1000
 TEMPERATURE = 0.7
 
 

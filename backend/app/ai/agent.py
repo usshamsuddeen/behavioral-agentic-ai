@@ -252,8 +252,8 @@ class AIAgent:
             context_str, results = self.retrieval.retrieve_context(
                 client_id=client_id,
                 query=query,
-                max_tokens=2000,
-                top_k=5
+                max_tokens=4000,
+                top_k=8
             )
             
             # Convert to list of document strings
