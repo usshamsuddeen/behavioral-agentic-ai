@@ -135,8 +135,8 @@ class RetrievalService:
         self,
         client_id: str,
         query: str,
-        max_tokens: int = 4000,
-        top_k: int = 8,
+        max_tokens: int = 2000,
+        top_k: int = 5,
         doc_type: Optional[str] = None
     ) -> Tuple[str, List[RetrievalResult]]:
         """
