@@ -198,6 +198,56 @@ def analyze_sentiment_transformer(text: str) -> Dict:
         # Get cached or fresh inference
         star_rating, confidence = _cached_inference(text)
         
+        # ── CHAT-TEXT GUARD ──────────────────────────────────────────
+        # The BERT model is trained on PRODUCT REVIEWS (Amazon/Yelp),
+        # not chat messages. It misclassifies questions, greetings, and
+        # neutral conversational text as 1-star (extremely negative).
+        #
+        # Examples of misclassification:
+        #   "Do you have any info about products?" → 1 star (-100%)
+        #   "What is the price?"                   → 1 star (-100%)
+        #   "Can I return this?"                   → 1 star (-100%)
+        #   "Hello, I need help"                   → 1-2 stars
+        #
+        # Fix: detect questions, greetings, and short neutral text,
+        # then override to 3 stars (neutral) when BERT scores ≤ 2.
+        # ─────────────────────────────────────────────────────────────
+        if star_rating <= 2:
+            text_lower = text.lower().strip()
+            text_stripped = text.strip()
+            
+            # Detect questions (most common misclassification)
+            is_question = (
+                text_stripped.endswith("?")
+                or text_lower.startswith(("what ", "how ", "do ", "does ", "can ",
+                    "could ", "would ", "is ", "are ", "where ", "when ", "which ",
+                    "who ", "will ", "have ", "has ", "should ", "may ", "tell me",
+                    "any ", "please "))
+            )
+            
+            # Detect greetings and short neutral messages
+            greeting_words = {"hi", "hello", "hey", "hola", "good morning",
+                "good afternoon", "good evening", "thanks", "thank you",
+                "ok", "okay", "yes", "no", "sure", "alright", "fine",
+                "i see", "got it", "understood", "bye", "goodbye"}
+            is_greeting = text_lower.rstrip("!., ") in greeting_words
+            
+            # Detect informational intent (not emotional)
+            info_keywords = ("information", "info", "details", "price",
+                "cost", "how much", "available", "offer", "product",
+                "service", "policy", "return", "shipping", "delivery",
+                "catalog", "menu", "options", "feature")
+            is_info_seeking = any(kw in text_lower for kw in info_keywords)
+            
+            if is_question or is_greeting or is_info_seeking:
+                logger.info(
+                    f"🛡️ Chat guard: BERT gave {star_rating}★ to chat text "
+                    f"(question={is_question}, greeting={is_greeting}, "
+                    f"info={is_info_seeking}), overriding to 3★ (neutral)"
+                )
+                star_rating = 3
+                confidence = 0.6  # Lower confidence since we overrode
+        
         # Map star rating to sentiment and score
         # 1-2 stars = negative, 3 = neutral, 4-5 = positive
         if star_rating <= 2:
