@@ -75,6 +75,18 @@ SENTIMENT_DICTS = {
         "negative": {"生气", "沮丧", "糟糕", "坏", "讨厌", "不可接受", "投诉", "差"},
         "negations": {"不", "没", "无", "非"},
         "urgent": {"律师", "起诉", "报警", "违法"}
+    },
+    "it": {
+        "positive": {"grazie", "eccellente", "buono", "felice", "amore", "meraviglioso", "perfetto", "bene", "ottimo", "fantastico"},
+        "negative": {"arrabbiato", "frustrato", "terribile", "cattivo", "odio", "inaccettabile", "reclamo", "male", "pessimo", "lento"},
+        "negations": {"non", "mai", "niente", "nessuno", "nulla"},
+        "urgent": {"avvocato", "causa", "illegale", "polizia", "denuncia"}
+    },
+    "nl": {
+        "positive": {"bedankt", "uitstekend", "goed", "blij", "liefde", "geweldig", "perfect", "fijn", "fantastisch", "prima"},
+        "negative": {"boos", "gefrustreerd", "verschrikkelijk", "slecht", "haat", "onacceptabel", "klacht", "erg", "vreselijk", "traag"},
+        "negations": {"niet", "geen", "nooit", "niets", "niemand"},
+        "urgent": {"advocaat", "rechtszaak", "illegaal", "politie", "aanklacht"}
     }
 }
 

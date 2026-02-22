@@ -23,7 +23,7 @@ services:
       - OPENROUTER_API_KEY=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
       # ── Vector Store ────────────
       - VECTOR_STORE_DIR=/app/data/vector_store
-      - EMBEDDING_MODEL=all-MiniLM-L6-v2
+      - EMBEDDING_MODEL=paraphrase-multilingual-MiniLM-L12-v2
       # ── Security ────────────────
       - JWT_SECRET_KEY=bhai-production-jwt-secret-change-me-to-random-64-chars
       # ── Application ─────────────
