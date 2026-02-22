@@ -7,13 +7,11 @@
     <meta name="description" content="Behavioral Agentic AI - Setup Wizard">
     <title>Setup Wizard | Behavioral Agentic AI</title>
 
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
 
-    <!-- Stylesheets -->
     <link rel="stylesheet" href="/css/design-system.css">
     <link rel="stylesheet" href="/css/components.css">
 
@@ -26,47 +24,70 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #16213e 100%);
-            min-height: 100vh;
+            background: #07070d;
+            height: 100vh;
+            overflow: hidden;
             color: #fff;
         }
 
-        .bg-animation {
+        /* ═══════════════════════════════════════════════════════
+           BACKGROUND – canvas + orbs
+           ═══════════════════════════════════════════════════════ */
+        .bg-layer {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             z-index: 0;
-            overflow: hidden;
+            pointer-events: none;
         }
 
-        .bg-animation::before,
-        .bg-animation::after {
-            content: '';
+        .bg-layer canvas {
             position: absolute;
-            width: 600px;
-            height: 600px;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .bg-orb {
+            position: absolute;
             border-radius: 50%;
             filter: blur(120px);
-            opacity: 0.3;
-            animation: float 20s ease-in-out infinite;
+            opacity: 0.18;
+            pointer-events: none;
         }
 
-        .bg-animation::before {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            top: -200px;
-            right: -200px;
+        .bg-orb--1 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, #667eea, #764ba2);
+            top: -12%;
+            right: -10%;
+            animation: orbDrift 25s ease-in-out infinite;
         }
 
-        .bg-animation::after {
-            background: linear-gradient(135deg, #2ed573, #1e90ff);
-            bottom: -200px;
-            left: -200px;
-            animation-delay: -10s;
+        .bg-orb--2 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, #f093fb, #c471f5);
+            bottom: -10%;
+            left: -8%;
+            animation: orbDrift 30s ease-in-out infinite reverse;
         }
 
-        @keyframes float {
+        .bg-orb--3 {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, #2ed573, #1e90ff);
+            top: 50%;
+            left: 40%;
+            transform: translate(-50%, -50%);
+            animation: orbDrift 22s ease-in-out infinite 5s;
+        }
+
+        @keyframes orbDrift {
 
             0%,
             100% {
@@ -74,55 +95,81 @@
             }
 
             50% {
-                transform: translate(30px, 60px) scale(1.05);
+                transform: translate(35px, 50px) scale(1.08);
             }
         }
 
+        /* ═══════════════════════════════════════════════════════
+           LAYOUT
+           ═══════════════════════════════════════════════════════ */
         .onboarding-container {
             position: relative;
             z-index: 1;
-            max-width: 680px;
-            margin: 0 auto;
-            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            padding: 1.5rem 2rem;
         }
 
-        /* Header */
+        /* ── HEADER ──────────────────────────────────────────── */
         .onboarding-header {
             text-align: center;
-            margin-bottom: 2rem;
+            margin-bottom: 1.25rem;
+            animation: fadeSlideIn 0.6s ease both;
         }
 
         .onboarding-header h1 {
-            font-size: 2rem;
+            font-size: 1.6rem;
             font-weight: 700;
-            margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #fff, #a5b4fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .onboarding-header p {
-            color: rgba(255, 255, 255, 0.5);
+            color: rgba(255, 255, 255, 0.42);
+            font-size: 0.88rem;
+            margin-top: 0.3rem;
         }
 
-        /* Step Progress */
+        @keyframes fadeSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ── STEP PROGRESS ───────────────────────────────────── */
         .step-progress {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 0;
-            margin-bottom: 2.5rem;
+            margin-bottom: 1.5rem;
+            animation: fadeSlideIn 0.6s 0.1s ease both;
         }
 
         .step-dot {
-            width: 36px;
-            height: 36px;
+            width: 34px;
+            height: 34px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.08);
-            border: 2px solid rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.04);
+            border: 2px solid rgba(255, 255, 255, 0.1);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 600;
-            color: rgba(255, 255, 255, 0.4);
+            color: rgba(255, 255, 255, 0.3);
             transition: all 0.4s ease;
             flex-shrink: 0;
         }
@@ -131,7 +178,7 @@
             background: linear-gradient(135deg, #667eea, #764ba2);
             border-color: #667eea;
             color: #fff;
-            box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+            box-shadow: 0 0 18px rgba(102, 126, 234, 0.5);
         }
 
         .step-dot.completed {
@@ -141,9 +188,9 @@
         }
 
         .step-line {
-            width: 40px;
+            width: 36px;
             height: 2px;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.08);
             transition: background 0.4s ease;
         }
 
@@ -151,16 +198,66 @@
             background: #2ed573;
         }
 
-        /* Card */
+        /* ── WIZARD CARD (glass) ─────────────────────────────── */
         .wizard-card {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(20px);
-            border-radius: 24px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            padding: 2.5rem;
-            box-shadow: 0 32px 64px rgba(0, 0, 0, 0.4);
+            width: 100%;
+            max-width: 640px;
+            background: rgba(255, 255, 255, 0.025);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-radius: 22px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 2rem 2.25rem;
+            box-shadow:
+                0 28px 56px rgba(0, 0, 0, 0.45),
+                0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+                0 1px 0 rgba(255, 255, 255, 0.06) inset;
+            position: relative;
+            overflow: hidden;
+            animation: cardEntry 0.7s 0.15s cubic-bezier(0.22, 1, 0.36, 1) both;
         }
 
+        @keyframes cardEntry {
+            from {
+                opacity: 0;
+                transform: translateY(14px);
+                filter: blur(3px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+                filter: blur(0);
+            }
+        }
+
+        /* Shimmer line */
+        .wizard-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg,
+                    transparent 0%, rgba(102, 126, 234, 0.3) 25%,
+                    rgba(167, 139, 250, 0.5) 50%, rgba(102, 126, 234, 0.3) 75%, transparent 100%);
+            animation: shimmer 4s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+
+            0%,
+            100% {
+                opacity: 0.4;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+
+        /* ── STEP PANELS ─────────────────────────────────────── */
         .step-panel {
             display: none;
             animation: fadeIn 0.4s ease;
@@ -173,7 +270,7 @@
         @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: translateY(10px);
+                transform: translateY(8px);
             }
 
             to {
@@ -183,71 +280,115 @@
         }
 
         .step-title {
-            font-size: 1.4rem;
+            font-size: 1.2rem;
             font-weight: 700;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.35rem;
+            letter-spacing: -0.01em;
         }
 
         .step-description {
-            color: rgba(255, 255, 255, 0.5);
-            margin-bottom: 1.5rem;
-            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.42);
+            font-size: 0.85rem;
+            margin-bottom: 1.25rem;
+            line-height: 1.5;
         }
 
-        /* Forms */
+        /* ── FORM ELEMENTS ───────────────────────────────────── */
         .form-group {
-            margin-bottom: 1.25rem;
+            margin-bottom: 0.9rem;
+            position: relative;
         }
 
         .form-group label {
             display: block;
-            font-size: 0.875rem;
+            font-size: 0.72rem;
             font-weight: 500;
-            color: rgba(255, 255, 255, 0.7);
-            margin-bottom: 0.5rem;
+            color: rgba(255, 255, 255, 0.48);
+            margin-bottom: 0.3rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
         }
 
         .form-group input,
         .form-group textarea,
         .form-group select {
             width: 100%;
-            padding: 0.875rem 1rem;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
+            padding: 0.65rem 0.85rem;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 10px;
             color: #fff;
-            font-size: 1rem;
+            font-size: 0.88rem;
             font-family: inherit;
-            transition: all 0.3s ease;
+            transition: border-color 0.3s, background 0.3s, box-shadow 0.3s;
         }
 
         .form-group input::placeholder,
         .form-group textarea::placeholder {
-            color: rgba(255, 255, 255, 0.3);
+            color: rgba(255, 255, 255, 0.18);
         }
 
         .form-group input:focus,
         .form-group textarea:focus,
         .form-group select:focus {
             outline: none;
-            border-color: #667eea;
-            background: rgba(102, 126, 234, 0.1);
-            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+            border-color: rgba(102, 126, 234, 0.5);
+            background: rgba(102, 126, 234, 0.04);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.08);
         }
 
         .form-group textarea {
-            resize: vertical;
-            min-height: 80px;
+            resize: none;
+            min-height: 70px;
         }
 
         .form-group select option {
             background: #1a1a2e;
         }
 
-        /* Color picker row */
+        /* Two columns */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        /* Focus underline */
+        .form-group .focus-line {
+            position: absolute;
+            bottom: 0;
+            left: 10px;
+            right: 10px;
+            height: 2px;
+            border-radius: 1px;
+            background: linear-gradient(90deg, #667eea, #a78bfa, #667eea);
+            background-size: 200% 100%;
+            transform: scaleX(0);
+            transition: transform 0.3s;
+            transform-origin: left;
+        }
+
+        .form-group input:focus~.focus-line,
+        .form-group textarea:focus~.focus-line,
+        .form-group select:focus~.focus-line {
+            transform: scaleX(1);
+            animation: lineSlide 2s linear infinite;
+        }
+
+        @keyframes lineSlide {
+            0% {
+                background-position: 0% 0%;
+            }
+
+            100% {
+                background-position: 200% 0%;
+            }
+        }
+
+        /* ── COLOR PICKER ────────────────────────────────────── */
         .color-row {
             display: flex;
-            gap: 1rem;
+            gap: 0.75rem;
         }
 
         .color-row .form-group {
@@ -261,8 +402,8 @@
         }
 
         .color-input-wrap input[type="color"] {
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
             border: none;
             border-radius: 8px;
             cursor: pointer;
@@ -271,15 +412,87 @@
         }
 
         .color-input-wrap span {
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.82rem;
         }
 
-        /* Upload area */
+        /* ── STORE PLATFORM CARDS ────────────────────────────── */
+        .platform-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.65rem;
+            margin-top: 0.5rem;
+        }
+
+        .platform-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 1rem 0.5rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1.5px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .platform-card:hover {
+            border-color: rgba(102, 126, 234, 0.3);
+            background: rgba(102, 126, 234, 0.04);
+            transform: translateY(-2px);
+        }
+
+        .platform-card.selected {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.08);
+            box-shadow: 0 0 16px rgba(102, 126, 234, 0.15);
+        }
+
+        .platform-card.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 6px;
+            right: 8px;
+            font-size: 0.65rem;
+            color: #667eea;
+            font-weight: 700;
+        }
+
+        .platform-card-icon {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            font-size: 1.3rem;
+        }
+
+        .platform-card-name {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.75);
+            text-align: center;
+        }
+
+        .platform-card-sub {
+            font-size: 0.6rem;
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Hidden real select */
+        #storePlatform {
+            display: none;
+        }
+
+        /* ── UPLOAD / KB ─────────────────────────────────────── */
         .upload-area {
-            border: 2px dashed rgba(255, 255, 255, 0.15);
-            border-radius: 16px;
-            padding: 2.5rem;
+            border: 2px dashed rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            padding: 1.5rem;
             text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -287,19 +500,19 @@
 
         .upload-area:hover {
             border-color: #667eea;
-            background: rgba(102, 126, 234, 0.05);
+            background: rgba(102, 126, 234, 0.04);
         }
 
         .upload-area svg {
-            width: 48px;
-            height: 48px;
-            color: rgba(255, 255, 255, 0.3);
-            margin-bottom: 1rem;
+            width: 36px;
+            height: 36px;
+            color: rgba(255, 255, 255, 0.25);
+            margin-bottom: 0.5rem;
         }
 
         .upload-area p {
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.82rem;
         }
 
         .upload-area .highlight {
@@ -308,18 +521,18 @@
         }
 
         .upload-list {
-            margin-top: 1rem;
+            margin-top: 0.5rem;
         }
 
         .upload-item {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0.75rem 1rem;
-            background: rgba(255, 255, 255, 0.05);
+            padding: 0.5rem 0.75rem;
+            background: rgba(255, 255, 255, 0.04);
             border-radius: 8px;
-            margin-bottom: 0.5rem;
-            font-size: 0.9rem;
+            margin-bottom: 0.35rem;
+            font-size: 0.8rem;
         }
 
         .upload-item button {
@@ -327,111 +540,151 @@
             border: none;
             color: #f5576c;
             cursor: pointer;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
         }
 
-        /* Completion */
+        /* ── COMPLETION ──────────────────────────────────────── */
         .complete-section {
             text-align: center;
-            padding: 2rem 0;
+            padding: 1.5rem 0;
         }
 
         .complete-icon {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 1.5rem;
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 1rem;
             background: linear-gradient(135deg, #2ed573, #17c0eb);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 12px 32px rgba(46, 213, 115, 0.4);
+            box-shadow: 0 10px 28px rgba(46, 213, 115, 0.35);
+            animation: completePop 0.5s ease both;
+        }
+
+        @keyframes completePop {
+            from {
+                transform: scale(0.6);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
         }
 
         .complete-icon svg {
-            width: 40px;
-            height: 40px;
+            width: 30px;
+            height: 30px;
             color: #fff;
         }
 
         .complete-section h2 {
-            font-size: 1.5rem;
-            margin-bottom: 0.5rem;
+            font-size: 1.3rem;
+            margin-bottom: 0.4rem;
         }
 
         .complete-section p {
-            color: rgba(255, 255, 255, 0.5);
-            margin-bottom: 1rem;
+            color: rgba(255, 255, 255, 0.42);
+            font-size: 0.85rem;
+            margin-bottom: 0.75rem;
         }
 
-        /* Widget code */
         .embed-code {
-            background: rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 1rem;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 0.85rem;
             text-align: left;
             font-family: 'Courier New', monospace;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: #a5b4fc;
             word-break: break-all;
-            margin: 1rem 0;
+            margin: 0.75rem 0;
         }
 
         .copy-btn {
-            background: rgba(102, 126, 234, 0.2);
-            border: 1px solid rgba(102, 126, 234, 0.3);
+            background: rgba(102, 126, 234, 0.15);
+            border: 1px solid rgba(102, 126, 234, 0.25);
             color: #a5b4fc;
-            padding: 0.5rem 1rem;
+            padding: 0.5rem 1.2rem;
             border-radius: 8px;
             cursor: pointer;
-            font-size: 0.85rem;
-            transition: all 0.3s ease;
+            font-size: 0.82rem;
+            font-weight: 500;
+            transition: all 0.3s;
         }
 
         .copy-btn:hover {
-            background: rgba(102, 126, 234, 0.4);
+            background: rgba(102, 126, 234, 0.3);
         }
 
-        /* Actions */
+        /* ── STEP ACTIONS ────────────────────────────────────── */
         .step-actions {
             display: flex;
             justify-content: space-between;
-            margin-top: 2rem;
+            margin-top: 1.5rem;
         }
 
         .btn-back,
         .btn-next,
         .btn-finish {
-            padding: 0.875rem 2rem;
-            border-radius: 12px;
-            font-size: 1rem;
+            padding: 0.7rem 1.75rem;
+            border-radius: 10px;
+            font-size: 0.9rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s;
             border: none;
         }
 
         .btn-back {
-            background: rgba(255, 255, 255, 0.05);
-            color: rgba(255, 255, 255, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.04);
+            color: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .btn-back:hover {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.08);
         }
 
         .btn-next,
         .btn-finish {
             background: linear-gradient(135deg, #667eea, #764ba2);
             color: #fff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-next::before,
+        .btn-finish::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #764ba2, #c471f5);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .btn-next span,
+        .btn-finish span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn-next:hover::before,
+        .btn-finish:hover::before {
+            opacity: 1;
         }
 
         .btn-next:hover,
         .btn-finish:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
         }
 
         .btn-next:disabled {
@@ -440,16 +693,16 @@
             transform: none;
         }
 
-        /* Toast */
+        /* ── TOAST ───────────────────────────────────────────── */
         .toast {
             position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            padding: 1rem 1.5rem;
-            border-radius: 12px;
-            font-size: 0.9rem;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            padding: 0.75rem 1.25rem;
+            border-radius: 10px;
+            font-size: 0.82rem;
             z-index: 1000;
-            transform: translateY(100px);
+            transform: translateY(80px);
             opacity: 0;
             transition: all 0.4s ease;
         }
@@ -460,19 +713,28 @@
         }
 
         .toast.success {
-            background: rgba(46, 213, 115, 0.15);
-            border: 1px solid rgba(46, 213, 115, 0.3);
+            background: rgba(46, 213, 115, 0.12);
+            border: 1px solid rgba(46, 213, 115, 0.25);
             color: #2ed573;
         }
 
         .toast.error {
-            background: rgba(245, 87, 108, 0.15);
-            border: 1px solid rgba(245, 87, 108, 0.3);
+            background: rgba(245, 87, 108, 0.12);
+            border: 1px solid rgba(245, 87, 108, 0.25);
             color: #f5576c;
         }
 
-        @media (max-width: 600px) {
+        /* ── RESPONSIVE ──────────────────────────────────────── */
+        @media (max-width: 700px) {
+            body {
+                overflow-y: auto;
+                height: auto;
+                min-height: 100vh;
+            }
+
             .onboarding-container {
+                height: auto;
+                min-height: 100vh;
                 padding: 1rem;
             }
 
@@ -481,14 +743,28 @@
             }
 
             .step-line {
-                width: 20px;
+                width: 18px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .platform-grid {
+                grid-template-columns: repeat(2, 1fr);
             }
         }
     </style>
 </head>
 
 <body>
-    <div class="bg-animation"></div>
+    <!-- ═══════ BACKGROUND ═══════ -->
+    <div class="bg-layer">
+        <div class="bg-orb bg-orb--1"></div>
+        <div class="bg-orb bg-orb--2"></div>
+        <div class="bg-orb bg-orb--3"></div>
+        <canvas id="grainCanvas"></canvas>
+    </div>
 
     <div class="onboarding-container">
         <!-- Header -->
@@ -515,27 +791,32 @@
             <div class="step-panel active" id="step1">
                 <h2 class="step-title">📋 Business Profile</h2>
                 <p class="step-description">Tell us about your business so the AI can represent you perfectly.</p>
-                <div class="form-group">
-                    <label for="bizName">Business Name</label>
-                    <input type="text" id="bizName" placeholder="e.g. Stellar Electronics">
-                </div>
-                <div class="form-group">
-                    <label for="bizIndustry">Industry</label>
-                    <select id="bizIndustry">
-                        <option value="">Select industry…</option>
-                        <option value="electronics">Electronics</option>
-                        <option value="fashion">Fashion & Apparel</option>
-                        <option value="health">Health & Beauty</option>
-                        <option value="food">Food & Beverage</option>
-                        <option value="home">Home & Garden</option>
-                        <option value="sports">Sports & Outdoors</option>
-                        <option value="other">Other</option>
-                    </select>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="bizName">Business Name</label>
+                        <input type="text" id="bizName" placeholder="e.g. Stellar Electronics">
+                        <div class="focus-line"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="bizIndustry">Industry</label>
+                        <select id="bizIndustry">
+                            <option value="">Select industry…</option>
+                            <option value="electronics">Electronics</option>
+                            <option value="fashion">Fashion & Apparel</option>
+                            <option value="health">Health & Beauty</option>
+                            <option value="food">Food & Beverage</option>
+                            <option value="home">Home & Garden</option>
+                            <option value="sports">Sports & Outdoors</option>
+                            <option value="other">Other</option>
+                        </select>
+                        <div class="focus-line"></div>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label for="bizDesc">Brief Description</label>
-                    <textarea id="bizDesc"
+                    <textarea id="bizDesc" rows="3"
                         placeholder="What does your business do? This helps the AI craft better responses."></textarea>
+                    <div class="focus-line"></div>
                 </div>
                 <div class="form-group">
                     <label for="bizTimezone">Timezone</label>
@@ -549,27 +830,65 @@
                         <option value="Asia/Kolkata">Asia/Kolkata</option>
                         <option value="Asia/Shanghai">Asia/Shanghai</option>
                     </select>
+                    <div class="focus-line"></div>
                 </div>
             </div>
 
             <!-- Step 2: Connect Store -->
             <div class="step-panel" id="step2">
                 <h2 class="step-title">🔗 Connect Your Store</h2>
-                <p class="step-description">Provide your store URL. We'll use it to link the chat widget.</p>
-                <div class="form-group">
+                <p class="step-description">Choose your platform and provide your store URL.</p>
+
+                <!-- Hidden select (keeps backend logic intact) -->
+                <select id="storePlatform">
+                    <option value="">Select platform…</option>
+                    <option value="shopify">Shopify</option>
+                    <option value="woocommerce">WooCommerce</option>
+                    <option value="alibaba">Alibaba / AliExpress</option>
+                    <option value="custom">Custom Website</option>
+                    <option value="other">Other</option>
+                </select>
+
+                <label
+                    style="font-size:0.72rem;font-weight:500;color:rgba(255,255,255,0.48);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.4rem;display:block;">Select
+                    Platform</label>
+                <div class="platform-grid">
+                    <div class="platform-card" data-platform="shopify" onclick="selectPlatform(this,'shopify')">
+                        <div class="platform-card-icon">🛍️</div>
+                        <span class="platform-card-name">Shopify</span>
+                        <span class="platform-card-sub">Hosted store</span>
+                    </div>
+                    <div class="platform-card" data-platform="woocommerce" onclick="selectPlatform(this,'woocommerce')">
+                        <div class="platform-card-icon">🔌</div>
+                        <span class="platform-card-name">WooCommerce</span>
+                        <span class="platform-card-sub">WordPress plugin</span>
+                    </div>
+                    <div class="platform-card" data-platform="alibaba" onclick="selectPlatform(this,'alibaba')">
+                        <div class="platform-card-icon">🌏</div>
+                        <span class="platform-card-name">Alibaba</span>
+                        <span class="platform-card-sub">AliExpress</span>
+                    </div>
+                    <div class="platform-card" data-platform="magento" onclick="selectPlatform(this,'magento')">
+                        <div class="platform-card-icon">🧱</div>
+                        <span class="platform-card-name">Magento</span>
+                        <span class="platform-card-sub">Adobe Commerce</span>
+                    </div>
+                    <div class="platform-card" data-platform="custom" onclick="selectPlatform(this,'custom')">
+                        <div class="platform-card-icon">🌐</div>
+                        <span class="platform-card-name">Custom Site</span>
+                        <span class="platform-card-sub">Any website</span>
+                    </div>
+                    <div class="platform-card" data-platform="other" onclick="selectPlatform(this,'other')">
+                        <div class="platform-card-icon">➕</div>
+                        <span class="platform-card-name">Other</span>
+                        <span class="platform-card-sub">Tell us more</span>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 1rem;">
                     <label for="storeUrl">Store URL</label>
                     <input type="url" id="storeUrl" placeholder="https://your-store.com">
-                </div>
-                <div class="form-group">
-                    <label for="storePlatform">Platform (Optional)</label>
-                    <select id="storePlatform">
-                        <option value="">Select platform…</option>
-                        <option value="shopify">Shopify</option>
-                        <option value="woocommerce">WooCommerce</option>
-                        <option value="alibaba">Alibaba / AliExpress</option>
-                        <option value="custom">Custom Website</option>
-                        <option value="other">Other</option>
-                    </select>
+                    <div class="focus-line"></div>
                 </div>
             </div>
 
@@ -577,13 +896,17 @@
             <div class="step-panel" id="step3">
                 <h2 class="step-title">🎨 Configure Widget</h2>
                 <p class="step-description">Customize how the chat widget looks on your site.</p>
-                <div class="form-group">
-                    <label for="widgetTitle">Widget Title</label>
-                    <input type="text" id="widgetTitle" placeholder="e.g. Chat with us">
-                </div>
-                <div class="form-group">
-                    <label for="widgetGreeting">Greeting Message</label>
-                    <input type="text" id="widgetGreeting" placeholder="Hi! How can we help you today?">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="widgetTitle">Widget Title</label>
+                        <input type="text" id="widgetTitle" placeholder="e.g. Chat with us">
+                        <div class="focus-line"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="widgetGreeting">Greeting Message</label>
+                        <input type="text" id="widgetGreeting" placeholder="Hi! How can we help?">
+                        <div class="focus-line"></div>
+                    </div>
                 </div>
                 <div class="color-row">
                     <div class="form-group">
@@ -599,6 +922,7 @@
                             <option value="bottom-right">Bottom Right</option>
                             <option value="bottom-left">Bottom Left</option>
                         </select>
+                        <div class="focus-line"></div>
                     </div>
                 </div>
                 <div class="form-group">
@@ -611,37 +935,42 @@
                         <option value="pt">Portuguese</option>
                         <option value="it">Italian</option>
                     </select>
+                    <div class="focus-line"></div>
                 </div>
             </div>
 
-            <!-- Step 4: Knowledge Base (Text Input) -->
+            <!-- Step 4: Knowledge Base -->
             <div class="step-panel" id="step4">
                 <h2 class="step-title">📚 Add Product Knowledge</h2>
-                <p class="step-description">Paste your product details, FAQs, return policies, or any info you want the
-                    AI to know about your business.</p>
-                <div class="form-group">
-                    <label for="kbTitle">Knowledge Title</label>
-                    <input type="text" id="kbTitle" placeholder="e.g. Product Catalog, Return Policy, FAQ">
-                </div>
-                <div class="form-group">
-                    <label for="kbDocType">Type</label>
-                    <select id="kbDocType">
-                        <option value="general">General</option>
-                        <option value="product">Product Info</option>
-                        <option value="policy">Policies</option>
-                        <option value="faq">FAQ</option>
-                    </select>
+                <p class="step-description">Paste product details, FAQs, or policies so the AI can answer intelligently.
+                </p>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="kbTitle">Knowledge Title</label>
+                        <input type="text" id="kbTitle" placeholder="e.g. Product Catalog">
+                        <div class="focus-line"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="kbDocType">Type</label>
+                        <select id="kbDocType">
+                            <option value="general">General</option>
+                            <option value="product">Product Info</option>
+                            <option value="policy">Policies</option>
+                            <option value="faq">FAQ</option>
+                        </select>
+                        <div class="focus-line"></div>
+                    </div>
                 </div>
                 <div class="form-group">
                     <label for="kbText">Knowledge Content</label>
-                    <textarea id="kbText" rows="10" placeholder="Paste your product details, FAQs, policies here...
+                    <textarea id="kbText" rows="6" placeholder="Paste your product details, FAQs, policies here...
 
 Example:
-Our store sells premium wireless headphones ($49.99), Bluetooth speakers ($29.99), and USB-C cables ($9.99).
-Return policy: 30-day returns with receipt. Free shipping on orders over $50.
-Support hours: Mon-Fri 9am-5pm EST."></textarea>
+Our store sells premium wireless headphones ($49.99), Bluetooth speakers ($29.99).
+Return policy: 30-day returns with receipt. Free shipping on orders over $50."></textarea>
+                    <div class="focus-line"></div>
                 </div>
-                <p style="color: rgba(255,255,255,0.4); font-size: 0.85rem; margin-top: 0.5rem;">
+                <p style="color:rgba(255,255,255,0.3);font-size:0.75rem;margin-top:0.25rem;">
                     You can skip this step and add knowledge later from your dashboard.
                 </p>
             </div>
@@ -655,8 +984,8 @@ Support hours: Mon-Fri 9am-5pm EST."></textarea>
                         </svg>
                     </div>
                     <h2>You're All Set! 🎉</h2>
-                    <p>Your AI support widget is ready. Copy the embed code below and paste it into your website before
-                        the end of "&lt; body &gt;" tag.</p>
+                    <p>Your AI support widget is ready. Copy the embed code and paste it before the closing
+                        &lt;/body&gt; tag.</p>
                     <div class="embed-code" id="embedCode">
                         &lt;script src="https://sentimenta.snick.at/widget/embed.js"
                         data-key="YOUR_API_KEY"&gt;&lt;/script&gt;
@@ -667,10 +996,11 @@ Support hours: Mon-Fri 9am-5pm EST."></textarea>
 
             <!-- Navigation Actions -->
             <div class="step-actions">
-                <button class="btn-back" id="btnBack" onclick="prevStep()" style="visibility: hidden;">← Back</button>
-                <button class="btn-next" id="btnNext" onclick="nextStep()">Continue →</button>
-                <button class="btn-finish" id="btnFinish" onclick="goToDashboard()" style="display:none;">Go to
-                    Dashboard →</button>
+                <button class="btn-back" id="btnBack" onclick="prevStep()" style="visibility: hidden;"><span>←
+                        Back</span></button>
+                <button class="btn-next" id="btnNext" onclick="nextStep()"><span>Continue →</span></button>
+                <button class="btn-finish" id="btnFinish" onclick="goToDashboard()" style="display:none;"><span>Go to
+                        Dashboard →</span></button>
             </div>
         </div>
     </div>
@@ -681,6 +1011,96 @@ Support hours: Mon-Fri 9am-5pm EST."></textarea>
     <script src="/js/api.js"></script>
     <script src="/js/sidebar.js"></script>
     <script>
+        // ═══════════════════════════════════════════════════════
+        // PARTICLE GRAIN SYSTEM (100+ grains)
+        // ═══════════════════════════════════════════════════════
+        (function () {
+            const canvas = document.getElementById('grainCanvas');
+            const ctx = canvas.getContext('2d');
+            let W, H, mouseX = -9999, mouseY = -9999;
+            const COUNT = 120;
+            const particles = [];
+            const HUES = [235, 255, 270, 295, 320, 340, 200, 185];
+
+            function resize() {
+                W = canvas.width = window.innerWidth;
+                H = canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            document.addEventListener('mousemove', e => {
+                mouseX = e.clientX; mouseY = e.clientY;
+            });
+            document.addEventListener('mouseleave', () => { mouseX = -9999; mouseY = -9999; });
+
+            class P {
+                constructor() { this.init(); }
+                init() {
+                    this.x = Math.random() * W; this.y = Math.random() * H;
+                    this.r0 = 0.5 + Math.random() * 1.5; this.r = this.r0;
+                    this.vx = (Math.random() - 0.5) * 0.2;
+                    this.vy = (Math.random() - 0.5) * 0.2;
+                    this.hi = Math.random() * HUES.length;
+                    this.hs = 0.003 + Math.random() * 0.006;
+                    this.sat = 60 + Math.random() * 30;
+                    this.lit = 55 + Math.random() * 20;
+                    this.a0 = 0.12 + Math.random() * 0.3;
+                    this.a = this.a0;
+                    this.tp = Math.random() * 6.28;
+                    this.ts = 0.008 + Math.random() * 0.012;
+                }
+                update() {
+                    this.x += this.vx; this.y += this.vy;
+                    if (this.x < -5) this.x = W + 5;
+                    if (this.x > W + 5) this.x = -5;
+                    if (this.y < -5) this.y = H + 5;
+                    if (this.y > H + 5) this.y = -5;
+                    this.hi = (this.hi + this.hs) % HUES.length;
+                    this.tp += this.ts;
+                    const tw = 0.7 + 0.3 * Math.sin(this.tp);
+                    const dx = this.x - mouseX, dy = this.y - mouseY;
+                    const inf = Math.max(0, 1 - Math.sqrt(dx * dx + dy * dy) / 160);
+                    this.a = this.a0 * tw + inf * 0.45;
+                    this.r = this.r0 + inf * 2.5;
+                }
+                draw() {
+                    const i = Math.floor(this.hi), f = this.hi - i;
+                    const h = HUES[i % HUES.length] + (HUES[(i + 1) % HUES.length] - HUES[i % HUES.length]) * f;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.r, 0, 6.28);
+                    ctx.fillStyle = `hsla(${h},${this.sat}%,${this.lit}%,${this.a})`;
+                    ctx.fill();
+                    if (this.a > 0.3) {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.r * 2.2, 0, 6.28);
+                        ctx.fillStyle = `hsla(${h},${this.sat}%,${this.lit}%,${(this.a - 0.3) * 0.2})`;
+                        ctx.fill();
+                    }
+                }
+            }
+            for (let i = 0; i < COUNT; i++) particles.push(new P());
+            (function loop() {
+                ctx.clearRect(0, 0, W, H);
+                particles.forEach(p => { p.update(); p.draw(); });
+                requestAnimationFrame(loop);
+            })();
+        })();
+
+
+        // ═══════════════════════════════════════════════════════
+        // PLATFORM CARD SELECTION
+        // ═══════════════════════════════════════════════════════
+        function selectPlatform(card, value) {
+            document.querySelectorAll('.platform-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            document.getElementById('storePlatform').value = value;
+        }
+
+
+        // ═══════════════════════════════════════════════════════
+        // ONBOARDING LOGIC (unchanged backend calls)
+        // ═══════════════════════════════════════════════════════
         const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
             ? 'http://localhost:8000' : window.location.origin;
 
@@ -698,29 +1118,6 @@ Support hours: Mon-Fri 9am-5pm EST."></textarea>
         document.getElementById('widgetColor').addEventListener('input', e => {
             document.getElementById('colorLabel').textContent = e.target.value;
         });
-
-        // File upload
-        document.getElementById('fileInput').addEventListener('change', e => {
-            for (const file of e.target.files) {
-                uploadedFiles.push(file);
-                renderUploadList();
-            }
-        });
-
-        function renderUploadList() {
-            const list = document.getElementById('uploadList');
-            list.innerHTML = uploadedFiles.map((f, i) =>
-                `<div class="upload-item">
-                    <span>📄 ${f.name} (${(f.size / 1024).toFixed(1)} KB)</span>
-                    <button onclick="removeFile(${i})">✕</button>
-                </div>`
-            ).join('');
-        }
-
-        function removeFile(index) {
-            uploadedFiles.splice(index, 1);
-            renderUploadList();
-        }
 
         function updateProgress() {
             document.querySelectorAll('.step-dot').forEach(dot => {
