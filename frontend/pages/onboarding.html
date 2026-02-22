@@ -121,79 +121,33 @@
         }
 
         /* ═══════════════════════════════════════════════════════
-           LAYOUT — full viewport centered
+           LAYOUT
            ═══════════════════════════════════════════════════════ */
         .onboarding-wrap {
             position: relative;
             z-index: 1;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 100vh;
             padding: 2rem;
         }
 
-        /* ── HEADER (above card) ─────────────────────────────── */
-        .onboarding-header {
-            text-align: center;
-            margin-bottom: 1.25rem;
-            animation: fadeDown 0.6s ease both;
-        }
-
-        .onboarding-header h1 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #fff, #a5b4fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .onboarding-header p {
-            color: rgba(255, 255, 255, 0.35);
-            font-size: 0.82rem;
-            margin-top: 0.2rem;
-        }
-
-        @keyframes fadeDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
         /* ═══════════════════════════════════════════════════════
-           GLASS CARD — split: left sidebar + right content
+           MACBOOK-STYLE WINDOW FRAME
            ═══════════════════════════════════════════════════════ */
-        .wizard-card {
-            display: flex;
+        .mac-frame {
             width: 100%;
-            max-width: 780px;
-            min-height: 460px;
-            background: rgba(255, 255, 255, 0.025);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border-radius: 24px;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            box-shadow:
-                0 32px 64px rgba(0, 0, 0, 0.5),
-                0 0 0 1px rgba(255, 255, 255, 0.04) inset,
-                0 1px 0 rgba(255, 255, 255, 0.06) inset;
-            position: relative;
-            overflow: hidden;
+            max-width: 840px;
+            display: flex;
+            flex-direction: column;
             animation: cardEntry 0.7s 0.15s cubic-bezier(0.22, 1, 0.36, 1) both;
         }
 
         @keyframes cardEntry {
             from {
                 opacity: 0;
-                transform: translateY(16px) scale(0.98);
+                transform: translateY(18px) scale(0.97);
                 filter: blur(4px);
             }
 
@@ -204,88 +158,146 @@
             }
         }
 
-        /* Shimmer top line */
-        .wizard-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            z-index: 5;
-            background: linear-gradient(90deg,
-                    transparent 0%,
-                    rgba(102, 126, 234, 0.4) 30%,
-                    rgba(167, 139, 250, 0.6) 50%,
-                    rgba(102, 126, 234, 0.4) 70%,
-                    transparent 100%);
-            animation: shimmer 4s ease-in-out infinite;
+        /* ── Title bar with traffic lights ───────────────────── */
+        .mac-titlebar {
+            display: flex;
+            align-items: center;
+            padding: 0.7rem 1rem;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-bottom: none;
+            border-radius: 16px 16px 0 0;
+            backdrop-filter: blur(20px);
         }
 
-        @keyframes shimmer {
-
-            0%,
-            100% {
-                opacity: 0.4;
-            }
-
-            50% {
-                opacity: 1;
-            }
+        .mac-dots {
+            display: flex;
+            gap: 6px;
+            margin-right: 1rem;
         }
 
-        /* Magic glow pulse on card border */
+        .mac-dots span {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .mac-dots span:nth-child(1) {
+            background: #ff5f57;
+        }
+
+        .mac-dots span:nth-child(2) {
+            background: #febc2e;
+        }
+
+        .mac-dots span:nth-child(3) {
+            background: #28c840;
+        }
+
+        .mac-titlebar-text {
+            flex: 1;
+            text-align: center;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.25);
+            letter-spacing: 0.04em;
+            margin-right: 2.5rem;
+            /* offset for dots width to center text */
+        }
+
+        /* ── Card body ───────────────────────────────────────── */
+        .wizard-card {
+            display: flex;
+            flex: 1;
+            min-height: 480px;
+            background: rgba(255, 255, 255, 0.025);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border-radius: 0 0 16px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-top: none;
+            box-shadow:
+                0 32px 64px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+                0 1px 0 rgba(255, 255, 255, 0.06) inset;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* ── Diagonal glow sweep ─────────────────────────────── */
         .wizard-card::after {
             content: '';
             position: absolute;
-            top: -1px;
-            left: -1px;
-            right: -1px;
-            bottom: -1px;
-            border-radius: 24px;
-            z-index: -1;
-            background: conic-gradient(from var(--glow-angle, 0deg),
+            width: 180px;
+            height: 600px;
+            top: -100px;
+            left: -100px;
+            background: linear-gradient(135deg,
                     transparent 0%,
-                    rgba(102, 126, 234, 0.12) 10%,
-                    transparent 20%,
+                    rgba(102, 126, 234, 0.06) 40%,
+                    rgba(167, 139, 250, 0.08) 50%,
+                    rgba(102, 126, 234, 0.06) 60%,
                     transparent 100%);
-            animation: glowSweep 6s linear infinite;
+            transform: rotate(45deg);
+            animation: diagonalSweep 5s ease-in-out infinite;
+            pointer-events: none;
         }
 
-        @property --glow-angle {
-            syntax: '<angle>';
-            initial-value: 0deg;
-            inherits: false;
-        }
-
-        @keyframes glowSweep {
-            from {
-                --glow-angle: 0deg;
+        @keyframes diagonalSweep {
+            0% {
+                transform: rotate(45deg) translateX(-300px) translateY(-200px);
             }
 
-            to {
-                --glow-angle: 360deg;
+            50% {
+                transform: rotate(45deg) translateX(800px) translateY(400px);
+            }
+
+            100% {
+                transform: rotate(45deg) translateX(-300px) translateY(-200px);
             }
         }
 
-        /* ── LEFT SIDEBAR ────────────────────────────────────── */
+        /* ═══════════════════════════════════════════════════════
+           LEFT SIDEBAR
+           ═══════════════════════════════════════════════════════ */
         .wizard-sidebar {
-            flex: 0 0 180px;
-            background: rgba(255, 255, 255, 0.015);
+            flex: 0 0 200px;
+            background: rgba(255, 255, 255, 0.012);
             border-right: 1px solid rgba(255, 255, 255, 0.04);
-            padding: 2rem 1.25rem;
+            padding: 2rem 1.5rem;
             display: flex;
             flex-direction: column;
-            gap: 0;
         }
 
+        /* ── Heading (moved here from above card) ────────────── */
+        .sidebar-brand {
+            margin-bottom: 2rem;
+        }
+
+        .sidebar-brand h1 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.3rem;
+        }
+
+        .sidebar-brand p {
+            font-size: 0.72rem;
+            color: rgba(255, 255, 255, 0.3);
+            line-height: 1.45;
+        }
+
+        /* ── Step indicators ─────────────────────────────────── */
         .sidebar-label {
-            font-size: 0.6rem;
+            font-size: 0.55rem;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.12em;
-            color: rgba(255, 255, 255, 0.2);
-            margin-bottom: 1.25rem;
+            letter-spacing: 0.14em;
+            color: rgba(255, 255, 255, 0.15);
+            margin-bottom: 1rem;
         }
 
         .sidebar-steps {
@@ -299,21 +311,21 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 0.5rem 0;
+            padding: 0.45rem 0;
             cursor: default;
             transition: all 0.3s;
         }
 
         .sidebar-step-dot {
-            width: 28px;
-            height: 28px;
+            width: 26px;
+            height: 26px;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.03);
             border: 1.5px solid rgba(255, 255, 255, 0.08);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             font-weight: 600;
             color: rgba(255, 255, 255, 0.2);
             transition: all 0.4s ease;
@@ -334,35 +346,35 @@
         }
 
         .sidebar-step-label {
-            font-size: 0.7rem;
+            font-size: 0.72rem;
             font-weight: 500;
-            color: rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.18);
             transition: color 0.3s;
-            white-space: nowrap;
         }
 
         .sidebar-step.active .sidebar-step-label {
-            color: rgba(255, 255, 255, 0.85);
+            color: rgba(255, 255, 255, 0.8);
         }
 
         .sidebar-step.completed .sidebar-step-label {
-            color: rgba(255, 255, 255, 0.45);
+            color: rgba(255, 255, 255, 0.4);
         }
 
-        /* Connector lines between dots */
         .sidebar-connector {
             width: 1.5px;
-            height: 16px;
-            background: rgba(255, 255, 255, 0.06);
-            margin-left: 13px;
+            height: 14px;
+            background: rgba(255, 255, 255, 0.05);
+            margin-left: 12px;
             transition: background 0.4s;
         }
 
         .sidebar-connector.completed {
-            background: rgba(46, 213, 115, 0.4);
+            background: rgba(46, 213, 115, 0.35);
         }
 
-        /* ── RIGHT CONTENT AREA ──────────────────────────────── */
+        /* ═══════════════════════════════════════════════════════
+           RIGHT CONTENT
+           ═══════════════════════════════════════════════════════ */
         .wizard-content {
             flex: 1;
             padding: 2rem 2.5rem;
@@ -372,7 +384,6 @@
             min-width: 0;
         }
 
-        /* ── STEP PANELS ─────────────────────────────────────── */
         .step-panel {
             display: none;
             animation: fadeIn 0.35s ease;
@@ -387,7 +398,7 @@
         @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: translateX(8px);
+                transform: translateX(6px);
             }
 
             to {
@@ -401,12 +412,13 @@
             font-weight: 700;
             margin-bottom: 0.15rem;
             letter-spacing: -0.01em;
+            color: #fff;
         }
 
         .step-description {
-            color: rgba(255, 255, 255, 0.32);
-            font-size: 0.78rem;
-            margin-bottom: 1.1rem;
+            color: rgba(255, 255, 255, 0.35);
+            font-size: 0.8rem;
+            margin-bottom: 1.25rem;
         }
 
         .step-fields {
@@ -414,51 +426,40 @@
         }
 
         /* ═══════════════════════════════════════════════════════
-           FORM ELEMENTS — with icons
+           FORM — login-identical colors
            ═══════════════════════════════════════════════════════ */
         .form-group {
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.85rem;
             position: relative;
         }
 
         .form-group label {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 0.72rem;
+            display: block;
+            font-size: 0.8rem;
             font-weight: 500;
-            color: rgba(255, 255, 255, 0.45);
+            color: rgba(255, 255, 255, 0.55);
             text-transform: uppercase;
             letter-spacing: 0.06em;
-            margin-bottom: 0.3rem;
-        }
-
-        .label-icon {
-            font-size: 0.72rem;
-            opacity: 0.6;
+            margin-bottom: 0.35rem;
         }
 
         .form-group input,
         .form-group textarea,
         .form-group select {
             width: 100%;
-            padding: 0.65rem 0.9rem 0.65rem 2.25rem;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
             color: #fff;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             font-family: inherit;
             transition: border-color 0.3s, background 0.3s, box-shadow 0.3s;
         }
 
-        .form-group select {
-            padding-left: 2.25rem;
-        }
-
         .form-group input::placeholder,
         .form-group textarea::placeholder {
-            color: rgba(255, 255, 255, 0.15);
+            color: rgba(255, 255, 255, 0.2);
         }
 
         .form-group input:focus,
@@ -466,41 +467,30 @@
         .form-group select:focus {
             outline: none;
             border-color: #667eea;
-            background: rgba(102, 126, 234, 0.04);
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.08);
+            background: rgba(102, 126, 234, 0.06);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
         .form-group textarea {
             resize: none;
-            padding-left: 0.9rem;
         }
 
         .form-group select option {
             background: #12122a;
         }
 
-        /* Field inline icon */
-        .field-icon {
-            position: absolute;
-            left: 10px;
-            bottom: 10px;
-            font-size: 0.82rem;
-            opacity: 0.3;
-            pointer-events: none;
-            transition: opacity 0.3s;
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
         }
 
-        .form-group input:focus~.field-icon,
-        .form-group select:focus~.field-icon {
-            opacity: 0.6;
-        }
-
-        /* Focus underline */
+        /* Focus underline — login-identical */
         .form-group .focus-line {
             position: absolute;
             bottom: 0;
-            left: 10px;
-            right: 10px;
+            left: 12px;
+            right: 12px;
             height: 2px;
             border-radius: 1px;
             background: linear-gradient(90deg, #667eea, #a78bfa, #667eea);
@@ -527,17 +517,10 @@
             }
         }
 
-        /* Two-column grid */
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.65rem;
-        }
-
         /* ── COLOR PICKER ────────────────────────────────────── */
         .color-row {
             display: flex;
-            gap: 0.65rem;
+            gap: 0.75rem;
         }
 
         .color-row .form-group {
@@ -551,8 +534,8 @@
         }
 
         .color-input-wrap input[type="color"] {
-            width: 36px;
-            height: 36px;
+            width: 38px;
+            height: 38px;
             border: none;
             border-radius: 10px;
             cursor: pointer;
@@ -561,30 +544,19 @@
         }
 
         .color-input-wrap span {
-            color: rgba(255, 255, 255, 0.35);
-            font-size: 0.82rem;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.85rem;
             font-family: 'Courier New', monospace;
         }
 
         /* ═══════════════════════════════════════════════════════
            STORE PLATFORM CARDS
            ═══════════════════════════════════════════════════════ */
-        .platform-label {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 0.72rem;
-            font-weight: 500;
-            color: rgba(255, 255, 255, 0.45);
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            margin-bottom: 0.4rem;
-        }
-
         .platform-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 0.5rem;
+            gap: 0.55rem;
+            margin-bottom: 1rem;
         }
 
         .platform-card {
@@ -592,8 +564,8 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 3px;
-            padding: 0.7rem 0.4rem;
+            gap: 4px;
+            padding: 0.85rem 0.5rem;
             background: rgba(255, 255, 255, 0.02);
             border: 1.5px solid rgba(255, 255, 255, 0.05);
             border-radius: 12px;
@@ -605,39 +577,39 @@
         .platform-card:hover {
             border-color: rgba(102, 126, 234, 0.2);
             background: rgba(102, 126, 234, 0.025);
-            transform: translateY(-1px);
+            transform: translateY(-2px);
         }
 
         .platform-card.selected {
             border-color: #667eea;
-            background: rgba(102, 126, 234, 0.05);
-            box-shadow: 0 0 12px rgba(102, 126, 234, 0.1);
+            background: rgba(102, 126, 234, 0.06);
+            box-shadow: 0 0 14px rgba(102, 126, 234, 0.12);
         }
 
         .platform-card.selected::after {
             content: '✓';
             position: absolute;
-            top: 4px;
-            right: 6px;
+            top: 5px;
+            right: 7px;
             font-size: 0.55rem;
             color: #667eea;
             font-weight: 700;
         }
 
         .platform-card-icon {
-            font-size: 1.1rem;
+            font-size: 1.15rem;
             line-height: 1;
         }
 
         .platform-card-name {
-            font-size: 0.65rem;
+            font-size: 0.68rem;
             font-weight: 600;
             color: rgba(255, 255, 255, 0.65);
         }
 
         .platform-card-sub {
-            font-size: 0.5rem;
-            color: rgba(255, 255, 255, 0.2);
+            font-size: 0.52rem;
+            color: rgba(255, 255, 255, 0.22);
             line-height: 1;
         }
 
@@ -655,13 +627,12 @@
             align-items: center;
             justify-content: center;
             flex: 1;
-            padding: 0.5rem 0;
         }
 
         .complete-icon {
-            width: 56px;
-            height: 56px;
-            margin-bottom: 0.85rem;
+            width: 60px;
+            height: 60px;
+            margin-bottom: 1rem;
             background: linear-gradient(135deg, #2ed573, #17c0eb);
             border-radius: 50%;
             display: flex;
@@ -684,33 +655,34 @@
         }
 
         .complete-icon svg {
-            width: 26px;
-            height: 26px;
+            width: 28px;
+            height: 28px;
             color: #fff;
         }
 
         .complete-section h2 {
-            font-size: 1.15rem;
-            margin-bottom: 0.3rem;
+            font-size: 1.2rem;
+            margin-bottom: 0.35rem;
+            color: #fff;
         }
 
         .complete-section p {
-            color: rgba(255, 255, 255, 0.35);
-            font-size: 0.78rem;
-            margin-bottom: 0.65rem;
-            max-width: 340px;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.82rem;
+            margin-bottom: 0.75rem;
+            max-width: 360px;
         }
 
         .embed-code {
             background: rgba(0, 0, 0, 0.3);
             border: 1px solid rgba(255, 255, 255, 0.06);
             border-radius: 10px;
-            padding: 0.75rem 0.85rem;
+            padding: 0.8rem 1rem;
             text-align: left;
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
             font-family: 'Courier New', monospace;
-            font-size: 0.68rem;
+            font-size: 0.7rem;
             color: #a5b4fc;
             word-break: break-all;
             margin: 0.5rem 0;
@@ -720,21 +692,21 @@
             background: rgba(102, 126, 234, 0.1);
             border: 1px solid rgba(102, 126, 234, 0.18);
             color: #a5b4fc;
-            padding: 0.45rem 1.15rem;
+            padding: 0.5rem 1.25rem;
             border-radius: 10px;
             cursor: pointer;
-            font-size: 0.78rem;
+            font-size: 0.8rem;
             font-weight: 500;
             transition: all 0.3s;
         }
 
         .copy-btn:hover {
-            background: rgba(102, 126, 234, 0.22);
+            background: rgba(102, 126, 234, 0.25);
             transform: translateY(-1px);
         }
 
         /* ═══════════════════════════════════════════════════════
-           STEP ACTIONS (bottom of right panel)
+           STEP ACTIONS
            ═══════════════════════════════════════════════════════ */
         .step-actions {
             display: flex;
@@ -746,9 +718,9 @@
         .btn-back,
         .btn-next,
         .btn-finish {
-            padding: 0.6rem 1.5rem;
-            border-radius: 10px;
-            font-size: 0.85rem;
+            padding: 0.65rem 1.6rem;
+            border-radius: 12px;
+            font-size: 0.88rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
@@ -756,13 +728,13 @@
         }
 
         .btn-back {
-            background: rgba(255, 255, 255, 0.03);
-            color: rgba(255, 255, 255, 0.45);
-            border: 1px solid rgba(255, 255, 255, 0.06);
+            background: rgba(255, 255, 255, 0.04);
+            color: rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         .btn-back:hover {
-            background: rgba(255, 255, 255, 0.07);
+            background: rgba(255, 255, 255, 0.08);
         }
 
         .btn-next,
@@ -807,44 +779,6 @@
             opacity: 0.5;
             cursor: not-allowed;
             transform: none;
-        }
-
-        /* ── Floating ring accents inside card ────────────────── */
-        .card-ring {
-            position: absolute;
-            border-radius: 50%;
-            border: 1px solid rgba(102, 126, 234, 0.06);
-            pointer-events: none;
-        }
-
-        .card-ring--1 {
-            width: 280px;
-            height: 280px;
-            top: -60px;
-            right: -80px;
-            animation: ringPulse 8s ease-in-out infinite;
-        }
-
-        .card-ring--2 {
-            width: 200px;
-            height: 200px;
-            bottom: -40px;
-            left: 120px;
-            animation: ringPulse 10s ease-in-out infinite 3s;
-        }
-
-        @keyframes ringPulse {
-
-            0%,
-            100% {
-                transform: scale(1);
-                opacity: 0.4;
-            }
-
-            50% {
-                transform: scale(1.08);
-                opacity: 0.8;
-            }
         }
 
         /* ── TOAST ───────────────────────────────────────────── */
@@ -896,7 +830,14 @@
             .wizard-card {
                 flex-direction: column;
                 min-height: auto;
-                border-radius: 18px;
+            }
+
+            .mac-titlebar {
+                border-radius: 14px 14px 0 0;
+            }
+
+            .wizard-card {
+                border-radius: 0 0 14px 14px;
             }
 
             .wizard-sidebar {
@@ -906,6 +847,15 @@
                 border-bottom: 1px solid rgba(255, 255, 255, 0.04);
                 padding: 1rem;
                 overflow-x: auto;
+                align-items: center;
+            }
+
+            .sidebar-brand {
+                display: none;
+            }
+
+            .sidebar-label {
+                display: none;
             }
 
             .sidebar-steps {
@@ -945,283 +895,286 @@
     </div>
 
     <div class="onboarding-wrap">
-        <div class="onboarding-header">
-            <h1>✨ Setup Wizard</h1>
-            <p>Let's get your AI support widget ready in minutes</p>
-        </div>
-
-        <div class="wizard-card">
-            <!-- Decorative rings -->
-            <div class="card-ring card-ring--1"></div>
-            <div class="card-ring card-ring--2"></div>
-
-            <!-- ════ LEFT SIDEBAR — Steps ════ -->
-            <div class="wizard-sidebar">
-                <div class="sidebar-label">Steps</div>
-                <div class="sidebar-steps">
-                    <div class="sidebar-step active" data-step="1">
-                        <div class="sidebar-step-dot">1</div>
-                        <span class="sidebar-step-label">Business</span>
-                    </div>
-                    <div class="sidebar-connector" data-line="1"></div>
-                    <div class="sidebar-step" data-step="2">
-                        <div class="sidebar-step-dot">2</div>
-                        <span class="sidebar-step-label">Store</span>
-                    </div>
-                    <div class="sidebar-connector" data-line="2"></div>
-                    <div class="sidebar-step" data-step="3">
-                        <div class="sidebar-step-dot">3</div>
-                        <span class="sidebar-step-label">Widget</span>
-                    </div>
-                    <div class="sidebar-connector" data-line="3"></div>
-                    <div class="sidebar-step" data-step="4">
-                        <div class="sidebar-step-dot">4</div>
-                        <span class="sidebar-step-label">Knowledge</span>
-                    </div>
-                    <div class="sidebar-connector" data-line="4"></div>
-                    <div class="sidebar-step" data-step="5">
-                        <div class="sidebar-step-dot">5</div>
-                        <span class="sidebar-step-label">Launch</span>
-                    </div>
-                </div>
+        <div class="mac-frame">
+            <!-- ═══ MacBook Title Bar ═══ -->
+            <div class="mac-titlebar">
+                <div class="mac-dots"><span></span><span></span><span></span></div>
+                <span class="mac-titlebar-text">Setup Wizard — Behavioral Agentic AI</span>
             </div>
 
-            <!-- ════ RIGHT — Content ════ -->
-            <div class="wizard-content">
+            <!-- ═══ Card Body ═══ -->
+            <div class="wizard-card">
 
-                <!-- Step 1: Business Profile -->
-                <div class="step-panel active" id="step1">
-                    <div>
-                        <h2 class="step-title">📋 Business Profile</h2>
-                        <p class="step-description">Tell us about your business so the AI can represent you.</p>
+                <!-- ════ LEFT SIDEBAR ════ -->
+                <div class="wizard-sidebar">
+                    <div class="sidebar-brand">
+                        <h1>✨ Setup Wizard</h1>
+                        <p>Get your AI support widget ready in minutes</p>
                     </div>
-                    <div class="step-fields">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label><span class="label-icon">🏢</span> Business Name</label>
-                                <input type="text" id="bizName" placeholder="e.g. Stellar Electronics">
-                                <span class="field-icon">🏢</span>
-                                <div class="focus-line"></div>
-                            </div>
-                            <div class="form-group">
-                                <label><span class="label-icon">🏷️</span> Industry</label>
-                                <select id="bizIndustry">
-                                    <option value="">Select…</option>
-                                    <option value="electronics">Electronics</option>
-                                    <option value="fashion">Fashion & Apparel</option>
-                                    <option value="health">Health & Beauty</option>
-                                    <option value="food">Food & Beverage</option>
-                                    <option value="home">Home & Garden</option>
-                                    <option value="sports">Sports & Outdoors</option>
-                                    <option value="other">Other</option>
-                                </select>
-                                <span class="field-icon">🏷️</span>
-                                <div class="focus-line"></div>
-                            </div>
+
+                    <div class="sidebar-label">Progress</div>
+                    <div class="sidebar-steps">
+                        <div class="sidebar-step active" data-step="1">
+                            <div class="sidebar-step-dot">1</div>
+                            <span class="sidebar-step-label">Business</span>
                         </div>
-                        <div class="form-group">
-                            <label><span class="label-icon">📝</span> Brief Description</label>
-                            <textarea id="bizDesc" rows="3"
-                                placeholder="What does your business do? This helps the AI craft better responses."></textarea>
-                            <div class="focus-line"></div>
+                        <div class="sidebar-connector" data-line="1"></div>
+                        <div class="sidebar-step" data-step="2">
+                            <div class="sidebar-step-dot">2</div>
+                            <span class="sidebar-step-label">Store</span>
                         </div>
-                        <div class="form-group">
-                            <label><span class="label-icon">🌍</span> Timezone</label>
-                            <select id="bizTimezone">
-                                <option value="UTC">UTC</option>
-                                <option value="US/Eastern">US Eastern</option>
-                                <option value="US/Pacific">US Pacific</option>
-                                <option value="Europe/London">Europe/London</option>
-                                <option value="Europe/Berlin">Europe/Berlin</option>
-                                <option value="Asia/Dubai">Asia/Dubai</option>
-                                <option value="Asia/Kolkata">Asia/Kolkata</option>
-                                <option value="Asia/Shanghai">Asia/Shanghai</option>
-                            </select>
-                            <span class="field-icon">🌍</span>
-                            <div class="focus-line"></div>
+                        <div class="sidebar-connector" data-line="2"></div>
+                        <div class="sidebar-step" data-step="3">
+                            <div class="sidebar-step-dot">3</div>
+                            <span class="sidebar-step-label">Widget</span>
+                        </div>
+                        <div class="sidebar-connector" data-line="3"></div>
+                        <div class="sidebar-step" data-step="4">
+                            <div class="sidebar-step-dot">4</div>
+                            <span class="sidebar-step-label">Knowledge</span>
+                        </div>
+                        <div class="sidebar-connector" data-line="4"></div>
+                        <div class="sidebar-step" data-step="5">
+                            <div class="sidebar-step-dot">5</div>
+                            <span class="sidebar-step-label">Launch</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Step 2: Connect Store -->
-                <div class="step-panel" id="step2">
-                    <div>
-                        <h2 class="step-title">🔗 Connect Your Store</h2>
-                        <p class="step-description">Choose your platform and provide your store URL.</p>
-                    </div>
-                    <div class="step-fields">
-                        <select id="storePlatform">
-                            <option value="">Select platform…</option>
-                            <option value="shopify">Shopify</option>
-                            <option value="woocommerce">WooCommerce</option>
-                            <option value="alibaba">Alibaba / AliExpress</option>
-                            <option value="custom">Custom Website</option>
-                            <option value="other">Other</option>
-                        </select>
+                <!-- ════ RIGHT — Content ════ -->
+                <div class="wizard-content">
 
-                        <div class="platform-label"><span class="label-icon">🖥️</span> Platform</div>
-                        <div class="platform-grid">
-                            <div class="platform-card" data-platform="shopify" onclick="selectPlatform(this,'shopify')">
-                                <span class="platform-card-icon">🛍️</span>
-                                <span class="platform-card-name">Shopify</span>
-                                <span class="platform-card-sub">Hosted store</span>
-                            </div>
-                            <div class="platform-card" data-platform="woocommerce"
-                                onclick="selectPlatform(this,'woocommerce')">
-                                <span class="platform-card-icon">🔌</span>
-                                <span class="platform-card-name">WooCommerce</span>
-                                <span class="platform-card-sub">WordPress</span>
-                            </div>
-                            <div class="platform-card" data-platform="alibaba" onclick="selectPlatform(this,'alibaba')">
-                                <span class="platform-card-icon">🌏</span>
-                                <span class="platform-card-name">Alibaba</span>
-                                <span class="platform-card-sub">AliExpress</span>
-                            </div>
-                            <div class="platform-card" data-platform="magento" onclick="selectPlatform(this,'magento')">
-                                <span class="platform-card-icon">🧱</span>
-                                <span class="platform-card-name">Magento</span>
-                                <span class="platform-card-sub">Adobe</span>
-                            </div>
-                            <div class="platform-card" data-platform="custom" onclick="selectPlatform(this,'custom')">
-                                <span class="platform-card-icon">🌐</span>
-                                <span class="platform-card-name">Custom</span>
-                                <span class="platform-card-sub">Any site</span>
-                            </div>
-                            <div class="platform-card" data-platform="other" onclick="selectPlatform(this,'other')">
-                                <span class="platform-card-icon">➕</span>
-                                <span class="platform-card-name">Other</span>
-                                <span class="platform-card-sub">Tell us</span>
-                            </div>
+                    <!-- Step 1: Business Profile -->
+                    <div class="step-panel active" id="step1">
+                        <div>
+                            <h2 class="step-title">Business Profile</h2>
+                            <p class="step-description">Tell us about your business so the AI can represent you
+                                perfectly.</p>
                         </div>
-
-                        <div class="form-group" style="margin-top:0.85rem;">
-                            <label><span class="label-icon">🔗</span> Store URL</label>
-                            <input type="url" id="storeUrl" placeholder="https://your-store.com">
-                            <span class="field-icon">🔗</span>
-                            <div class="focus-line"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Step 3: Configure Widget -->
-                <div class="step-panel" id="step3">
-                    <div>
-                        <h2 class="step-title">🎨 Configure Widget</h2>
-                        <p class="step-description">Customize the look of the chat widget on your site.</p>
-                    </div>
-                    <div class="step-fields">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label><span class="label-icon">💬</span> Widget Title</label>
-                                <input type="text" id="widgetTitle" placeholder="e.g. Chat with us">
-                                <span class="field-icon">💬</span>
-                                <div class="focus-line"></div>
-                            </div>
-                            <div class="form-group">
-                                <label><span class="label-icon">👋</span> Greeting</label>
-                                <input type="text" id="widgetGreeting" placeholder="Hi! How can we help?">
-                                <span class="field-icon">👋</span>
-                                <div class="focus-line"></div>
-                            </div>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label><span class="label-icon">🎨</span> Primary Color</label>
-                                <div class="color-input-wrap">
-                                    <input type="color" id="widgetColor" value="#667eea">
-                                    <span id="colorLabel">#667eea</span>
+                        <div class="step-fields">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Business Name</label>
+                                    <input type="text" id="bizName" placeholder="e.g. Stellar Electronics">
+                                    <div class="focus-line"></div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Industry</label>
+                                    <select id="bizIndustry">
+                                        <option value="">Select…</option>
+                                        <option value="electronics">Electronics</option>
+                                        <option value="fashion">Fashion & Apparel</option>
+                                        <option value="health">Health & Beauty</option>
+                                        <option value="food">Food & Beverage</option>
+                                        <option value="home">Home & Garden</option>
+                                        <option value="sports">Sports & Outdoors</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                    <div class="focus-line"></div>
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label><span class="label-icon">📌</span> Position</label>
-                                <select id="widgetPosition">
-                                    <option value="bottom-right">Bottom Right</option>
-                                    <option value="bottom-left">Bottom Left</option>
+                                <label>Brief Description</label>
+                                <textarea id="bizDesc" rows="3"
+                                    placeholder="What does your business do? This helps the AI craft better responses."></textarea>
+                                <div class="focus-line"></div>
+                            </div>
+                            <div class="form-group">
+                                <label>Timezone</label>
+                                <select id="bizTimezone">
+                                    <option value="UTC">UTC</option>
+                                    <option value="US/Eastern">US Eastern</option>
+                                    <option value="US/Pacific">US Pacific</option>
+                                    <option value="Europe/London">Europe/London</option>
+                                    <option value="Europe/Berlin">Europe/Berlin</option>
+                                    <option value="Asia/Dubai">Asia/Dubai</option>
+                                    <option value="Asia/Kolkata">Asia/Kolkata</option>
+                                    <option value="Asia/Shanghai">Asia/Shanghai</option>
                                 </select>
-                                <span class="field-icon">📌</span>
                                 <div class="focus-line"></div>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label><span class="label-icon">🌐</span> Language</label>
-                            <select id="widgetLang">
-                                <option value="en">English</option>
-                                <option value="es">Spanish</option>
-                                <option value="fr">French</option>
-                                <option value="de">German</option>
-                                <option value="pt">Portuguese</option>
-                                <option value="it">Italian</option>
+                    </div>
+
+                    <!-- Step 2: Connect Store -->
+                    <div class="step-panel" id="step2">
+                        <div>
+                            <h2 class="step-title">Connect Your Store</h2>
+                            <p class="step-description">Choose your e-commerce platform and provide your store URL.</p>
+                        </div>
+                        <div class="step-fields">
+                            <select id="storePlatform">
+                                <option value="">Select platform…</option>
+                                <option value="shopify">Shopify</option>
+                                <option value="woocommerce">WooCommerce</option>
+                                <option value="alibaba">Alibaba / AliExpress</option>
+                                <option value="custom">Custom Website</option>
+                                <option value="other">Other</option>
                             </select>
-                            <span class="field-icon">🌐</span>
-                            <div class="focus-line"></div>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Step 4: Knowledge Base -->
-                <div class="step-panel" id="step4">
-                    <div>
-                        <h2 class="step-title">📚 Product Knowledge</h2>
-                        <p class="step-description">Paste product details, FAQs, or policies for the AI.</p>
-                    </div>
-                    <div class="step-fields">
-                        <div class="form-row">
+                            <label
+                                style="font-size:0.8rem;font-weight:500;color:rgba(255,255,255,0.55);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.4rem;display:block;">Platform</label>
+                            <div class="platform-grid">
+                                <div class="platform-card" data-platform="shopify"
+                                    onclick="selectPlatform(this,'shopify')">
+                                    <span class="platform-card-icon">🛍️</span>
+                                    <span class="platform-card-name">Shopify</span>
+                                    <span class="platform-card-sub">Hosted store</span>
+                                </div>
+                                <div class="platform-card" data-platform="woocommerce"
+                                    onclick="selectPlatform(this,'woocommerce')">
+                                    <span class="platform-card-icon">🔌</span>
+                                    <span class="platform-card-name">WooCommerce</span>
+                                    <span class="platform-card-sub">WordPress</span>
+                                </div>
+                                <div class="platform-card" data-platform="alibaba"
+                                    onclick="selectPlatform(this,'alibaba')">
+                                    <span class="platform-card-icon">🌏</span>
+                                    <span class="platform-card-name">Alibaba</span>
+                                    <span class="platform-card-sub">AliExpress</span>
+                                </div>
+                                <div class="platform-card" data-platform="magento"
+                                    onclick="selectPlatform(this,'magento')">
+                                    <span class="platform-card-icon">🧱</span>
+                                    <span class="platform-card-name">Magento</span>
+                                    <span class="platform-card-sub">Adobe</span>
+                                </div>
+                                <div class="platform-card" data-platform="custom"
+                                    onclick="selectPlatform(this,'custom')">
+                                    <span class="platform-card-icon">🌐</span>
+                                    <span class="platform-card-name">Custom</span>
+                                    <span class="platform-card-sub">Any site</span>
+                                </div>
+                                <div class="platform-card" data-platform="other" onclick="selectPlatform(this,'other')">
+                                    <span class="platform-card-icon">➕</span>
+                                    <span class="platform-card-name">Other</span>
+                                    <span class="platform-card-sub">Tell us</span>
+                                </div>
+                            </div>
+
                             <div class="form-group">
-                                <label><span class="label-icon">📄</span> Title</label>
-                                <input type="text" id="kbTitle" placeholder="e.g. Product Catalog">
-                                <span class="field-icon">📄</span>
+                                <label>Store URL</label>
+                                <input type="url" id="storeUrl" placeholder="https://your-store.com">
                                 <div class="focus-line"></div>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Configure Widget -->
+                    <div class="step-panel" id="step3">
+                        <div>
+                            <h2 class="step-title">Configure Widget</h2>
+                            <p class="step-description">Customize the look of the chat widget on your site.</p>
+                        </div>
+                        <div class="step-fields">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Widget Title</label>
+                                    <input type="text" id="widgetTitle" placeholder="e.g. Chat with us">
+                                    <div class="focus-line"></div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Greeting Message</label>
+                                    <input type="text" id="widgetGreeting" placeholder="Hi! How can we help?">
+                                    <div class="focus-line"></div>
+                                </div>
+                            </div>
+                            <div class="color-row">
+                                <div class="form-group">
+                                    <label>Primary Color</label>
+                                    <div class="color-input-wrap">
+                                        <input type="color" id="widgetColor" value="#667eea">
+                                        <span id="colorLabel">#667eea</span>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Position</label>
+                                    <select id="widgetPosition">
+                                        <option value="bottom-right">Bottom Right</option>
+                                        <option value="bottom-left">Bottom Left</option>
+                                    </select>
+                                    <div class="focus-line"></div>
+                                </div>
+                            </div>
                             <div class="form-group">
-                                <label><span class="label-icon">🏷️</span> Type</label>
-                                <select id="kbDocType">
-                                    <option value="general">General</option>
-                                    <option value="product">Product Info</option>
-                                    <option value="policy">Policies</option>
-                                    <option value="faq">FAQ</option>
+                                <label>Language</label>
+                                <select id="widgetLang">
+                                    <option value="en">English</option>
+                                    <option value="es">Spanish</option>
+                                    <option value="fr">French</option>
+                                    <option value="de">German</option>
+                                    <option value="pt">Portuguese</option>
+                                    <option value="it">Italian</option>
                                 </select>
-                                <span class="field-icon">🏷️</span>
                                 <div class="focus-line"></div>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label><span class="label-icon">📝</span> Content</label>
-                            <textarea id="kbText" rows="6"
-                                placeholder="Paste your product details, FAQs, or policies here…"></textarea>
-                            <div class="focus-line"></div>
-                        </div>
-                        <p style="color:rgba(255,255,255,0.2);font-size:0.68rem;">
-                            You can skip this and add knowledge later from your dashboard.
-                        </p>
                     </div>
-                </div>
 
-                <!-- Step 5: Complete -->
-                <div class="step-panel" id="step5">
-                    <div class="complete-section">
-                        <div class="complete-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-                                <polyline points="20 6 9 17 4 12" />
-                            </svg>
+                    <!-- Step 4: Knowledge Base -->
+                    <div class="step-panel" id="step4">
+                        <div>
+                            <h2 class="step-title">Product Knowledge</h2>
+                            <p class="step-description">Paste product details, FAQs, or policies so the AI can answer
+                                intelligently.</p>
                         </div>
-                        <h2>You're All Set! 🎉</h2>
-                        <p>Your AI widget is ready. Copy the embed code and paste it before your closing &lt;/body&gt;
-                            tag.</p>
-                        <div class="embed-code" id="embedCode">
-                            &lt;script src="https://sentimenta.snick.at/widget/embed.js"
-                            data-key="YOUR_API_KEY"&gt;&lt;/script&gt;
+                        <div class="step-fields">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Title</label>
+                                    <input type="text" id="kbTitle" placeholder="e.g. Product Catalog">
+                                    <div class="focus-line"></div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Type</label>
+                                    <select id="kbDocType">
+                                        <option value="general">General</option>
+                                        <option value="product">Product Info</option>
+                                        <option value="policy">Policies</option>
+                                        <option value="faq">FAQ</option>
+                                    </select>
+                                    <div class="focus-line"></div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Content</label>
+                                <textarea id="kbText" rows="7"
+                                    placeholder="Paste your product details, FAQs, or policies here…"></textarea>
+                                <div class="focus-line"></div>
+                            </div>
+                            <p style="color:rgba(255,255,255,0.2);font-size:0.7rem;">
+                                You can skip this and add knowledge later from your dashboard.
+                            </p>
                         </div>
-                        <button class="copy-btn" onclick="copyEmbed()">📋 Copy Embed Code</button>
                     </div>
-                </div>
 
-                <!-- Navigation -->
-                <div class="step-actions">
-                    <button class="btn-back" id="btnBack" onclick="prevStep()" style="visibility:hidden;"><span>←
-                            Back</span></button>
-                    <button class="btn-next" id="btnNext" onclick="nextStep()"><span>Continue →</span></button>
-                    <button class="btn-finish" id="btnFinish" onclick="goToDashboard()" style="display:none;"><span>Go
-                            to Dashboard →</span></button>
+                    <!-- Step 5: Complete -->
+                    <div class="step-panel" id="step5">
+                        <div class="complete-section">
+                            <div class="complete-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                    <polyline points="20 6 9 17 4 12" />
+                                </svg>
+                            </div>
+                            <h2>You're All Set! 🎉</h2>
+                            <p>Your AI widget is ready. Copy the embed code and paste it before your closing
+                                &lt;/body&gt; tag.</p>
+                            <div class="embed-code" id="embedCode">
+                                &lt;script src="https://sentimenta.snick.at/widget/embed.js"
+                                data-key="YOUR_API_KEY"&gt;&lt;/script&gt;
+                            </div>
+                            <button class="copy-btn" onclick="copyEmbed()">📋 Copy Embed Code</button>
+                        </div>
+                    </div>
+
+                    <!-- Navigation -->
+                    <div class="step-actions">
+                        <button class="btn-back" id="btnBack" onclick="prevStep()" style="visibility:hidden;"><span>←
+                                Back</span></button>
+                        <button class="btn-next" id="btnNext" onclick="nextStep()"><span>Continue →</span></button>
+                        <button class="btn-finish" id="btnFinish" onclick="goToDashboard()"
+                            style="display:none;"><span>Go to Dashboard →</span></button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1339,18 +1292,15 @@
         });
 
         function updateProgress() {
-            // Update sidebar steps
             document.querySelectorAll('.sidebar-step').forEach(step => {
                 const s = parseInt(step.dataset.step);
                 step.classList.toggle('active', s === currentStep);
                 step.classList.toggle('completed', s < currentStep);
             });
-            // Update connector lines
             document.querySelectorAll('.sidebar-connector').forEach(line => {
                 const l = parseInt(line.dataset.line);
                 line.classList.toggle('completed', l < currentStep);
             });
-            // Update panels
             document.querySelectorAll('.step-panel').forEach(panel => {
                 panel.classList.toggle('active', panel.id === `step${currentStep}`);
             });
