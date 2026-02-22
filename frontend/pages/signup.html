@@ -26,7 +26,7 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #16213e 100%);
+            background: #07070d;
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -35,8 +35,19 @@
             position: relative;
         }
 
-        /* Animated Background */
-        .bg-animation {
+        /* ── Particle Canvas ─────────────────────────────────── */
+        #particleCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* ── Ambient Glow Orbs ───────────────────────────────── */
+        .ambient-glow {
             position: fixed;
             top: 0;
             left: 0;
@@ -44,75 +55,158 @@
             height: 100%;
             z-index: 0;
             overflow: hidden;
+            pointer-events: none;
         }
 
-        .bg-animation::before,
-        .bg-animation::after {
-            content: '';
+        .ambient-glow .orb {
             position: absolute;
-            width: 600px;
-            height: 600px;
             border-radius: 50%;
-            filter: blur(100px);
-            opacity: 0.4;
-            animation: float 20s ease-in-out infinite;
+            filter: blur(120px);
+            opacity: 0.18;
         }
 
-        .bg-animation::before {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            top: -200px;
-            right: -200px;
+        .ambient-glow .orb--1 {
+            width: 480px;
+            height: 480px;
+            background: radial-gradient(circle, #667eea, #764ba2);
+            top: -12%;
+            right: -8%;
+            animation: orbFloat1 25s ease-in-out infinite;
         }
 
-        .bg-animation::after {
-            background: linear-gradient(135deg, #2ed573 0%, #1e90ff 100%);
-            bottom: -200px;
-            left: -200px;
-            animation-delay: -10s;
+        .ambient-glow .orb--2 {
+            width: 420px;
+            height: 420px;
+            background: radial-gradient(circle, #2ed573, #1e90ff);
+            bottom: -10%;
+            left: -10%;
+            animation: orbFloat2 30s ease-in-out infinite;
         }
 
-        @keyframes float {
+        .ambient-glow .orb--3 {
+            width: 260px;
+            height: 260px;
+            background: radial-gradient(circle, #f093fb, #c471f5);
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation: orbFloat3 22s ease-in-out infinite;
+        }
+
+        @keyframes orbFloat1 {
 
             0%,
             100% {
                 transform: translate(0, 0) scale(1);
             }
 
-            25% {
-                transform: translate(50px, 50px) scale(1.1);
+            33% {
+                transform: translate(-40px, 50px) scale(1.08);
             }
 
-            50% {
-                transform: translate(0, 100px) scale(1);
-            }
-
-            75% {
-                transform: translate(-50px, 50px) scale(0.9);
+            66% {
+                transform: translate(25px, 30px) scale(0.95);
             }
         }
 
-        /* Login Container */
+        @keyframes orbFloat2 {
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            33% {
+                transform: translate(50px, -35px) scale(1.1);
+            }
+
+            66% {
+                transform: translate(-30px, -20px) scale(0.92);
+            }
+        }
+
+        @keyframes orbFloat3 {
+
+            0%,
+            100% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+
+            50% {
+                transform: translate(-55%, -45%) scale(1.12);
+            }
+        }
+
+        /* ── Signup Container ────────────────────────────────── */
         .signup-container {
             position: relative;
             z-index: 1;
             width: 100%;
             max-width: 480px;
             padding: 2rem;
+            animation: cardEntry 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
         }
 
-        /* Glass Card */
+        @keyframes cardEntry {
+            from {
+                opacity: 0;
+                transform: translateY(24px) scale(0.98);
+                filter: blur(4px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                filter: blur(0);
+            }
+        }
+
+        /* ── Glass Card ──────────────────────────────────────── */
         .signup-card {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.025);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
             border-radius: 24px;
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.06);
             padding: 2.5rem;
-            box-shadow: 0 32px 64px rgba(0, 0, 0, 0.4),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            box-shadow:
+                0 32px 64px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.04) inset,
+                0 1px 0 rgba(255, 255, 255, 0.06) inset;
+            position: relative;
+            overflow: hidden;
         }
 
-        /* Logo */
+        /* Shimmer line at top */
+        .signup-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg,
+                    transparent 0%,
+                    rgba(46, 213, 115, 0.3) 25%,
+                    rgba(102, 126, 234, 0.5) 50%,
+                    rgba(167, 139, 250, 0.3) 75%,
+                    transparent 100%);
+            animation: shimmer 4s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+
+            0%,
+            100% {
+                opacity: 0.4;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
+
+        /* ── Logo ────────────────────────────────────────────── */
         .signup-logo {
             display: flex;
             align-items: center;
@@ -125,11 +219,26 @@
             width: 48px;
             height: 48px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 12px;
+            border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+            box-shadow:
+                0 8px 24px rgba(102, 126, 234, 0.35),
+                0 0 0 1px rgba(102, 126, 234, 0.15);
+            animation: logoPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes logoPulse {
+
+            0%,
+            100% {
+                box-shadow: 0 8px 24px rgba(102, 126, 234, 0.35), 0 0 0 1px rgba(102, 126, 234, 0.15);
+            }
+
+            50% {
+                box-shadow: 0 8px 32px rgba(102, 126, 234, 0.5), 0 0 0 1px rgba(102, 126, 234, 0.25);
+            }
         }
 
         .signup-logo-icon svg {
@@ -147,7 +256,7 @@
             background-clip: text;
         }
 
-        /* Header */
+        /* ── Header ──────────────────────────────────────────── */
         .signup-header {
             text-align: center;
             margin-bottom: 1.5rem;
@@ -158,30 +267,26 @@
             font-weight: 700;
             color: #fff;
             margin-bottom: 0.5rem;
+            letter-spacing: -0.02em;
         }
 
         .signup-header p {
-            color: rgba(255, 255, 255, 0.5);
+            color: rgba(255, 255, 255, 0.45);
             font-size: 0.95rem;
         }
 
-        /* Form */
+        /* ── Form ────────────────────────────────────────────── */
         .signup-form {
             display: flex;
             flex-direction: column;
-            gap: 1.25rem;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
+            gap: 1.15rem;
         }
 
         .form-group {
             display: flex;
             flex-direction: column;
-            gap: 0.5rem;
+            gap: 0.45rem;
+            position: relative;
         }
 
         .form-group.full-width {
@@ -189,50 +294,83 @@
         }
 
         .form-group label {
-            font-size: 0.875rem;
+            font-size: 0.8rem;
             font-weight: 500;
-            color: rgba(255, 255, 255, 0.7);
+            color: rgba(255, 255, 255, 0.55);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
         }
 
         .form-group input {
             width: 100%;
-            padding: 0.875rem 1rem;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.85rem 1.1rem;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 12px;
             color: #fff;
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-family: inherit;
-            transition: all 0.3s ease;
+            transition: border-color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
         }
 
         .form-group input::placeholder {
-            color: rgba(255, 255, 255, 0.3);
+            color: rgba(255, 255, 255, 0.22);
         }
 
         .form-group input:focus {
             outline: none;
-            border-color: #667eea;
-            background: rgba(102, 126, 234, 0.1);
-            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+            border-color: rgba(102, 126, 234, 0.6);
+            background: rgba(102, 126, 234, 0.06);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
+            transform: scale(1.008);
         }
 
         .form-group input.error {
             border-color: #f5576c;
-            background: rgba(245, 87, 108, 0.1);
+            background: rgba(245, 87, 108, 0.06);
         }
 
-        /* Password Strength */
+        /* Animated underline on focus */
+        .form-group .focus-line {
+            position: absolute;
+            bottom: 0;
+            left: 12px;
+            right: 12px;
+            height: 2px;
+            border-radius: 1px;
+            background: linear-gradient(90deg, #667eea, #a78bfa, #667eea);
+            background-size: 200% 100%;
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+            transform-origin: left;
+        }
+
+        .form-group input:focus~.focus-line {
+            transform: scaleX(1);
+            animation: lineSlide 2s linear infinite;
+        }
+
+        @keyframes lineSlide {
+            0% {
+                background-position: 0% 0%;
+            }
+
+            100% {
+                background-position: 200% 0%;
+            }
+        }
+
+        /* ── Password Strength ───────────────────────────────── */
         .password-strength {
             display: flex;
             gap: 4px;
-            margin-top: 8px;
+            margin-top: 6px;
         }
 
         .password-strength .bar {
             flex: 1;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.1);
+            height: 3px;
+            background: rgba(255, 255, 255, 0.08);
             border-radius: 2px;
             transition: all 0.3s ease;
         }
@@ -257,34 +395,35 @@
         }
 
         .password-hint {
-            font-size: 0.75rem;
-            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.72rem;
+            color: rgba(255, 255, 255, 0.35);
             margin-top: 4px;
         }
 
-        /* Terms */
+        /* ── Terms Checkbox ──────────────────────────────────── */
         .checkbox-group {
             display: flex;
             align-items: flex-start;
-            gap: 0.75rem;
+            gap: 0.7rem;
         }
 
         .checkbox-group input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            margin-top: 2px;
+            width: 16px;
+            height: 16px;
+            margin-top: 3px;
             accent-color: #667eea;
             cursor: pointer;
+            flex-shrink: 0;
         }
 
         .checkbox-group label {
-            font-size: 0.875rem;
-            color: rgba(255, 255, 255, 0.6);
-            line-height: 1.4;
+            font-size: 0.82rem;
+            color: rgba(255, 255, 255, 0.5);
+            line-height: 1.45;
         }
 
         .checkbox-group a {
-            color: #667eea;
+            color: rgba(102, 126, 234, 0.9);
             text-decoration: none;
         }
 
@@ -292,10 +431,10 @@
             text-decoration: underline;
         }
 
-        /* Submit Button */
+        /* ── Submit Button ───────────────────────────────────── */
         .btn-submit {
             width: 100%;
-            padding: 1rem;
+            padding: 0.95rem;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border: none;
             border-radius: 12px;
@@ -306,6 +445,7 @@
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
+            letter-spacing: 0.01em;
         }
 
         .btn-submit::before {
@@ -315,7 +455,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #764ba2 0%, #f093fb 100%);
+            background: linear-gradient(135deg, #764ba2 0%, #c471f5 100%);
             opacity: 0;
             transition: opacity 0.3s ease;
         }
@@ -331,7 +471,7 @@
 
         .btn-submit:hover {
             transform: translateY(-2px);
-            box-shadow: 0 12px 24px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 12px 32px rgba(102, 126, 234, 0.35);
         }
 
         .btn-submit:disabled {
@@ -364,16 +504,16 @@
             }
         }
 
-        /* Footer */
+        /* ── Footer ──────────────────────────────────────────── */
         .signup-footer {
             text-align: center;
             margin-top: 1.5rem;
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.9rem;
         }
 
         .signup-footer a {
-            color: #667eea;
+            color: rgba(102, 126, 234, 0.9);
             text-decoration: none;
             font-weight: 500;
         }
@@ -382,55 +522,69 @@
             color: #a5b4fc;
         }
 
-        /* Messages */
+        /* ── Messages ────────────────────────────────────────── */
         .error-message {
-            background: rgba(245, 87, 108, 0.1);
-            border: 1px solid rgba(245, 87, 108, 0.3);
-            border-radius: 8px;
+            background: rgba(245, 87, 108, 0.08);
+            border: 1px solid rgba(245, 87, 108, 0.25);
+            border-radius: 10px;
             padding: 0.75rem 1rem;
             color: #f5576c;
-            font-size: 0.875rem;
+            font-size: 0.85rem;
             display: none;
-        }
-
-        .error-message.show {
-            display: block;
+            animation: msgSlide 0.3s ease;
         }
 
         .success-message {
-            background: rgba(46, 213, 115, 0.1);
-            border: 1px solid rgba(46, 213, 115, 0.3);
-            border-radius: 8px;
+            background: rgba(46, 213, 115, 0.08);
+            border: 1px solid rgba(46, 213, 115, 0.25);
+            border-radius: 10px;
             padding: 0.75rem 1rem;
             color: #2ed573;
-            font-size: 0.875rem;
+            font-size: 0.85rem;
             display: none;
+            animation: msgSlide 0.3s ease;
         }
 
+        .error-message.show,
         .success-message.show {
             display: block;
         }
 
-        /* Responsive */
+        @keyframes msgSlide {
+            from {
+                opacity: 0;
+                transform: translateY(-6px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ── Responsive ──────────────────────────────────────── */
         @media (max-width: 520px) {
             .signup-container {
                 padding: 1rem;
             }
 
             .signup-card {
-                padding: 2rem;
-            }
-
-            .form-row {
-                grid-template-columns: 1fr;
+                padding: 2rem 1.5rem;
             }
         }
     </style>
 </head>
 
 <body>
-    <!-- Background Animation -->
-    <div class="bg-animation"></div>
+    <!-- Ambient Glow Orbs -->
+    <div class="ambient-glow">
+        <div class="orb orb--1"></div>
+        <div class="orb orb--2"></div>
+        <div class="orb orb--3"></div>
+    </div>
+
+    <!-- Particle Canvas -->
+    <canvas id="particleCanvas"></canvas>
 
     <!-- Signup Container -->
     <div class="signup-container">
@@ -452,7 +606,7 @@
             <!-- Header -->
             <div class="signup-header">
                 <h1>Create Account</h1>
-                <p>Start your free trial - no credit card required</p>
+                <p>Start your free trial — no credit card required</p>
             </div>
 
             <!-- Messages -->
@@ -464,27 +618,32 @@
                 <div class="form-group">
                     <label for="fullName">Full Name</label>
                     <input type="text" id="fullName" name="fullName" placeholder="Enter your full name" required>
+                    <div class="focus-line"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="email">Email Address</label>
                     <input type="email" id="email" name="email" placeholder="Enter your email" required>
+                    <div class="focus-line"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="company">Company / Store Name</label>
                     <input type="text" id="company" name="company" placeholder="Enter your company or store name">
+                    <div class="focus-line"></div>
                 </div>
 
                 <div class="form-group">
-                    <label for="storeUrl">Store URL (Optional)</label>
+                    <label for="storeUrl">Store URL <span style="font-weight:400;opacity:0.6">(Optional)</span></label>
                     <input type="url" id="storeUrl" name="storeUrl" placeholder="https://your-store.com">
+                    <div class="focus-line"></div>
                 </div>
 
                 <div class="form-group">
                     <label for="password">Password</label>
                     <input type="password" id="password" name="password" placeholder="Create a password" required
                         minlength="8">
+                    <div class="focus-line"></div>
                     <div class="password-strength" id="passwordStrength">
                         <div class="bar"></div>
                         <div class="bar"></div>
@@ -498,6 +657,7 @@
                     <label for="confirmPassword">Confirm Password</label>
                     <input type="password" id="confirmPassword" name="confirmPassword"
                         placeholder="Confirm your password" required>
+                    <div class="focus-line"></div>
                 </div>
 
                 <div class="checkbox-group">
@@ -521,7 +681,120 @@
 
     <script src="/js/api.js"></script>
     <script>
-        // DOM Elements
+        // ═══════════════════════════════════════════════════════
+        // PARTICLE SYSTEM — Color-changing grains
+        // ═══════════════════════════════════════════════════════
+        (function () {
+            const canvas = document.getElementById('particleCanvas');
+            const ctx = canvas.getContext('2d');
+            let W, H;
+            let mouseX = -9999, mouseY = -9999;
+            const PARTICLE_COUNT = 80;
+            const particles = [];
+
+            const HUES = [235, 255, 270, 295, 320, 340, 200, 185];
+
+            function resize() {
+                W = canvas.width = window.innerWidth;
+                H = canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            document.addEventListener('mousemove', (e) => {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+            });
+            document.addEventListener('mouseleave', () => {
+                mouseX = -9999;
+                mouseY = -9999;
+            });
+
+            class Particle {
+                constructor() {
+                    this.reset();
+                }
+
+                reset() {
+                    this.x = Math.random() * W;
+                    this.y = Math.random() * H;
+                    this.baseRadius = 0.8 + Math.random() * 1.8;
+                    this.radius = this.baseRadius;
+                    this.vx = (Math.random() - 0.5) * 0.3;
+                    this.vy = (Math.random() - 0.5) * 0.3;
+                    this.hueIndex = Math.random() * HUES.length;
+                    this.hueSpeed = 0.003 + Math.random() * 0.008;
+                    this.baseSat = 60 + Math.random() * 30;
+                    this.baseLight = 55 + Math.random() * 20;
+                    this.baseAlpha = 0.15 + Math.random() * 0.35;
+                    this.alpha = this.baseAlpha;
+                    this.twinklePhase = Math.random() * Math.PI * 2;
+                    this.twinkleSpeed = 0.008 + Math.random() * 0.015;
+                }
+
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+
+                    if (this.x < -10) this.x = W + 10;
+                    if (this.x > W + 10) this.x = -10;
+                    if (this.y < -10) this.y = H + 10;
+                    if (this.y > H + 10) this.y = -10;
+
+                    this.hueIndex = (this.hueIndex + this.hueSpeed) % HUES.length;
+
+                    this.twinklePhase += this.twinkleSpeed;
+                    const twinkle = 0.7 + 0.3 * Math.sin(this.twinklePhase);
+
+                    const dx = this.x - mouseX;
+                    const dy = this.y - mouseY;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    const influence = Math.max(0, 1 - dist / 180);
+
+                    this.alpha = (this.baseAlpha * twinkle) + influence * 0.45;
+                    this.radius = this.baseRadius + influence * 2.5;
+                }
+
+                draw() {
+                    const i = Math.floor(this.hueIndex);
+                    const frac = this.hueIndex - i;
+                    const h1 = HUES[i % HUES.length];
+                    const h2 = HUES[(i + 1) % HUES.length];
+                    const hue = h1 + (h2 - h1) * frac;
+
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = `hsla(${hue}, ${this.baseSat}%, ${this.baseLight}%, ${this.alpha})`;
+                    ctx.fill();
+
+                    if (this.alpha > 0.35) {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.radius * 2.5, 0, Math.PI * 2);
+                        ctx.fillStyle = `hsla(${hue}, ${this.baseSat}%, ${this.baseLight}%, ${(this.alpha - 0.35) * 0.3})`;
+                        ctx.fill();
+                    }
+                }
+            }
+
+            for (let i = 0; i < PARTICLE_COUNT; i++) {
+                particles.push(new Particle());
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, W, H);
+                for (const p of particles) {
+                    p.update();
+                    p.draw();
+                }
+                requestAnimationFrame(animate);
+            }
+            animate();
+        })();
+
+
+        // ═══════════════════════════════════════════════════════
+        // SIGNUP LOGIC
+        // ═══════════════════════════════════════════════════════
         const signupForm = document.getElementById('signupForm');
         const submitBtn = document.getElementById('submitBtn');
         const errorMessage = document.getElementById('errorMessage');
@@ -529,7 +802,6 @@
         const passwordInput = document.getElementById('password');
         const passwordStrength = document.getElementById('passwordStrength');
 
-        // Auto-detect API base
         const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
             ? 'http://localhost:8000' : window.location.origin;
 
@@ -561,7 +833,6 @@
             const confirmPassword = document.getElementById('confirmPassword').value;
             const terms = document.getElementById('terms').checked;
 
-            // Validate
             if (!fullName || !email || !password) {
                 showError('Please fill in all required fields');
                 return;
@@ -592,7 +863,6 @@
                 return;
             }
 
-            // Show loading
             submitBtn.classList.add('loading');
             submitBtn.disabled = true;
             hideMessages();
@@ -600,9 +870,7 @@
             try {
                 const response = await fetch(`${API_BASE}/api/auth/signup`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         email: email,
                         password: password,
@@ -615,14 +883,12 @@
                 const data = await response.json();
 
                 if (response.ok) {
-                    // Save tokens
                     localStorage.setItem('access_token', data.access_token);
                     localStorage.setItem('refresh_token', data.refresh_token);
                     localStorage.setItem('user', JSON.stringify(data.user));
 
                     showSuccess('Account created! Redirecting to setup...');
 
-                    // Redirect to onboarding
                     setTimeout(() => {
                         window.location.href = '/pages/onboarding.html';
                     }, 1000);
