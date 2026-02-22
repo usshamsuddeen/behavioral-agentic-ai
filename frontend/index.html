@@ -48,18 +48,23 @@
         /* LEFT: scrolling text steps */
         .hiw-steps {
             flex: 1;
-            padding: 0 2rem 100vh 2rem;
+            padding: 0 2rem 4rem 2rem;
         }
 
         .hiw-step {
-            min-height: 70vh;
+            min-height: 60vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            padding: 3rem 1rem 3rem 0;
+            padding: 2rem 1rem 2rem 0;
             opacity: 0.25;
             transform: translateY(10px);
             transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .hiw-step:last-child {
+            min-height: 50vh;
+            padding-bottom: 0;
         }
 
         .hiw-step.active {
@@ -112,10 +117,17 @@
         .hiw-visual {
             flex: 0 0 480px;
             position: sticky;
-            top: 120px;
+            top: 50%;
+            transform: translateY(-50%);
             height: fit-content;
             padding: 0 2rem 0 0;
             align-self: flex-start;
+            transition: opacity 0.4s ease;
+        }
+
+        .hiw-visual.faded {
+            opacity: 0;
+            pointer-events: none;
         }
 
         .hiw-card {
@@ -528,12 +540,7 @@
             transition: width 1.2s ease;
         }
 
-        .lang-accuracy {
-            font-size: 0.7rem;
-            font-weight: 600;
-            color: var(--primary-400);
-            margin-top: 4px;
-        }
+
 
 
         /* ═══════════════════════════════════════════════════════
@@ -1153,7 +1160,6 @@
                         <div class="lang-bar-track">
                             <div class="lang-bar-fill" style="width: 0"></div>
                         </div>
-                        <div class="lang-accuracy">96% accuracy</div>
                     </div>
                 </div>
                 <div class="lang-card" data-acc="94">
@@ -1164,7 +1170,6 @@
                         <div class="lang-bar-track">
                             <div class="lang-bar-fill" style="width: 0"></div>
                         </div>
-                        <div class="lang-accuracy">94% accuracy</div>
                     </div>
                 </div>
                 <div class="lang-card" data-acc="93">
@@ -1175,7 +1180,6 @@
                         <div class="lang-bar-track">
                             <div class="lang-bar-fill" style="width: 0"></div>
                         </div>
-                        <div class="lang-accuracy">93% accuracy</div>
                     </div>
                 </div>
                 <div class="lang-card" data-acc="92">
@@ -1186,7 +1190,6 @@
                         <div class="lang-bar-track">
                             <div class="lang-bar-fill" style="width: 0"></div>
                         </div>
-                        <div class="lang-accuracy">92% accuracy</div>
                     </div>
                 </div>
                 <div class="lang-card" data-acc="91">
@@ -1197,7 +1200,6 @@
                         <div class="lang-bar-track">
                             <div class="lang-bar-fill" style="width: 0"></div>
                         </div>
-                        <div class="lang-accuracy">91% accuracy</div>
                     </div>
                 </div>
                 <div class="lang-card" data-acc="90">
@@ -1208,7 +1210,6 @@
                         <div class="lang-bar-track">
                             <div class="lang-bar-fill" style="width: 0"></div>
                         </div>
-                        <div class="lang-accuracy">90% accuracy</div>
                     </div>
                 </div>
             </div>
@@ -1302,11 +1303,23 @@
                     }
                 });
             }, {
-                rootMargin: '-35% 0px -35% 0px',
-                threshold: 0.1
+                rootMargin: '-30% 0px -30% 0px',
+                threshold: 0.15
             });
 
             steps.forEach(s => stepObserver.observe(s));
+
+            // Fade out the sticky visual when HiW section leaves viewport
+            const hiwSection = document.querySelector('.hiw-section');
+            const hiwVisual = document.querySelector('.hiw-visual');
+            if (hiwSection && hiwVisual) {
+                const sectionObserver = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        hiwVisual.classList.toggle('faded', !entry.isIntersecting);
+                    });
+                }, { threshold: 0.05 });
+                sectionObserver.observe(hiwSection);
+            }
 
             // ═══════════════════════════════════════════════════════
             // LANGUAGE ACCURACY BARS — Animate on scroll
