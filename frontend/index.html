@@ -32,7 +32,7 @@
 
         .hiw-header {
             text-align: center;
-            padding: 80px 2rem 40px;
+            padding: 80px 2rem 60px;
             max-width: 600px;
             margin: 0 auto;
         }
@@ -52,7 +52,7 @@
         }
 
         .hiw-step {
-            min-height: 60vh;
+            min-height: 55vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -62,8 +62,12 @@
             transition: opacity 0.5s ease, transform 0.5s ease;
         }
 
+        .hiw-step:first-child {
+            padding-top: 3rem;
+        }
+
         .hiw-step:last-child {
-            min-height: 50vh;
+            min-height: 45vh;
             padding-bottom: 0;
         }
 
@@ -117,8 +121,7 @@
         .hiw-visual {
             flex: 0 0 480px;
             position: sticky;
-            top: 50%;
-            transform: translateY(-50%);
+            top: 100px;
             height: fit-content;
             padding: 0 2rem 0 0;
             align-self: flex-start;
