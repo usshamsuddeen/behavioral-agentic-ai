@@ -7,13 +7,11 @@
     <meta name="description" content="Behavioral Agentic AI - Create Account">
     <title>Sign Up | Behavioral Agentic AI</title>
 
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
 
-    <!-- Stylesheets -->
     <link rel="stylesheet" href="/css/design-system.css">
     <link rel="stylesheet" href="/css/components.css">
 
@@ -27,205 +25,125 @@
         body {
             font-family: 'Inter', sans-serif;
             background: #07070d;
-            min-height: 100vh;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           SPLIT-SCREEN LAYOUT
+           ═══════════════════════════════════════════════════════ */
+        .auth-layout {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* ── LEFT PANEL — Branding & Particles ─────────────── */
+        .auth-brand {
+            flex: 0 0 42%;
             position: relative;
-        }
-
-        /* ── Particle Canvas ─────────────────────────────────── */
-        #particleCanvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            pointer-events: none;
-        }
-
-        /* ── Ambient Glow Orbs ───────────────────────────────── */
-        .ambient-glow {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 3rem;
             overflow: hidden;
-            pointer-events: none;
+            background: linear-gradient(160deg, #0c0c1a 0%, #12122a 100%);
         }
 
-        .ambient-glow .orb {
+        .auth-brand canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        /* Ambient orbs */
+        .auth-brand .orb {
             position: absolute;
             border-radius: 50%;
-            filter: blur(120px);
-            opacity: 0.18;
+            filter: blur(100px);
+            opacity: 0.22;
+            pointer-events: none;
         }
 
-        .ambient-glow .orb--1 {
-            width: 480px;
-            height: 480px;
+        .auth-brand .orb--1 {
+            width: 380px;
+            height: 380px;
             background: radial-gradient(circle, #667eea, #764ba2);
-            top: -12%;
-            right: -8%;
-            animation: orbFloat1 25s ease-in-out infinite;
+            top: -10%;
+            left: -15%;
+            animation: orbA 25s ease-in-out infinite;
         }
 
-        .ambient-glow .orb--2 {
-            width: 420px;
-            height: 420px;
-            background: radial-gradient(circle, #2ed573, #1e90ff);
-            bottom: -10%;
-            left: -10%;
-            animation: orbFloat2 30s ease-in-out infinite;
-        }
-
-        .ambient-glow .orb--3 {
-            width: 260px;
-            height: 260px;
+        .auth-brand .orb--2 {
+            width: 300px;
+            height: 300px;
             background: radial-gradient(circle, #f093fb, #c471f5);
-            top: 45%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            animation: orbFloat3 22s ease-in-out infinite;
+            bottom: -8%;
+            right: -12%;
+            animation: orbB 30s ease-in-out infinite;
         }
 
-        @keyframes orbFloat1 {
+        @keyframes orbA {
 
             0%,
             100% {
                 transform: translate(0, 0) scale(1);
-            }
-
-            33% {
-                transform: translate(-40px, 50px) scale(1.08);
-            }
-
-            66% {
-                transform: translate(25px, 30px) scale(0.95);
-            }
-        }
-
-        @keyframes orbFloat2 {
-
-            0%,
-            100% {
-                transform: translate(0, 0) scale(1);
-            }
-
-            33% {
-                transform: translate(50px, -35px) scale(1.1);
-            }
-
-            66% {
-                transform: translate(-30px, -20px) scale(0.92);
-            }
-        }
-
-        @keyframes orbFloat3 {
-
-            0%,
-            100% {
-                transform: translate(-50%, -50%) scale(1);
             }
 
             50% {
-                transform: translate(-55%, -45%) scale(1.12);
+                transform: translate(30px, 40px) scale(1.1);
             }
         }
 
-        /* ── Signup Container ────────────────────────────────── */
-        .signup-container {
-            position: relative;
-            z-index: 1;
-            width: 100%;
-            max-width: 580px;
-            padding: 1.25rem;
-            animation: cardEntry 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+        @keyframes orbB {
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            50% {
+                transform: translate(-25px, -30px) scale(1.08);
+            }
         }
 
-        @keyframes cardEntry {
+        .brand-content {
+            position: relative;
+            z-index: 1;
+            animation: brandEntry 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+
+        @keyframes brandEntry {
             from {
                 opacity: 0;
-                transform: translateY(24px) scale(0.98);
-                filter: blur(4px);
+                transform: translateX(-20px);
             }
 
             to {
                 opacity: 1;
-                transform: translateY(0) scale(1);
-                filter: blur(0);
+                transform: translateX(0);
             }
         }
 
-        /* ── Glass Card ──────────────────────────────────────── */
-        .signup-card {
-            background: rgba(255, 255, 255, 0.025);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border-radius: 24px;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            padding: 2rem 2.25rem;
-            box-shadow:
-                0 32px 64px rgba(0, 0, 0, 0.5),
-                0 0 0 1px rgba(255, 255, 255, 0.04) inset,
-                0 1px 0 rgba(255, 255, 255, 0.06) inset;
-            position: relative;
-            overflow: hidden;
-        }
-
-        /* Shimmer line at top */
-        .signup-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: linear-gradient(90deg,
-                    transparent 0%,
-                    rgba(46, 213, 115, 0.3) 25%,
-                    rgba(102, 126, 234, 0.5) 50%,
-                    rgba(167, 139, 250, 0.3) 75%,
-                    transparent 100%);
-            animation: shimmer 4s ease-in-out infinite;
-        }
-
-        @keyframes shimmer {
-
-            0%,
-            100% {
-                opacity: 0.4;
-            }
-
-            50% {
-                opacity: 1;
-            }
-        }
-
-        /* ── Logo ────────────────────────────────────────────── */
-        .signup-logo {
+        .brand-logo {
             display: flex;
             align-items: center;
-            justify-content: center;
             gap: 12px;
-            margin-bottom: 1rem;
+            margin-bottom: 2.5rem;
+            text-decoration: none;
         }
 
-        .signup-logo-icon {
-            width: 48px;
-            height: 48px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 14px;
+        .brand-logo-icon {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow:
-                0 8px 24px rgba(102, 126, 234, 0.35),
-                0 0 0 1px rgba(102, 126, 234, 0.15);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.35);
             animation: logoPulse 3s ease-in-out infinite;
         }
 
@@ -233,56 +151,190 @@
 
             0%,
             100% {
-                box-shadow: 0 8px 24px rgba(102, 126, 234, 0.35), 0 0 0 1px rgba(102, 126, 234, 0.15);
+                box-shadow: 0 6px 20px rgba(102, 126, 234, 0.35);
             }
 
             50% {
-                box-shadow: 0 8px 32px rgba(102, 126, 234, 0.5), 0 0 0 1px rgba(102, 126, 234, 0.25);
+                box-shadow: 0 6px 28px rgba(102, 126, 234, 0.5);
             }
         }
 
-        .signup-logo-icon svg {
-            width: 28px;
-            height: 28px;
-            color: white;
+        .brand-logo-icon svg {
+            width: 24px;
+            height: 24px;
+            color: #fff;
         }
 
-        .signup-logo-text {
-            font-size: 1.5rem;
+        .brand-logo-text {
+            font-size: 1.3rem;
             font-weight: 700;
-            background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
+            background: linear-gradient(135deg, #fff, #a5b4fc);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
 
-        /* ── Header ──────────────────────────────────────────── */
-        .signup-header {
-            text-align: center;
-            margin-bottom: 1rem;
+        .brand-headline {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #fff;
+            line-height: 1.2;
+            letter-spacing: -0.03em;
+            margin-bottom: 0.75rem;
         }
 
-        .signup-header h1 {
-            font-size: 1.75rem;
+        .brand-headline span {
+            background: linear-gradient(135deg, #667eea, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .brand-subtitle {
+            color: rgba(255, 255, 255, 0.45);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 2.5rem;
+            max-width: 340px;
+        }
+
+        /* Feature list */
+        .brand-features {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .brand-features li {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: rgba(255, 255, 255, 0.65);
+            font-size: 0.9rem;
+        }
+
+        .feature-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: rgba(102, 126, 234, 0.12);
+            border: 1px solid rgba(102, 126, 234, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        /* Divider line between panels */
+        .auth-divider {
+            width: 1px;
+            background: linear-gradient(180deg,
+                    transparent 10%,
+                    rgba(102, 126, 234, 0.2) 30%,
+                    rgba(167, 139, 250, 0.3) 50%,
+                    rgba(102, 126, 234, 0.2) 70%,
+                    transparent 90%);
+            flex-shrink: 0;
+        }
+
+        /* ── RIGHT PANEL — Form ────────────────────────────── */
+        .auth-form-panel {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            position: relative;
+            background: #0a0a12;
+        }
+
+        .auth-form-wrap {
+            width: 100%;
+            max-width: 420px;
+            animation: formEntry 0.7s 0.15s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+
+        @keyframes formEntry {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+                filter: blur(3px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+                filter: blur(0);
+            }
+        }
+
+        .form-header {
+            margin-bottom: 1.75rem;
+        }
+
+        .form-header h1 {
+            font-size: 1.6rem;
             font-weight: 700;
             color: #fff;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.35rem;
             letter-spacing: -0.02em;
         }
 
-        .signup-header p {
-            color: rgba(255, 255, 255, 0.45);
-            font-size: 0.95rem;
+        .form-header p {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.9rem;
         }
 
-        /* ── Form ────────────────────────────────────────────── */
+        /* ── Messages ──────────────────────────────────────── */
+        .error-message,
+        .success-message {
+            border-radius: 10px;
+            padding: 0.7rem 0.9rem;
+            font-size: 0.82rem;
+            display: none;
+            margin-bottom: 0.75rem;
+            animation: msgSlide 0.3s ease;
+        }
+
+        .error-message {
+            background: rgba(245, 87, 108, 0.08);
+            border: 1px solid rgba(245, 87, 108, 0.2);
+            color: #f5576c;
+        }
+
+        .success-message {
+            background: rgba(46, 213, 115, 0.08);
+            border: 1px solid rgba(46, 213, 115, 0.2);
+            color: #2ed573;
+        }
+
+        .error-message.show,
+        .success-message.show {
+            display: block;
+        }
+
+        @keyframes msgSlide {
+            from {
+                opacity: 0;
+                transform: translateY(-4px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ── Form ──────────────────────────────────────────── */
         .signup-form {
             display: flex;
             flex-direction: column;
-            gap: 0.85rem;
+            gap: 1rem;
         }
 
-        .form-row-2col {
+        .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 0.85rem;
@@ -291,63 +343,53 @@
         .form-group {
             display: flex;
             flex-direction: column;
-            gap: 0.35rem;
+            gap: 0.3rem;
             position: relative;
         }
 
-        .form-group.full-width {
-            grid-column: 1 / -1;
-        }
-
         .form-group label {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 500;
-            color: rgba(255, 255, 255, 0.55);
+            color: rgba(255, 255, 255, 0.5);
             text-transform: uppercase;
             letter-spacing: 0.06em;
         }
 
         .form-group input {
             width: 100%;
-            padding: 0.7rem 0.95rem;
+            padding: 0.7rem 0.9rem;
             background: rgba(255, 255, 255, 0.04);
             border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 12px;
+            border-radius: 10px;
             color: #fff;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             font-family: inherit;
-            transition: border-color 0.3s ease, background 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+            transition: border-color 0.3s, background 0.3s, box-shadow 0.3s;
         }
 
         .form-group input::placeholder {
-            color: rgba(255, 255, 255, 0.22);
+            color: rgba(255, 255, 255, 0.2);
         }
 
         .form-group input:focus {
             outline: none;
-            border-color: rgba(102, 126, 234, 0.6);
-            background: rgba(102, 126, 234, 0.06);
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
-            transform: scale(1.008);
+            border-color: rgba(102, 126, 234, 0.55);
+            background: rgba(102, 126, 234, 0.05);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
-        .form-group input.error {
-            border-color: #f5576c;
-            background: rgba(245, 87, 108, 0.06);
-        }
-
-        /* Animated underline on focus */
+        /* Focus underline */
         .form-group .focus-line {
             position: absolute;
             bottom: 0;
-            left: 12px;
-            right: 12px;
+            left: 10px;
+            right: 10px;
             height: 2px;
             border-radius: 1px;
             background: linear-gradient(90deg, #667eea, #a78bfa, #667eea);
             background-size: 200% 100%;
             transform: scaleX(0);
-            transition: transform 0.3s ease;
+            transition: transform 0.3s;
             transform-origin: left;
         }
 
@@ -366,19 +408,19 @@
             }
         }
 
-        /* ── Password Strength ───────────────────────────────── */
+        /* Password strength */
         .password-strength {
             display: flex;
-            gap: 4px;
-            margin-top: 6px;
+            gap: 3px;
+            margin-top: 4px;
         }
 
         .password-strength .bar {
             flex: 1;
             height: 3px;
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.06);
             border-radius: 2px;
-            transition: all 0.3s ease;
+            transition: all 0.3s;
         }
 
         .password-strength.weak .bar:nth-child(1) {
@@ -401,12 +443,12 @@
         }
 
         .password-hint {
-            font-size: 0.72rem;
-            color: rgba(255, 255, 255, 0.35);
-            margin-top: 4px;
+            font-size: 0.68rem;
+            color: rgba(255, 255, 255, 0.3);
+            margin-top: 2px;
         }
 
-        /* ── Terms Checkbox ──────────────────────────────────── */
+        /* Terms */
         .checkbox-group {
             display: flex;
             align-items: flex-start;
@@ -414,22 +456,22 @@
         }
 
         .checkbox-group input[type="checkbox"] {
-            width: 16px;
-            height: 16px;
-            margin-top: 3px;
+            width: 15px;
+            height: 15px;
+            margin-top: 2px;
             accent-color: #667eea;
             cursor: pointer;
             flex-shrink: 0;
         }
 
         .checkbox-group label {
-            font-size: 0.82rem;
-            color: rgba(255, 255, 255, 0.5);
-            line-height: 1.45;
+            font-size: 0.78rem;
+            color: rgba(255, 255, 255, 0.45);
+            line-height: 1.4;
         }
 
         .checkbox-group a {
-            color: rgba(102, 126, 234, 0.9);
+            color: rgba(102, 126, 234, 0.85);
             text-decoration: none;
         }
 
@@ -437,21 +479,21 @@
             text-decoration: underline;
         }
 
-        /* ── Submit Button ───────────────────────────────────── */
+        /* Submit */
         .btn-submit {
             width: 100%;
             padding: 0.8rem;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #667eea, #764ba2);
             border: none;
-            border-radius: 12px;
+            border-radius: 10px;
             color: #fff;
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s;
             position: relative;
             overflow: hidden;
-            letter-spacing: 0.01em;
+            margin-top: 0.25rem;
         }
 
         .btn-submit::before {
@@ -461,9 +503,9 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, #764ba2 0%, #c471f5 100%);
+            background: linear-gradient(135deg, #764ba2, #c471f5);
             opacity: 0;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.3s;
         }
 
         .btn-submit span {
@@ -477,7 +519,7 @@
 
         .btn-submit:hover {
             transform: translateY(-2px);
-            box-shadow: 0 12px 32px rgba(102, 126, 234, 0.35);
+            box-shadow: 0 10px 28px rgba(102, 126, 234, 0.3);
         }
 
         .btn-submit:disabled {
@@ -488,8 +530,8 @@
 
         .btn-submit .spinner {
             display: none;
-            width: 20px;
-            height: 20px;
+            width: 18px;
+            height: 18px;
             border: 2px solid rgba(255, 255, 255, 0.3);
             border-top-color: #fff;
             border-radius: 50%;
@@ -510,299 +552,285 @@
             }
         }
 
-        /* ── Footer ──────────────────────────────────────────── */
-        .signup-footer {
+        /* Footer */
+        .form-footer {
             text-align: center;
-            margin-top: 1rem;
-            color: rgba(255, 255, 255, 0.4);
+            margin-top: 1.25rem;
+            color: rgba(255, 255, 255, 0.35);
             font-size: 0.85rem;
         }
 
-        .signup-footer a {
-            color: rgba(102, 126, 234, 0.9);
+        .form-footer a {
+            color: rgba(102, 126, 234, 0.85);
             text-decoration: none;
             font-weight: 500;
         }
 
-        .signup-footer a:hover {
+        .form-footer a:hover {
             color: #a5b4fc;
         }
 
-        /* ── Messages ────────────────────────────────────────── */
-        .error-message {
-            background: rgba(245, 87, 108, 0.08);
-            border: 1px solid rgba(245, 87, 108, 0.25);
-            border-radius: 10px;
-            padding: 0.75rem 1rem;
-            color: #f5576c;
-            font-size: 0.85rem;
-            display: none;
-            animation: msgSlide 0.3s ease;
-        }
-
-        .success-message {
-            background: rgba(46, 213, 115, 0.08);
-            border: 1px solid rgba(46, 213, 115, 0.25);
-            border-radius: 10px;
-            padding: 0.75rem 1rem;
-            color: #2ed573;
-            font-size: 0.85rem;
-            display: none;
-            animation: msgSlide 0.3s ease;
-        }
-
-        .error-message.show,
-        .success-message.show {
-            display: block;
-        }
-
-        @keyframes msgSlide {
-            from {
-                opacity: 0;
-                transform: translateY(-6px);
+        /* ═══════════════════════════════════════════════════════
+           RESPONSIVE — stack panels on mobile
+           ═══════════════════════════════════════════════════════ */
+        @media (max-width: 860px) {
+            .auth-layout {
+                flex-direction: column;
+                height: auto;
+                min-height: 100vh;
             }
 
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* ── Responsive ──────────────────────────────────────── */
-        @media (max-width: 620px) {
-            .signup-container {
-                padding: 1rem;
+            .auth-brand {
+                flex: none;
+                padding: 2rem;
             }
 
-            .signup-card {
-                padding: 1.5rem 1.25rem;
+            .brand-headline {
+                font-size: 1.5rem;
             }
 
-            .form-row-2col {
+            .brand-features {
+                display: none;
+            }
+
+            .auth-divider {
+                width: 100%;
+                height: 1px;
+            }
+
+            .auth-form-panel {
+                padding: 1.5rem;
+            }
+
+            .form-row {
                 grid-template-columns: 1fr;
+            }
+
+            body {
+                overflow-y: auto;
             }
         }
     </style>
 </head>
 
 <body>
-    <!-- Ambient Glow Orbs -->
-    <div class="ambient-glow">
-        <div class="orb orb--1"></div>
-        <div class="orb orb--2"></div>
-        <div class="orb orb--3"></div>
-    </div>
+    <div class="auth-layout">
 
-    <!-- Particle Canvas -->
-    <canvas id="particleCanvas"></canvas>
+        <!-- ── LEFT: Branding Panel ──────────────────────── -->
+        <div class="auth-brand">
+            <div class="orb orb--1"></div>
+            <div class="orb orb--2"></div>
+            <canvas id="particleCanvas"></canvas>
 
-    <!-- Signup Container -->
-    <div class="signup-container">
-        <div class="signup-card">
-            <!-- Logo -->
-            <div class="signup-logo">
-                <a href="/" style="display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;">
-                    <div class="signup-logo-icon">
+            <div class="brand-content">
+                <a href="/" class="brand-logo">
+                    <div class="brand-logo-icon">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M12 2L2 7l10 5 10-5-10-5z" />
                             <path d="M2 17l10 5 10-5" />
                             <path d="M2 12l10 5 10-5" />
                         </svg>
                     </div>
-                    <span class="signup-logo-text">Behavioral AI</span>
+                    <span class="brand-logo-text">Behavioral AI</span>
                 </a>
-            </div>
 
-            <!-- Header -->
-            <div class="signup-header">
-                <h1>Create Account</h1>
-                <p>Start your free trial — no credit card required</p>
-            </div>
+                <h2 class="brand-headline">
+                    Build smarter<br>customer <span>conversations</span>
+                </h2>
+                <p class="brand-subtitle">
+                    Deploy an AI-powered chat widget on your website in minutes. Understand customer behavior and
+                    automate support.
+                </p>
 
-            <!-- Messages -->
-            <div class="error-message" id="errorMessage"></div>
-            <div class="success-message" id="successMessage"></div>
-
-            <!-- Signup Form -->
-            <form class="signup-form" id="signupForm">
-                <div class="form-row-2col">
-                    <div class="form-group">
-                        <label for="fullName">Full Name</label>
-                        <input type="text" id="fullName" name="fullName" placeholder="Your full name" required>
-                        <div class="focus-line"></div>
-                    </div>
-                    <div class="form-group">
-                        <label for="email">Email Address</label>
-                        <input type="email" id="email" name="email" placeholder="you@company.com" required>
-                        <div class="focus-line"></div>
-                    </div>
-                </div>
-
-                <div class="form-row-2col">
-                    <div class="form-group">
-                        <label for="company">Company / Store</label>
-                        <input type="text" id="company" name="company" placeholder="Your company name">
-                        <div class="focus-line"></div>
-                    </div>
-                    <div class="form-group">
-                        <label for="storeUrl">Store URL <span
-                                style="font-weight:400;opacity:0.55">(Optional)</span></label>
-                        <input type="url" id="storeUrl" name="storeUrl" placeholder="https://your-store.com">
-                        <div class="focus-line"></div>
-                    </div>
-                </div>
-
-                <div class="form-row-2col">
-                    <div class="form-group">
-                        <label for="password">Password</label>
-                        <input type="password" id="password" name="password" placeholder="Create a password" required
-                            minlength="8">
-                        <div class="focus-line"></div>
-                        <div class="password-strength" id="passwordStrength">
-                            <div class="bar"></div>
-                            <div class="bar"></div>
-                            <div class="bar"></div>
-                            <div class="bar"></div>
-                        </div>
-                        <span class="password-hint">Min 8 chars, 1 uppercase, 1 number</span>
-                    </div>
-                    <div class="form-group">
-                        <label for="confirmPassword">Confirm Password</label>
-                        <input type="password" id="confirmPassword" name="confirmPassword"
-                            placeholder="Re-enter password" required>
-                        <div class="focus-line"></div>
-                    </div>
-                </div>
-
-                <div class="checkbox-group">
-                    <input type="checkbox" id="terms" name="terms" required>
-                    <label for="terms">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy
-                            Policy</a></label>
-                </div>
-
-                <button type="submit" class="btn-submit" id="submitBtn">
-                    <span class="btn-text">Create Account</span>
-                    <span class="spinner"></span>
-                </button>
-            </form>
-
-            <!-- Footer -->
-            <div class="signup-footer">
-                Already have an account? <a href="/pages/login.html">Sign in</a>
+                <ul class="brand-features">
+                    <li>
+                        <div class="feature-icon">🤖</div>
+                        AI-powered auto-responses with your knowledge base
+                    </li>
+                    <li>
+                        <div class="feature-icon">📊</div>
+                        Real-time sentiment analysis on every conversation
+                    </li>
+                    <li>
+                        <div class="feature-icon">⚡</div>
+                        One-line embed — live on your site in 30 seconds
+                    </li>
+                    <li>
+                        <div class="feature-icon">🔒</div>
+                        Multi-tenant SaaS with full data isolation
+                    </li>
+                </ul>
             </div>
         </div>
+
+        <!-- Divider -->
+        <div class="auth-divider"></div>
+
+        <!-- ── RIGHT: Form Panel ─────────────────────────── -->
+        <div class="auth-form-panel">
+            <div class="auth-form-wrap">
+                <div class="form-header">
+                    <h1>Create your account</h1>
+                    <p>Free to start — no credit card required</p>
+                </div>
+
+                <div class="error-message" id="errorMessage"></div>
+                <div class="success-message" id="successMessage"></div>
+
+                <form class="signup-form" id="signupForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="fullName">Full Name</label>
+                            <input type="text" id="fullName" name="fullName" placeholder="John Doe" required>
+                            <div class="focus-line"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" placeholder="you@company.com" required>
+                            <div class="focus-line"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="company">Company</label>
+                            <input type="text" id="company" name="company" placeholder="Acme Inc.">
+                            <div class="focus-line"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="storeUrl">Store URL <span style="opacity:0.5">(optional)</span></label>
+                            <input type="url" id="storeUrl" name="storeUrl" placeholder="https://...">
+                            <div class="focus-line"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" id="password" name="password" placeholder="••••••••" required
+                                minlength="8">
+                            <div class="focus-line"></div>
+                            <div class="password-strength" id="passwordStrength">
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                                <div class="bar"></div>
+                            </div>
+                            <span class="password-hint">8+ chars, 1 uppercase, 1 number</span>
+                        </div>
+                        <div class="form-group">
+                            <label for="confirmPassword">Confirm</label>
+                            <input type="password" id="confirmPassword" name="confirmPassword" placeholder="••••••••"
+                                required>
+                            <div class="focus-line"></div>
+                        </div>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="terms" name="terms" required>
+                        <label for="terms">I agree to the <a href="#">Terms</a> and <a href="#">Privacy
+                                Policy</a></label>
+                    </div>
+
+                    <button type="submit" class="btn-submit" id="submitBtn">
+                        <span class="btn-text">Create Account</span>
+                        <span class="spinner"></span>
+                    </button>
+                </form>
+
+                <div class="form-footer">
+                    Already have an account? <a href="/pages/login.html">Sign in</a>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <script src="/js/api.js"></script>
     <script>
         // ═══════════════════════════════════════════════════════
-        // PARTICLE SYSTEM — Color-changing grains
+        // PARTICLE SYSTEM (left panel only)
         // ═══════════════════════════════════════════════════════
         (function () {
             const canvas = document.getElementById('particleCanvas');
             const ctx = canvas.getContext('2d');
+            const brand = canvas.parentElement;
             let W, H;
             let mouseX = -9999, mouseY = -9999;
-            const PARTICLE_COUNT = 80;
+            const COUNT = 60;
             const particles = [];
-
             const HUES = [235, 255, 270, 295, 320, 340, 200, 185];
 
             function resize() {
-                W = canvas.width = window.innerWidth;
-                H = canvas.height = window.innerHeight;
+                const r = brand.getBoundingClientRect();
+                W = canvas.width = r.width;
+                H = canvas.height = r.height;
             }
             window.addEventListener('resize', resize);
             resize();
 
-            document.addEventListener('mousemove', (e) => {
-                mouseX = e.clientX;
-                mouseY = e.clientY;
+            brand.addEventListener('mousemove', (e) => {
+                const r = brand.getBoundingClientRect();
+                mouseX = e.clientX - r.left;
+                mouseY = e.clientY - r.top;
             });
-            document.addEventListener('mouseleave', () => {
-                mouseX = -9999;
-                mouseY = -9999;
-            });
+            brand.addEventListener('mouseleave', () => { mouseX = -9999; mouseY = -9999; });
 
-            class Particle {
-                constructor() {
-                    this.reset();
-                }
-
-                reset() {
+            class P {
+                constructor() { this.init(); }
+                init() {
                     this.x = Math.random() * W;
                     this.y = Math.random() * H;
-                    this.baseRadius = 0.8 + Math.random() * 1.8;
-                    this.radius = this.baseRadius;
-                    this.vx = (Math.random() - 0.5) * 0.3;
-                    this.vy = (Math.random() - 0.5) * 0.3;
-                    this.hueIndex = Math.random() * HUES.length;
-                    this.hueSpeed = 0.003 + Math.random() * 0.008;
-                    this.baseSat = 60 + Math.random() * 30;
-                    this.baseLight = 55 + Math.random() * 20;
-                    this.baseAlpha = 0.15 + Math.random() * 0.35;
-                    this.alpha = this.baseAlpha;
-                    this.twinklePhase = Math.random() * Math.PI * 2;
-                    this.twinkleSpeed = 0.008 + Math.random() * 0.015;
+                    this.r0 = 0.6 + Math.random() * 1.6;
+                    this.r = this.r0;
+                    this.vx = (Math.random() - 0.5) * 0.25;
+                    this.vy = (Math.random() - 0.5) * 0.25;
+                    this.hi = Math.random() * HUES.length;
+                    this.hs = 0.003 + Math.random() * 0.007;
+                    this.sat = 60 + Math.random() * 30;
+                    this.lit = 55 + Math.random() * 20;
+                    this.a0 = 0.15 + Math.random() * 0.35;
+                    this.a = this.a0;
+                    this.tp = Math.random() * 6.28;
+                    this.ts = 0.008 + Math.random() * 0.014;
                 }
-
                 update() {
-                    this.x += this.vx;
-                    this.y += this.vy;
-
-                    if (this.x < -10) this.x = W + 10;
-                    if (this.x > W + 10) this.x = -10;
-                    if (this.y < -10) this.y = H + 10;
-                    if (this.y > H + 10) this.y = -10;
-
-                    this.hueIndex = (this.hueIndex + this.hueSpeed) % HUES.length;
-
-                    this.twinklePhase += this.twinkleSpeed;
-                    const twinkle = 0.7 + 0.3 * Math.sin(this.twinklePhase);
-
-                    const dx = this.x - mouseX;
-                    const dy = this.y - mouseY;
-                    const dist = Math.sqrt(dx * dx + dy * dy);
-                    const influence = Math.max(0, 1 - dist / 180);
-
-                    this.alpha = (this.baseAlpha * twinkle) + influence * 0.45;
-                    this.radius = this.baseRadius + influence * 2.5;
+                    this.x += this.vx; this.y += this.vy;
+                    if (this.x < -5) this.x = W + 5;
+                    if (this.x > W + 5) this.x = -5;
+                    if (this.y < -5) this.y = H + 5;
+                    if (this.y > H + 5) this.y = -5;
+                    this.hi = (this.hi + this.hs) % HUES.length;
+                    this.tp += this.ts;
+                    const tw = 0.7 + 0.3 * Math.sin(this.tp);
+                    const dx = this.x - mouseX, dy = this.y - mouseY;
+                    const inf = Math.max(0, 1 - Math.sqrt(dx * dx + dy * dy) / 160);
+                    this.a = this.a0 * tw + inf * 0.5;
+                    this.r = this.r0 + inf * 2.5;
                 }
-
                 draw() {
-                    const i = Math.floor(this.hueIndex);
-                    const frac = this.hueIndex - i;
-                    const h1 = HUES[i % HUES.length];
-                    const h2 = HUES[(i + 1) % HUES.length];
-                    const hue = h1 + (h2 - h1) * frac;
-
+                    const i = Math.floor(this.hi), f = this.hi - i;
+                    const h = HUES[i % HUES.length] + (HUES[(i + 1) % HUES.length] - HUES[i % HUES.length]) * f;
                     ctx.beginPath();
-                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                    ctx.fillStyle = `hsla(${hue}, ${this.baseSat}%, ${this.baseLight}%, ${this.alpha})`;
+                    ctx.arc(this.x, this.y, this.r, 0, 6.28);
+                    ctx.fillStyle = `hsla(${h},${this.sat}%,${this.lit}%,${this.a})`;
                     ctx.fill();
-
-                    if (this.alpha > 0.35) {
+                    if (this.a > 0.35) {
                         ctx.beginPath();
-                        ctx.arc(this.x, this.y, this.radius * 2.5, 0, Math.PI * 2);
-                        ctx.fillStyle = `hsla(${hue}, ${this.baseSat}%, ${this.baseLight}%, ${(this.alpha - 0.35) * 0.3})`;
+                        ctx.arc(this.x, this.y, this.r * 2.5, 0, 6.28);
+                        ctx.fillStyle = `hsla(${h},${this.sat}%,${this.lit}%,${(this.a - 0.35) * 0.25})`;
                         ctx.fill();
                     }
                 }
             }
 
-            for (let i = 0; i < PARTICLE_COUNT; i++) {
-                particles.push(new Particle());
-            }
+            for (let i = 0; i < COUNT; i++) particles.push(new P());
 
-            function animate() {
+            (function loop() {
                 ctx.clearRect(0, 0, W, H);
-                for (const p of particles) {
-                    p.update();
-                    p.draw();
-                }
-                requestAnimationFrame(animate);
-            }
-            animate();
+                particles.forEach(p => { p.update(); p.draw(); });
+                requestAnimationFrame(loop);
+            })();
         })();
 
 
@@ -819,27 +847,22 @@
         const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
             ? 'http://localhost:8000' : window.location.origin;
 
-        // Password strength checker
         passwordInput.addEventListener('input', () => {
-            const password = passwordInput.value;
-            let strength = 0;
-
-            if (password.length >= 8) strength++;
-            if (/[A-Z]/.test(password)) strength++;
-            if (/[0-9]/.test(password)) strength++;
-            if (/[^A-Za-z0-9]/.test(password)) strength++;
-
+            const pw = passwordInput.value;
+            let s = 0;
+            if (pw.length >= 8) s++;
+            if (/[A-Z]/.test(pw)) s++;
+            if (/[0-9]/.test(pw)) s++;
+            if (/[^A-Za-z0-9]/.test(pw)) s++;
             passwordStrength.className = 'password-strength';
-            if (strength === 1) passwordStrength.classList.add('weak');
-            else if (strength === 2) passwordStrength.classList.add('medium');
-            else if (strength === 3) passwordStrength.classList.add('strong');
-            else if (strength === 4) passwordStrength.classList.add('very-strong');
+            if (s === 1) passwordStrength.classList.add('weak');
+            else if (s === 2) passwordStrength.classList.add('medium');
+            else if (s === 3) passwordStrength.classList.add('strong');
+            else if (s === 4) passwordStrength.classList.add('very-strong');
         });
 
-        // Form Submit
         signupForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-
             const fullName = document.getElementById('fullName').value.trim();
             const email = document.getElementById('email').value.trim();
             const company = document.getElementById('company').value.trim();
@@ -847,70 +870,39 @@
             const confirmPassword = document.getElementById('confirmPassword').value;
             const terms = document.getElementById('terms').checked;
 
-            if (!fullName || !email || !password) {
-                showError('Please fill in all required fields');
-                return;
-            }
-
-            if (password !== confirmPassword) {
-                showError('Passwords do not match');
-                return;
-            }
-
-            if (password.length < 8) {
-                showError('Password must be at least 8 characters');
-                return;
-            }
-
-            if (!/[A-Z]/.test(password)) {
-                showError('Password must contain at least one uppercase letter');
-                return;
-            }
-
-            if (!/[0-9]/.test(password)) {
-                showError('Password must contain at least one number');
-                return;
-            }
-
-            if (!terms) {
-                showError('Please agree to the Terms of Service');
-                return;
-            }
+            if (!fullName || !email || !password) { showError('Please fill in all required fields'); return; }
+            if (password !== confirmPassword) { showError('Passwords do not match'); return; }
+            if (password.length < 8) { showError('Password must be at least 8 characters'); return; }
+            if (!/[A-Z]/.test(password)) { showError('Password needs at least one uppercase letter'); return; }
+            if (!/[0-9]/.test(password)) { showError('Password needs at least one number'); return; }
+            if (!terms) { showError('Please agree to the Terms of Service'); return; }
 
             submitBtn.classList.add('loading');
             submitBtn.disabled = true;
             hideMessages();
 
             try {
-                const response = await fetch(`${API_BASE}/api/auth/signup`, {
+                const res = await fetch(`${API_BASE}/api/auth/signup`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        email: email,
-                        password: password,
-                        full_name: fullName,
+                        email, password, full_name: fullName,
                         company_name: company || null,
                         store_url: document.getElementById('storeUrl').value.trim() || null
                     })
                 });
-
-                const data = await response.json();
-
-                if (response.ok) {
+                const data = await res.json();
+                if (res.ok) {
                     localStorage.setItem('access_token', data.access_token);
                     localStorage.setItem('refresh_token', data.refresh_token);
                     localStorage.setItem('user', JSON.stringify(data.user));
-
                     showSuccess('Account created! Redirecting to setup...');
-
-                    setTimeout(() => {
-                        window.location.href = '/pages/onboarding.html';
-                    }, 1000);
+                    setTimeout(() => { window.location.href = '/pages/onboarding.html'; }, 1000);
                 } else {
                     showError(data.detail || 'Signup failed. Please try again.');
                 }
-            } catch (error) {
-                console.error('Signup error:', error);
+            } catch (err) {
+                console.error('Signup error:', err);
                 showError('Unable to connect to server. Please try again later.');
             } finally {
                 submitBtn.classList.remove('loading');
@@ -918,22 +910,9 @@
             }
         });
 
-        function showError(message) {
-            errorMessage.textContent = message;
-            errorMessage.classList.add('show');
-            successMessage.classList.remove('show');
-        }
-
-        function showSuccess(message) {
-            successMessage.textContent = message;
-            successMessage.classList.add('show');
-            errorMessage.classList.remove('show');
-        }
-
-        function hideMessages() {
-            errorMessage.classList.remove('show');
-            successMessage.classList.remove('show');
-        }
+        function showError(msg) { errorMessage.textContent = msg; errorMessage.classList.add('show'); successMessage.classList.remove('show'); }
+        function showSuccess(msg) { successMessage.textContent = msg; successMessage.classList.add('show'); errorMessage.classList.remove('show'); }
+        function hideMessages() { errorMessage.classList.remove('show'); successMessage.classList.remove('show'); }
     </script>
 </body>
 
