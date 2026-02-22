@@ -70,4 +70,4 @@ ENV CORS_ORIGINS="*"
 ENV BACKEND_URL="https://sentimenta.snick.at"
 
 # ── Run ──────────────────────────────────────────────────────────
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]

@@ -157,6 +157,7 @@ class VectorStore:
         self.dimension = self.embedding_service.dimension
         
         self.collections: Dict[str, Collection] = {}
+        self._collection_mtimes: Dict[str, float] = {}  # track JSON file mtimes
         self._lock = threading.Lock()
         
         # Load existing collections
@@ -172,6 +173,7 @@ class VectorStore:
                     data = json.load(f)
                     collection = Collection.from_dict(data)
                     self.collections[collection.name] = collection
+                    self._collection_mtimes[collection.name] = json_file.stat().st_mtime
                     logger.info(f"[OK] Loaded collection: {collection.name} ({collection.count()} docs)")
             except Exception as e:
                 logger.warning(f"[WARN] Failed to load {json_file}: {e}")
@@ -185,8 +187,29 @@ class VectorStore:
         try:
             with open(filepath, 'w', encoding='utf-8') as f:
                 json.dump(self.collections[name].to_dict(), f, indent=2)
+            self._collection_mtimes[name] = filepath.stat().st_mtime
         except Exception as e:
             logger.warning(f"[WARN] Failed to save collection {name}: {e}")
+    
+    def _reload_if_stale(self, collection_name: str):
+        """Reload a collection from disk if the JSON file has been updated externally."""
+        filepath = self.persist_dir / f"{collection_name}.json"
+        if not filepath.exists():
+            return
+        
+        disk_mtime = filepath.stat().st_mtime
+        cached_mtime = self._collection_mtimes.get(collection_name, 0)
+        
+        if disk_mtime > cached_mtime:
+            try:
+                with open(filepath, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    collection = Collection.from_dict(data)
+                    self.collections[collection_name] = collection
+                    self._collection_mtimes[collection_name] = disk_mtime
+                    logger.info(f"[RELOAD] Collection '{collection_name}' refreshed from disk ({collection.count()} docs)")
+            except Exception as e:
+                logger.warning(f"[WARN] Failed to reload {collection_name}: {e}")
     
     def get_or_create_collection(self, name: str) -> Collection:
         """Get or create a collection."""
@@ -260,6 +283,9 @@ class VectorStore:
         Returns:
             List of results with text, metadata, and similarity
         """
+        # Reload from disk if another process updated the JSON file
+        self._reload_if_stale(collection_name)
+        
         if collection_name not in self.collections:
             return []
         
