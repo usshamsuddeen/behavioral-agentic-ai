@@ -4,46 +4,838 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Widget Test Page</title>
+    <meta name="description" content="Behavioral Agentic AI - Widget Test Environment">
+    <title>Widget Test | Behavioral Agentic AI</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: 'Segoe UI', sans-serif;
-            margin: 60px;
-            background: #f0f4f8;
-            color: #1e293b;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(160deg, #0c0c1a 0%, #12122a 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: #fff;
         }
 
-        h1 {
-            color: #6366f1;
+        /* ═══════════════════════════════════════════════════════
+           BACKGROUND LAYER
+           ═══════════════════════════════════════════════════════ */
+        #particleCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
         }
 
-        code {
-            background: #e2e8f0;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 14px;
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.2;
+            pointer-events: none;
+            z-index: 0;
         }
 
-        .info {
-            background: #fff;
-            padding: 20px;
+        .orb--1 {
+            width: 420px;
+            height: 420px;
+            background: radial-gradient(circle, #667eea, #764ba2);
+            top: -10%;
+            left: -10%;
+            animation: orbA 25s ease-in-out infinite;
+        }
+
+        .orb--2 {
+            width: 340px;
+            height: 340px;
+            background: radial-gradient(circle, #f093fb, #c471f5);
+            bottom: -8%;
+            right: -10%;
+            animation: orbB 30s ease-in-out infinite;
+        }
+
+        .orb--3 {
+            width: 280px;
+            height: 280px;
+            background: radial-gradient(circle, #2ed573, #17c0eb);
+            top: 55%;
+            left: 50%;
+            animation: orbA 28s ease-in-out infinite 6s;
+        }
+
+        @keyframes orbA {
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            50% {
+                transform: translate(30px, 40px) scale(1.1);
+            }
+        }
+
+        @keyframes orbB {
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            50% {
+                transform: translate(-25px, -30px) scale(1.08);
+            }
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           MAIN LAYOUT
+           ═══════════════════════════════════════════════════════ */
+        .page-wrap {
+            position: relative;
+            z-index: 1;
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 3rem 2rem 6rem;
+            animation: pageEntry 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+
+        @keyframes pageEntry {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           BRAND LOGO
+           ═══════════════════════════════════════════════════════ */
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 3rem;
+            text-decoration: none;
+        }
+
+        .brand-logo-icon {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
             border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.35);
+            animation: logoPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes logoPulse {
+
+            0%,
+            100% {
+                box-shadow: 0 6px 20px rgba(102, 126, 234, 0.35);
+            }
+
+            50% {
+                box-shadow: 0 6px 28px rgba(102, 126, 234, 0.5);
+            }
+        }
+
+        .brand-logo-icon svg {
+            width: 22px;
+            height: 22px;
+            color: #fff;
+        }
+
+        .brand-logo-text {
+            font-size: 1.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff, #a5b4fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           HERO HEADING
+           ═══════════════════════════════════════════════════════ */
+        .hero-headline {
+            font-size: 2.6rem;
+            font-weight: 800;
+            color: #fff;
+            line-height: 1.12;
+            letter-spacing: -0.03em;
+            margin-bottom: 0.75rem;
+        }
+
+        .hero-headline span {
+            background: linear-gradient(135deg, #667eea, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+            max-width: 480px;
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           STATUS BADGES
+           ═══════════════════════════════════════════════════════ */
+        .status-badges {
+            display: flex;
+            gap: 0.65rem;
+            flex-wrap: wrap;
+            margin-bottom: 2.5rem;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.55);
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            animation: dotPulse 2s ease-in-out infinite;
+        }
+
+        .status-dot--green {
+            background: #2ed573;
+        }
+
+        .status-dot--blue {
+            background: #667eea;
+        }
+
+        .status-dot--amber {
+            background: #ffa726;
+        }
+
+        @keyframes dotPulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.5;
+                transform: scale(0.7);
+            }
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           INTERACTIVE DEMO CARD — Widget Preview
+           ═══════════════════════════════════════════════════════ */
+        .demo-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(16px);
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+            animation: demoFloat 6s ease-in-out infinite;
+            margin-bottom: 2.5rem;
+        }
+
+        @keyframes demoFloat {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-6px);
+            }
+        }
+
+        .demo-card-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .demo-dots {
+            display: flex;
+            gap: 5px;
+        }
+
+        .demo-dots span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .demo-dots span:nth-child(1) {
+            background: #f5576c;
+        }
+
+        .demo-dots span:nth-child(2) {
+            background: #ffa726;
+        }
+
+        .demo-dots span:nth-child(3) {
+            background: #2ed573;
+        }
+
+        .demo-card-title {
+            font-size: 0.72rem;
+            color: rgba(255, 255, 255, 0.45);
+            font-weight: 500;
+            margin-left: 6px;
+        }
+
+        .demo-card-body {
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* Chat messages */
+        .demo-msg {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            opacity: 0;
+            animation: msgFadeIn 0.5s ease forwards;
+        }
+
+        .demo-msg:nth-child(1) {
+            animation-delay: 0.5s;
+        }
+
+        .demo-msg:nth-child(2) {
+            animation-delay: 2.2s;
+        }
+
+        .demo-msg--ai {
+            flex-direction: row-reverse;
+        }
+
+        @keyframes msgFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .demo-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .demo-avatar--user {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+        }
+
+        .demo-avatar--ai {
+            background: linear-gradient(135deg, #2ed573, #1e90ff);
+            color: #fff;
+        }
+
+        .demo-bubble {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            padding: 8px 12px;
+            max-width: 85%;
+        }
+
+        .demo-bubble-text {
+            font-size: 0.78rem;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.4;
+        }
+
+        .demo-sentiment {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 5px;
+            font-size: 0.65rem;
+            font-weight: 600;
+        }
+
+        .demo-sentiment--pos {
+            color: #2ed573;
+        }
+
+        .demo-sentiment-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #2ed573;
+            animation: dotPulse 1.5s ease-in-out infinite;
+        }
+
+        .demo-resolve-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 10px;
+            border-radius: 6px;
+            background: rgba(46, 213, 115, 0.1);
+            border: 1px solid rgba(46, 213, 115, 0.2);
+            font-size: 0.68rem;
+            font-weight: 600;
+            color: #2ed573;
+            margin-top: 2px;
+            align-self: flex-start;
+            opacity: 0;
+            animation: badgePop 0.4s ease 3s forwards;
+        }
+
+        @keyframes badgePop {
+            from {
+                opacity: 0;
+                transform: scale(0.85);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           INFO CARDS
+           ═══════════════════════════════════════════════════════ */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.85rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .info-card {
+            background: rgba(255, 255, 255, 0.025);
+            backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            padding: 1.25rem 1.15rem;
+            transition: border-color 0.3s, transform 0.3s;
+        }
+
+        .info-card:hover {
+            border-color: rgba(102, 126, 234, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .info-card-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .info-card-icon svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .info-card-icon--purple {
+            background: rgba(102, 126, 234, 0.12);
+            color: #a5b4fc;
+        }
+
+        .info-card-icon--green {
+            background: rgba(46, 213, 115, 0.12);
+            color: #2ed573;
+        }
+
+        .info-card-icon--amber {
+            background: rgba(255, 167, 38, 0.12);
+            color: #ffa726;
+        }
+
+        .info-card-icon--pink {
+            background: rgba(245, 87, 108, 0.12);
+            color: #f5576c;
+        }
+
+        .info-card h3 {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 0.25rem;
+        }
+
+        .info-card p {
+            font-size: 0.72rem;
+            color: rgba(255, 255, 255, 0.3);
+            line-height: 1.45;
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           WIDGET EMBED SECTION
+           ═══════════════════════════════════════════════════════ */
+        .widget-notice {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 1rem 1.25rem;
+            background: rgba(102, 126, 234, 0.05);
+            border: 1px solid rgba(102, 126, 234, 0.12);
+            border-radius: 12px;
+            margin-bottom: 2rem;
+        }
+
+        .widget-notice svg {
+            width: 18px;
+            height: 18px;
+            color: #a5b4fc;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .widget-notice-text {
+            font-size: 0.82rem;
+            color: rgba(255, 255, 255, 0.55);
+            line-height: 1.55;
+        }
+
+        .widget-notice-text strong {
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           FOOTER NOTE
+           ═══════════════════════════════════════════════════════ */
+        .footer-note {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .footer-note p {
+            font-size: 0.72rem;
+            color: rgba(255, 255, 255, 0.2);
+        }
+
+        .footer-note a {
+            color: #a5b4fc;
+            text-decoration: none;
+        }
+
+        .footer-note a:hover {
+            text-decoration: underline;
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           RESPONSIVE
+           ═══════════════════════════════════════════════════════ */
+        @media (max-width: 600px) {
+            .page-wrap {
+                padding: 2rem 1.25rem 5rem;
+            }
+
+            .hero-headline {
+                font-size: 1.8rem;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .status-badges {
+                gap: 0.4rem;
+            }
         }
     </style>
 </head>
 
 <body>
-    <h1>🧪 Widget Test Page</h1>
-    <div class="info">
-        <p>If the widget is working, you should see a <strong>purple chat bubble</strong> in the bottom-right corner.
+    <div class="orb orb--1"></div>
+    <div class="orb orb--2"></div>
+    <div class="orb orb--3"></div>
+    <canvas id="particleCanvas"></canvas>
+
+    <div class="page-wrap">
+
+        <!-- ═══ BRAND ═══ -->
+        <a href="/" class="brand-logo">
+            <div class="brand-logo-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                    <path d="M2 17l10 5 10-5" />
+                    <path d="M2 12l10 5 10-5" />
+                </svg>
+            </div>
+            <span class="brand-logo-text">Behavioral AI</span>
+        </a>
+
+        <!-- ═══ HERO ═══ -->
+        <h1 class="hero-headline">
+            Your widget is live,<br><span>test it right here</span>
+        </h1>
+        <p class="hero-subtitle">
+            The chat widget is loaded on this page. Click the purple bubble in the bottom-right corner to start a
+            conversation and watch real-time sentiment analysis in action.
         </p>
-        <p>Open the browser console (F12 → Console) to see <code>[BehavioralAI]</code> debug messages.</p>
+
+        <!-- ═══ STATUS BADGES ═══ -->
+        <div class="status-badges">
+            <div class="status-badge">
+                <span class="status-dot status-dot--green"></span>
+                Widget Connected
+            </div>
+            <div class="status-badge">
+                <span class="status-dot status-dot--blue"></span>
+                Sentiment Engine Active
+            </div>
+            <div class="status-badge">
+                <span class="status-dot status-dot--amber"></span>
+                Escalation Monitoring
+            </div>
+        </div>
+
+        <!-- ═══ INTERACTIVE DEMO CARD ═══ -->
+        <div class="demo-card" id="demoCard">
+            <div class="demo-card-header">
+                <div class="demo-dots"><span></span><span></span><span></span></div>
+                <span class="demo-card-title">Widget Preview — Live Interaction</span>
+            </div>
+            <div class="demo-card-body">
+                <!-- Customer message -->
+                <div class="demo-msg" id="msg1">
+                    <div class="demo-avatar demo-avatar--user">C</div>
+                    <div class="demo-bubble">
+                        <div class="demo-bubble-text" id="typingText"></div>
+                    </div>
+                </div>
+
+                <!-- AI response -->
+                <div class="demo-msg demo-msg--ai" id="msg2">
+                    <div class="demo-avatar demo-avatar--ai">AI</div>
+                    <div class="demo-bubble">
+                        <div class="demo-bubble-text">✨ Happy to help! Your order #4821 shipped yesterday and
+                            should arrive by Thursday.</div>
+                        <div class="demo-sentiment demo-sentiment--pos" id="sentiment2" style="display:none;">
+                            <span class="demo-sentiment-dot"></span>
+                            Satisfied — 96%
+                        </div>
+                    </div>
+                </div>
+
+                <div class="demo-resolve-badge" id="resolveBadge">
+                    ✓ Issue resolved automatically
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ FEATURE INFO CARDS ═══ -->
+        <div class="info-grid">
+            <div class="info-card">
+                <div class="info-card-icon info-card-icon--purple">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                </div>
+                <h3>Live Chat Widget</h3>
+                <p>The purple bubble in the corner is your actual deployed widget — try it now.</p>
+            </div>
+            <div class="info-card">
+                <div class="info-card-icon info-card-icon--green">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                    </svg>
+                </div>
+                <h3>Sentiment Detection</h3>
+                <p>Every message is analyzed in real-time for emotional tone and intent.</p>
+            </div>
+            <div class="info-card">
+                <div class="info-card-icon info-card-icon--amber">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
+                </div>
+                <h3>Smart Escalation</h3>
+                <p>Frustrated customers are auto-routed to a human agent when needed.</p>
+            </div>
+            <div class="info-card">
+                <div class="info-card-icon info-card-icon--pink">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="2" y1="12" x2="22" y2="12"></line>
+                        <path
+                            d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z">
+                        </path>
+                    </svg>
+                </div>
+                <h3>Multilingual</h3>
+                <p>Supports 130+ languages with automatic translation and detection.</p>
+            </div>
+        </div>
+
+        <!-- ═══ DEBUG NOTICE ═══ -->
+        <div class="widget-notice">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+            </svg>
+            <div class="widget-notice-text">
+                <strong>Debug Tip:</strong> Open the browser console (<strong>F12 → Console</strong>) to see
+                <code
+                    style="background:rgba(255,255,255,0.06);padding:2px 6px;border-radius:4px;font-size:0.78rem;color:#a5b4fc;">[BehavioralAI]</code>
+                messages — including sentiment scores, escalation triggers, and WebSocket events.
+            </div>
+        </div>
+
+        <!-- ═══ FOOTER ═══ -->
+        <div class="footer-note">
+            <p>Behavioral Agentic AI — <a href="/">Back to Home</a></p>
+        </div>
     </div>
 
+    <!-- ═══════════════════════════════════════════════════════
+         PARTICLE GRAIN SYSTEM
+         ═══════════════════════════════════════════════════════ -->
+    <script>
+        (function () {
+            const canvas = document.getElementById('particleCanvas');
+            const ctx = canvas.getContext('2d');
+            let W, H, mouseX = -9999, mouseY = -9999;
+            const COUNT = 100;
+            const particles = [];
+            const HUES = [235, 255, 270, 295, 320, 340, 200, 185];
 
-    <!-- Behavioral AI Chat Widget -->
+            function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+            window.addEventListener('resize', resize); resize();
+            document.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
+
+            class P {
+                constructor() { this.init(); }
+                init() {
+                    this.x = Math.random() * W; this.y = Math.random() * H;
+                    this.r0 = 0.5 + Math.random() * 1.3; this.r = this.r0;
+                    this.vx = (Math.random() - 0.5) * 0.18;
+                    this.vy = (Math.random() - 0.5) * 0.18;
+                    this.hi = Math.random() * HUES.length;
+                    this.hs = 0.003 + Math.random() * 0.006;
+                    this.sat = 60 + Math.random() * 30;
+                    this.lit = 55 + Math.random() * 20;
+                    this.a0 = 0.1 + Math.random() * 0.25;
+                    this.a = this.a0;
+                    this.tp = Math.random() * 6.28;
+                    this.ts = 0.008 + Math.random() * 0.012;
+                }
+                update() {
+                    this.x += this.vx; this.y += this.vy;
+                    if (this.x < -5) this.x = W + 5;
+                    if (this.x > W + 5) this.x = -5;
+                    if (this.y < -5) this.y = H + 5;
+                    if (this.y > H + 5) this.y = -5;
+                    this.hi = (this.hi + this.hs) % HUES.length;
+                    this.tp += this.ts;
+                    const tw = 0.7 + 0.3 * Math.sin(this.tp);
+                    const dx = this.x - mouseX, dy = this.y - mouseY;
+                    const inf = Math.max(0, 1 - Math.sqrt(dx * dx + dy * dy) / 150);
+                    this.a = this.a0 * tw + inf * 0.4;
+                    this.r = this.r0 + inf * 2;
+                }
+                draw() {
+                    const i = Math.floor(this.hi), f = this.hi - i;
+                    const h = HUES[i % HUES.length] + (HUES[(i + 1) % HUES.length] - HUES[i % HUES.length]) * f;
+                    ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, 6.28);
+                    ctx.fillStyle = `hsla(${h},${this.sat}%,${this.lit}%,${this.a})`;
+                    ctx.fill();
+                    if (this.a > 0.3) {
+                        ctx.beginPath(); ctx.arc(this.x, this.y, this.r * 2.2, 0, 6.28);
+                        ctx.fillStyle = `hsla(${h},${this.sat}%,${this.lit}%,${(this.a - 0.3) * 0.18})`;
+                        ctx.fill();
+                    }
+                }
+            }
+            for (let i = 0; i < COUNT; i++) particles.push(new P());
+            (function loop() {
+                ctx.clearRect(0, 0, W, H);
+                particles.forEach(p => { p.update(); p.draw(); });
+                requestAnimationFrame(loop);
+            })();
+        })();
+
+        // ═══════════════════════════════════════════════════════
+        // TYPEWRITER EFFECT for demo card
+        // ═══════════════════════════════════════════════════════
+        (function () {
+            const text = "Hi! Can you check the status of my order #4821? I placed it two days ago.";
+            const el = document.getElementById('typingText');
+            const sentiment2 = document.getElementById('sentiment2');
+            let i = 0;
+
+            function type() {
+                if (i < text.length) {
+                    el.textContent += text[i]; i++;
+                    setTimeout(type, 28 + Math.random() * 20);
+                } else {
+                    setTimeout(() => { sentiment2.style.display = 'inline-flex'; }, 600);
+                }
+            }
+            setTimeout(type, 800);
+        })();
+    </script>
+
+    <!-- Behavioral AI Chat Widget — ORIGINAL EMBED (DO NOT MODIFY) -->
     <script src="https://sentimenta.snick.at/widget/embed.js"
         data-key="wk_V0cSV-OBk7eHgH0VRhqwRzX0iCqvQugOMzwi5BA5PyQ"></script>
 
