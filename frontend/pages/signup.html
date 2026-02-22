@@ -381,69 +381,7 @@
             }
         }
 
-        /* Analysis panel */
-        .demo-analysis {
-            margin-top: 2px;
-            padding: 10px 14px;
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            opacity: 0;
-            animation: msgFadeIn 0.5s ease 2.8s forwards;
-        }
 
-        .demo-analysis-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .demo-analysis-label {
-            font-size: 0.68rem;
-            color: rgba(255, 255, 255, 0.4);
-            font-weight: 500;
-        }
-
-        .demo-analysis-value {
-            font-size: 0.68rem;
-            font-weight: 600;
-        }
-
-        .demo-analysis-bar-track {
-            flex: 1;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.06);
-            border-radius: 2px;
-            margin: 0 10px;
-            overflow: hidden;
-        }
-
-        .demo-analysis-bar-fill {
-            height: 100%;
-            border-radius: 2px;
-            animation: barGrow 1s ease 3s both;
-        }
-
-        @keyframes barGrow {
-            from {
-                width: 0 !important;
-            }
-        }
-
-        .bar-neg {
-            background: linear-gradient(90deg, #f5576c, #ff8a80);
-        }
-
-        .bar-warn {
-            background: linear-gradient(90deg, #ffa726, #ffcc80);
-        }
-
-        .bar-pos {
-            background: linear-gradient(90deg, #2ed573, #69f0ae);
-        }
 
         .demo-escalation-badge {
             display: inline-flex;
@@ -459,7 +397,7 @@
             margin-top: 2px;
             align-self: flex-start;
             opacity: 0;
-            animation: escalationPop 0.4s ease 3.6s forwards;
+            animation: escalationPop 0.4s ease 2.8s forwards;
         }
 
         @keyframes escalationPop {
@@ -494,12 +432,51 @@
             justify-content: center;
             padding: 2rem;
             position: relative;
-            background: #0a0a12;
+            background: #07070d;
+            overflow: hidden;
+        }
+
+        .auth-form-panel canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .auth-form-panel .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.15;
+            pointer-events: none;
+        }
+
+        .auth-form-panel .orb--r1 {
+            width: 350px;
+            height: 350px;
+            background: radial-gradient(circle, #667eea, #764ba2);
+            top: -10%;
+            right: -12%;
+            animation: orbA 28s ease-in-out infinite;
+        }
+
+        .auth-form-panel .orb--r2 {
+            width: 280px;
+            height: 280px;
+            background: radial-gradient(circle, #f093fb, #c471f5);
+            bottom: -8%;
+            left: -10%;
+            animation: orbB 32s ease-in-out infinite;
         }
 
         .auth-form-wrap {
             width: 100%;
             max-width: 440px;
+            position: relative;
+            z-index: 1;
             animation: formEntry 0.7s 0.15s cubic-bezier(0.22, 1, 0.36, 1) both;
         }
 
@@ -964,30 +941,7 @@
                             </div>
                         </div>
 
-                        <!-- Analysis bars -->
-                        <div class="demo-analysis" id="analysisPanel">
-                            <div class="demo-analysis-row">
-                                <span class="demo-analysis-label">Frustration</span>
-                                <div class="demo-analysis-bar-track">
-                                    <div class="demo-analysis-bar-fill bar-neg" style="width:92%"></div>
-                                </div>
-                                <span class="demo-analysis-value" style="color:#f5576c">92%</span>
-                            </div>
-                            <div class="demo-analysis-row">
-                                <span class="demo-analysis-label">Urgency</span>
-                                <div class="demo-analysis-bar-track">
-                                    <div class="demo-analysis-bar-fill bar-warn" style="width:78%"></div>
-                                </div>
-                                <span class="demo-analysis-value" style="color:#ffa726">78%</span>
-                            </div>
-                            <div class="demo-analysis-row">
-                                <span class="demo-analysis-label">Resolution</span>
-                                <div class="demo-analysis-bar-track">
-                                    <div class="demo-analysis-bar-fill bar-pos" style="width:24%"></div>
-                                </div>
-                                <span class="demo-analysis-value" style="color:#2ed573">24%</span>
-                            </div>
-                        </div>
+
 
                         <div class="demo-escalation-badge" id="escalationBadge">
                             ⚠ Auto-escalated to human agent
@@ -1002,6 +956,9 @@
 
         <!-- ═══════ RIGHT PANEL ═══════ -->
         <div class="auth-form-panel">
+            <div class="orb orb--r1"></div>
+            <div class="orb orb--r2"></div>
+            <canvas id="particleCanvasRight"></canvas>
             <div class="auth-form-wrap">
                 <div class="signup-glass">
                     <div class="form-header">
@@ -1151,6 +1108,87 @@
                         ctx.beginPath();
                         ctx.arc(this.x, this.y, this.r * 2.2, 0, 6.28);
                         ctx.fillStyle = `hsla(${h},${this.sat}%,${this.lit}%,${(this.a - 0.3) * 0.2})`;
+                        ctx.fill();
+                    }
+                }
+            }
+            for (let i = 0; i < COUNT; i++) particles.push(new P());
+            (function loop() {
+                ctx.clearRect(0, 0, W, H);
+                particles.forEach(p => { p.update(); p.draw(); });
+                requestAnimationFrame(loop);
+            })();
+        })();
+
+
+        // ═══════════════════════════════════════════════════════
+        // PARTICLE SYSTEM (right panel — background grains)
+        // ═══════════════════════════════════════════════════════
+        (function () {
+            const canvas = document.getElementById('particleCanvasRight');
+            const ctx = canvas.getContext('2d');
+            const panel = document.querySelector('.auth-form-panel');
+            let W, H, mouseX = -9999, mouseY = -9999;
+            const COUNT = 45;
+            const particles = [];
+            const HUES = [235, 255, 270, 295, 320, 340, 200, 185];
+
+            function resize() {
+                const r = panel.getBoundingClientRect();
+                W = canvas.width = r.width;
+                H = canvas.height = r.height;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            panel.addEventListener('mousemove', e => {
+                const r = panel.getBoundingClientRect();
+                mouseX = e.clientX - r.left;
+                mouseY = e.clientY - r.top;
+            });
+            panel.addEventListener('mouseleave', () => { mouseX = -9999; mouseY = -9999; });
+
+            class P {
+                constructor() { this.init(); }
+                init() {
+                    this.x = Math.random() * W; this.y = Math.random() * H;
+                    this.r0 = 0.5 + Math.random() * 1.3; this.r = this.r0;
+                    this.vx = (Math.random() - 0.5) * 0.18;
+                    this.vy = (Math.random() - 0.5) * 0.18;
+                    this.hi = Math.random() * HUES.length;
+                    this.hs = 0.003 + Math.random() * 0.006;
+                    this.sat = 60 + Math.random() * 30;
+                    this.lit = 55 + Math.random() * 20;
+                    this.a0 = 0.1 + Math.random() * 0.25;
+                    this.a = this.a0;
+                    this.tp = Math.random() * 6.28;
+                    this.ts = 0.008 + Math.random() * 0.012;
+                }
+                update() {
+                    this.x += this.vx; this.y += this.vy;
+                    if (this.x < -5) this.x = W + 5;
+                    if (this.x > W + 5) this.x = -5;
+                    if (this.y < -5) this.y = H + 5;
+                    if (this.y > H + 5) this.y = -5;
+                    this.hi = (this.hi + this.hs) % HUES.length;
+                    this.tp += this.ts;
+                    const tw = 0.7 + 0.3 * Math.sin(this.tp);
+                    const dx = this.x - mouseX, dy = this.y - mouseY;
+                    const inf = Math.max(0, 1 - Math.sqrt(dx * dx + dy * dy) / 150);
+                    this.a = this.a0 * tw + inf * 0.4;
+                    this.r = this.r0 + inf * 2;
+                }
+                draw() {
+                    const i = Math.floor(this.hi), f = this.hi - i;
+                    const h = HUES[i % HUES.length] + (HUES[(i + 1) % HUES.length] - HUES[i % HUES.length]) * f;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.r, 0, 6.28);
+                    ctx.fillStyle = `hsla(${h},${this.sat}%,${this.lit}%,${this.a})`;
+                    ctx.fill();
+                    if (this.a > 0.3) {
+                        ctx.beginPath();
+                        ctx.arc(this.x, this.y, this.r * 2.2, 0, 6.28);
+                        ctx.fillStyle = `hsla(${h},${this.sat}%,${this.lit}%,${(this.a - 0.3) * 0.18})`;
                         ctx.fill();
                     }
                 }
