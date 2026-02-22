@@ -31,6 +31,28 @@
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
             margin: 20px 0;
         }
+
+        .status {
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin: 12px 0;
+        }
+
+        .status.loading {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status.success {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
     </style>
 </head>
 
@@ -40,11 +62,50 @@
         <p>If the widget is working, you should see a <strong>purple chat bubble</strong> in the bottom-right corner.
         </p>
         <p>Open the browser console (F12 → Console) to see <code>[BehavioralAI]</code> debug messages.</p>
+        <div id="widgetStatus" class="status loading">⏳ Fetching widget key from your account...</div>
     </div>
 
-    <!-- Behavioral AI Chat Widget -->
-    <script src="https://sentimenta.snick.at/widget/embed.js"
-        data-key="wk_wc9XukMy55X-dNxOEwgonWor_TbYa8e48WpMzVlOCNI"></script>
+    <script>
+        (async () => {
+            const statusEl = document.getElementById('widgetStatus');
+            const API_BASE = window.location.origin;
+            const token = localStorage.getItem('token');
+
+            if (!token) {
+                statusEl.className = 'status error';
+                statusEl.textContent = '❌ Not logged in. Please log in to the dashboard first, then refresh this page.';
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/api/settings`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!res.ok) throw new Error(`API returned ${res.status}`);
+
+                const data = await res.json();
+                const widgetKey = data.widget?.key;
+
+                if (!widgetKey) {
+                    statusEl.className = 'status error';
+                    statusEl.textContent = '❌ No widget key found. Please complete onboarding first.';
+                    return;
+                }
+
+                // Dynamically inject the embed script with the live key
+                const script = document.createElement('script');
+                script.src = `${API_BASE}/widget/embed.js`;
+                script.setAttribute('data-key', widgetKey);
+                document.body.appendChild(script);
+
+                statusEl.className = 'status success';
+                statusEl.textContent = `✅ Widget loaded with key: ${widgetKey.slice(0, 12)}...`;
+            } catch (err) {
+                statusEl.className = 'status error';
+                statusEl.textContent = `❌ Failed to fetch widget key: ${err.message}`;
+            }
+        })();
+    </script>
 </body>
 
 </html>
