@@ -238,9 +238,17 @@ async def send_chat_message(
             detail="Invalid session. Please start a new chat."
         )
 
-    # If conversation is already taken over by human agent, don't generate AI response
-    is_human_takeover = (conversation.assigned_agent_id is not None and
-                         conversation.status == ConversationStatus.ESCALATED.value)
+    # If conversation is escalated, resolved, or closed — don't auto-respond with AI.
+    # Only ACTIVE and PENDING conversations get AI responses.
+    # This covers: escalated (even before agent assignment), human takeover, resolved, closed.
+    is_human_takeover = (
+        conversation.status in (
+            ConversationStatus.ESCALATED.value,
+            ConversationStatus.RESOLVED.value,
+            ConversationStatus.CLOSED.value,
+        )
+        or conversation.assigned_agent_id is not None
+    )
 
     # ══════════════════════════════════════════════════════════════
     # Step 1: Save customer message
