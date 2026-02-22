@@ -31,28 +31,6 @@
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
             margin: 20px 0;
         }
-
-        .status {
-            padding: 10px 16px;
-            border-radius: 8px;
-            font-size: 14px;
-            margin: 12px 0;
-        }
-
-        .status.loading {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .status.success {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-        .status.error {
-            background: #fee2e2;
-            color: #991b1b;
-        }
     </style>
 </head>
 
@@ -62,55 +40,11 @@
         <p>If the widget is working, you should see a <strong>purple chat bubble</strong> in the bottom-right corner.
         </p>
         <p>Open the browser console (F12 → Console) to see <code>[BehavioralAI]</code> debug messages.</p>
-        <div id="widgetStatus" class="status loading">⏳ Loading widget...</div>
     </div>
 
-    <script>
-        (async () => {
-            const statusEl = document.getElementById('widgetStatus');
-            const API_BASE = window.location.origin;
-
-            // Priority 1: ?key=wk_xxx in URL
-            const urlKey = new URLSearchParams(window.location.search).get('key');
-
-            // Priority 2: Fetch from /api/settings using stored JWT
-            let widgetKey = urlKey || null;
-
-            if (!widgetKey) {
-                const token = localStorage.getItem('access_token');
-                if (token) {
-                    try {
-                        const res = await fetch(`${API_BASE}/api/settings`, {
-                            headers: { 'Authorization': `Bearer ${token}` }
-                        });
-                        if (res.ok) {
-                            const data = await res.json();
-                            widgetKey = data.widget?.key || null;
-                        }
-                    } catch (e) {
-                        console.warn('Could not fetch settings:', e);
-                    }
-                }
-            }
-
-            if (!widgetKey) {
-                statusEl.className = 'status error';
-                statusEl.innerHTML = '❌ No widget key found.<br><br>' +
-                    '• <b>Option 1:</b> Log in to the <a href="/dashboard.html">dashboard</a> first, then refresh this page.<br>' +
-                    '• <b>Option 2:</b> Add your key to the URL: <code>widget-test.html?key=wk_YOUR_KEY</code>';
-                return;
-            }
-
-            // Inject the embed script dynamically
-            const script = document.createElement('script');
-            script.src = `${API_BASE}/widget/embed.js`;
-            script.setAttribute('data-key', widgetKey);
-            document.body.appendChild(script);
-
-            statusEl.className = 'status success';
-            statusEl.textContent = `✅ Widget loaded with key: ${widgetKey.slice(0, 12)}...`;
-        })();
-    </script>
+    <!-- Behavioral AI Chat Widget -->
+    <script src="https://sentimenta.snick.at/widget/embed.js"
+        data-key="wk_wc9XukMy55X-dNxOEwgonWor_TbYa8e48WpMzVlOCNI"></script>
 </body>
 
 </html>
