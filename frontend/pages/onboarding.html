@@ -130,15 +130,15 @@
             align-items: center;
             justify-content: center;
             height: 100vh;
-            padding: 2rem;
+            padding: 1.75rem;
         }
 
         /* ═══════════════════════════════════════════════════════
-           MACBOOK-STYLE WINDOW FRAME
+           MACBOOK FRAME
            ═══════════════════════════════════════════════════════ */
         .mac-frame {
             width: 100%;
-            max-width: 840px;
+            max-width: 920px;
             display: flex;
             flex-direction: column;
             animation: cardEntry 0.7s 0.15s cubic-bezier(0.22, 1, 0.36, 1) both;
@@ -158,11 +158,11 @@
             }
         }
 
-        /* ── Title bar with traffic lights ───────────────────── */
+        /* ── Title bar ───────────────────────────────────────── */
         .mac-titlebar {
             display: flex;
             align-items: center;
-            padding: 0.7rem 1rem;
+            padding: 0.75rem 1.15rem;
             background: rgba(255, 255, 255, 0.04);
             border: 1px solid rgba(255, 255, 255, 0.06);
             border-bottom: none;
@@ -172,13 +172,13 @@
 
         .mac-dots {
             display: flex;
-            gap: 6px;
+            gap: 7px;
             margin-right: 1rem;
         }
 
         .mac-dots span {
-            width: 10px;
-            height: 10px;
+            width: 11px;
+            height: 11px;
             border-radius: 50%;
         }
 
@@ -197,19 +197,21 @@
         .mac-titlebar-text {
             flex: 1;
             text-align: center;
-            font-size: 0.7rem;
-            font-weight: 500;
-            color: rgba(255, 255, 255, 0.25);
+            font-size: 0.72rem;
+            font-weight: 600;
             letter-spacing: 0.04em;
-            margin-right: 2.5rem;
-            /* offset for dots width to center text */
+            margin-right: 3rem;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, #a5b4fc 50%, #c4b5fd 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         /* ── Card body ───────────────────────────────────────── */
         .wizard-card {
             display: flex;
             flex: 1;
-            min-height: 480px;
+            min-height: 520px;
             background: rgba(255, 255, 255, 0.025);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
@@ -228,32 +230,33 @@
         .wizard-card::after {
             content: '';
             position: absolute;
-            width: 180px;
-            height: 600px;
-            top: -100px;
-            left: -100px;
+            width: 200px;
+            height: 700px;
+            top: -120px;
+            left: -120px;
             background: linear-gradient(135deg,
                     transparent 0%,
-                    rgba(102, 126, 234, 0.06) 40%,
-                    rgba(167, 139, 250, 0.08) 50%,
-                    rgba(102, 126, 234, 0.06) 60%,
+                    rgba(102, 126, 234, 0.05) 40%,
+                    rgba(167, 139, 250, 0.07) 50%,
+                    rgba(102, 126, 234, 0.05) 60%,
                     transparent 100%);
             transform: rotate(45deg);
             animation: diagonalSweep 5s ease-in-out infinite;
             pointer-events: none;
+            z-index: 0;
         }
 
         @keyframes diagonalSweep {
             0% {
-                transform: rotate(45deg) translateX(-300px) translateY(-200px);
+                transform: rotate(45deg) translateX(-350px) translateY(-250px);
             }
 
             50% {
-                transform: rotate(45deg) translateX(800px) translateY(400px);
+                transform: rotate(45deg) translateX(900px) translateY(500px);
             }
 
             100% {
-                transform: rotate(45deg) translateX(-300px) translateY(-200px);
+                transform: rotate(45deg) translateX(-350px) translateY(-250px);
             }
         }
 
@@ -261,17 +264,18 @@
            LEFT SIDEBAR
            ═══════════════════════════════════════════════════════ */
         .wizard-sidebar {
-            flex: 0 0 200px;
+            flex: 0 0 210px;
             background: rgba(255, 255, 255, 0.012);
             border-right: 1px solid rgba(255, 255, 255, 0.04);
             padding: 2rem 1.5rem;
             display: flex;
             flex-direction: column;
+            position: relative;
+            z-index: 1;
         }
 
-        /* ── Heading (moved here from above card) ────────────── */
         .sidebar-brand {
-            margin-bottom: 2rem;
+            margin-bottom: 2.25rem;
         }
 
         .sidebar-brand h1 {
@@ -281,7 +285,7 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            margin-bottom: 0.3rem;
+            margin-bottom: 0.35rem;
         }
 
         .sidebar-brand p {
@@ -290,7 +294,6 @@
             line-height: 1.45;
         }
 
-        /* ── Step indicators ─────────────────────────────────── */
         .sidebar-label {
             font-size: 0.55rem;
             font-weight: 600;
@@ -311,21 +314,21 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 0.45rem 0;
+            padding: 0.5rem 0;
             cursor: default;
             transition: all 0.3s;
         }
 
         .sidebar-step-dot {
-            width: 26px;
-            height: 26px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.03);
             border: 1.5px solid rgba(255, 255, 255, 0.08);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.65rem;
+            font-size: 0.68rem;
             font-weight: 600;
             color: rgba(255, 255, 255, 0.2);
             transition: all 0.4s ease;
@@ -336,7 +339,7 @@
             background: linear-gradient(135deg, #667eea, #764ba2);
             border-color: #667eea;
             color: #fff;
-            box-shadow: 0 0 14px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 0 16px rgba(102, 126, 234, 0.45);
         }
 
         .sidebar-step.completed .sidebar-step-dot {
@@ -346,7 +349,7 @@
         }
 
         .sidebar-step-label {
-            font-size: 0.72rem;
+            font-size: 0.75rem;
             font-weight: 500;
             color: rgba(255, 255, 255, 0.18);
             transition: color 0.3s;
@@ -362,9 +365,9 @@
 
         .sidebar-connector {
             width: 1.5px;
-            height: 14px;
+            height: 16px;
             background: rgba(255, 255, 255, 0.05);
-            margin-left: 12px;
+            margin-left: 13px;
             transition: background 0.4s;
         }
 
@@ -377,11 +380,13 @@
            ═══════════════════════════════════════════════════════ */
         .wizard-content {
             flex: 1;
-            padding: 2rem 2.5rem;
+            padding: 2.25rem 2.75rem;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             min-width: 0;
+            position: relative;
+            z-index: 1;
         }
 
         .step-panel {
@@ -408,7 +413,7 @@
         }
 
         .step-title {
-            font-size: 1.2rem;
+            font-size: 1.25rem;
             font-weight: 700;
             margin-bottom: 0.15rem;
             letter-spacing: -0.01em;
@@ -417,8 +422,8 @@
 
         .step-description {
             color: rgba(255, 255, 255, 0.35);
-            font-size: 0.8rem;
-            margin-bottom: 1.25rem;
+            font-size: 0.82rem;
+            margin-bottom: 1.35rem;
         }
 
         .step-fields {
@@ -429,7 +434,7 @@
            FORM — login-identical colors
            ═══════════════════════════════════════════════════════ */
         .form-group {
-            margin-bottom: 0.85rem;
+            margin-bottom: 0.9rem;
             position: relative;
         }
 
@@ -447,7 +452,7 @@
         .form-group textarea,
         .form-group select {
             width: 100%;
-            padding: 0.75rem 1rem;
+            padding: 0.8rem 1.1rem;
             background: rgba(255, 255, 255, 0.04);
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 12px;
@@ -455,6 +460,22 @@
             font-size: 0.9rem;
             font-family: inherit;
             transition: border-color 0.3s, background 0.3s, box-shadow 0.3s;
+        }
+
+        /* ── Fix dropdown arrows: pad right for the native arrow ── */
+        .form-group select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            padding-right: 2.5rem;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.35)' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 12px;
+        }
+
+        .form-group select option {
+            background: #12122a;
         }
 
         .form-group input::placeholder,
@@ -475,14 +496,10 @@
             resize: none;
         }
 
-        .form-group select option {
-            background: #12122a;
-        }
-
         .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 0.75rem;
+            gap: 0.85rem;
         }
 
         /* Focus underline — login-identical */
@@ -520,7 +537,7 @@
         /* ── COLOR PICKER ────────────────────────────────────── */
         .color-row {
             display: flex;
-            gap: 0.75rem;
+            gap: 0.85rem;
         }
 
         .color-row .form-group {
@@ -534,8 +551,8 @@
         }
 
         .color-input-wrap input[type="color"] {
-            width: 38px;
-            height: 38px;
+            width: 40px;
+            height: 40px;
             border: none;
             border-radius: 10px;
             cursor: pointer;
@@ -550,13 +567,13 @@
         }
 
         /* ═══════════════════════════════════════════════════════
-           STORE PLATFORM CARDS
+           PLATFORM CARDS — minimal white SVG icons
            ═══════════════════════════════════════════════════════ */
         .platform-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 0.55rem;
-            margin-bottom: 1rem;
+            gap: 0.6rem;
+            margin-bottom: 1.1rem;
         }
 
         .platform-card {
@@ -564,10 +581,10 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 4px;
-            padding: 0.85rem 0.5rem;
+            gap: 5px;
+            padding: 0.9rem 0.5rem;
             background: rgba(255, 255, 255, 0.02);
-            border: 1.5px solid rgba(255, 255, 255, 0.05);
+            border: 1.5px solid rgba(255, 255, 255, 0.06);
             border-radius: 12px;
             cursor: pointer;
             transition: all 0.25s ease;
@@ -575,41 +592,59 @@
         }
 
         .platform-card:hover {
-            border-color: rgba(102, 126, 234, 0.2);
-            background: rgba(102, 126, 234, 0.025);
+            border-color: rgba(102, 126, 234, 0.3);
+            background: rgba(102, 126, 234, 0.04);
             transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.08);
         }
 
         .platform-card.selected {
             border-color: #667eea;
             background: rgba(102, 126, 234, 0.06);
-            box-shadow: 0 0 14px rgba(102, 126, 234, 0.12);
+            box-shadow: 0 0 16px rgba(102, 126, 234, 0.15);
         }
 
         .platform-card.selected::after {
-            content: '✓';
+            content: '';
             position: absolute;
-            top: 5px;
-            right: 7px;
-            font-size: 0.55rem;
-            color: #667eea;
-            font-weight: 700;
+            top: 6px;
+            right: 6px;
+            width: 14px;
+            height: 14px;
+            background: #667eea;
+            border-radius: 50%;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E");
+            background-size: 9px;
+            background-repeat: no-repeat;
+            background-position: center;
         }
 
         .platform-card-icon {
-            font-size: 1.15rem;
-            line-height: 1;
+            width: 22px;
+            height: 22px;
+            opacity: 0.55;
+            transition: opacity 0.3s;
+        }
+
+        .platform-card:hover .platform-card-icon,
+        .platform-card.selected .platform-card-icon {
+            opacity: 0.9;
         }
 
         .platform-card-name {
-            font-size: 0.68rem;
+            font-size: 0.7rem;
             font-weight: 600;
-            color: rgba(255, 255, 255, 0.65);
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .platform-card:hover .platform-card-name,
+        .platform-card.selected .platform-card-name {
+            color: rgba(255, 255, 255, 0.85);
         }
 
         .platform-card-sub {
             font-size: 0.52rem;
-            color: rgba(255, 255, 255, 0.22);
+            color: rgba(255, 255, 255, 0.2);
             line-height: 1;
         }
 
@@ -618,7 +653,7 @@
         }
 
         /* ═══════════════════════════════════════════════════════
-           COMPLETION
+           COMPLETION — REDESIGNED
            ═══════════════════════════════════════════════════════ */
         .complete-section {
             text-align: center;
@@ -630,79 +665,149 @@
         }
 
         .complete-icon {
-            width: 60px;
-            height: 60px;
-            margin-bottom: 1rem;
-            background: linear-gradient(135deg, #2ed573, #17c0eb);
-            border-radius: 50%;
+            width: 64px;
+            height: 64px;
+            margin-bottom: 1.15rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 18px;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 10px 24px rgba(46, 213, 115, 0.25);
+            box-shadow: 0 12px 28px rgba(102, 126, 234, 0.35);
             animation: completePop 0.5s ease both;
         }
 
         @keyframes completePop {
             from {
-                transform: scale(0.5);
+                transform: scale(0.5) rotate(-10deg);
                 opacity: 0;
             }
 
             to {
-                transform: scale(1);
+                transform: scale(1) rotate(0deg);
                 opacity: 1;
             }
         }
 
         .complete-icon svg {
-            width: 28px;
-            height: 28px;
+            width: 30px;
+            height: 30px;
             color: #fff;
         }
 
         .complete-section h2 {
-            font-size: 1.2rem;
-            margin-bottom: 0.35rem;
+            font-size: 1.3rem;
+            margin-bottom: 0.4rem;
             color: #fff;
+            font-weight: 700;
         }
 
-        .complete-section p {
+        .complete-section .complete-subtitle {
             color: rgba(255, 255, 255, 0.4);
             font-size: 0.82rem;
-            margin-bottom: 0.75rem;
-            max-width: 360px;
+            margin-bottom: 1.25rem;
+            max-width: 380px;
+            line-height: 1.5;
         }
 
-        .embed-code {
+        /* Embed Code Box — redesigned as mini MacBook window */
+        .embed-window {
+            width: 100%;
+            max-width: 440px;
             background: rgba(0, 0, 0, 0.3);
             border: 1px solid rgba(255, 255, 255, 0.06);
             border-radius: 10px;
-            padding: 0.8rem 1rem;
-            text-align: left;
-            width: 100%;
-            max-width: 420px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .embed-window-bar {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 0.45rem 0.7rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .embed-window-bar span {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+        }
+
+        .embed-window-bar span:nth-child(1) {
+            background: #ff5f57;
+        }
+
+        .embed-window-bar span:nth-child(2) {
+            background: #febc2e;
+        }
+
+        .embed-window-bar span:nth-child(3) {
+            background: #28c840;
+        }
+
+        .embed-window-bar .embed-window-label {
+            margin-left: 8px;
+            width: auto;
+            height: auto;
+            background: none;
+            border-radius: 0;
+            font-size: 0.6rem;
+            color: rgba(255, 255, 255, 0.25);
+            font-weight: 500;
+            letter-spacing: 0.04em;
+        }
+
+        .embed-code {
+            padding: 0.85rem 1rem;
             font-family: 'Courier New', monospace;
-            font-size: 0.7rem;
+            font-size: 0.72rem;
             color: #a5b4fc;
             word-break: break-all;
-            margin: 0.5rem 0;
+            text-align: left;
+            line-height: 1.55;
         }
 
         .copy-btn {
-            background: rgba(102, 126, 234, 0.1);
-            border: 1px solid rgba(102, 126, 234, 0.18);
-            color: #a5b4fc;
-            padding: 0.5rem 1.25rem;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            color: #fff;
+            padding: 0.55rem 1.5rem;
             border-radius: 10px;
             cursor: pointer;
-            font-size: 0.8rem;
-            font-weight: 500;
+            font-size: 0.82rem;
+            font-weight: 600;
             transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .copy-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #764ba2, #c471f5);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .copy-btn span {
+            position: relative;
+            z-index: 1;
+        }
+
+        .copy-btn:hover::before {
+            opacity: 1;
         }
 
         .copy-btn:hover {
-            background: rgba(102, 126, 234, 0.25);
-            transform: translateY(-1px);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(102, 126, 234, 0.3);
         }
 
         /* ═══════════════════════════════════════════════════════
@@ -711,14 +816,14 @@
         .step-actions {
             display: flex;
             justify-content: space-between;
-            padding-top: 1rem;
+            padding-top: 1.1rem;
             border-top: 1px solid rgba(255, 255, 255, 0.03);
         }
 
         .btn-back,
         .btn-next,
         .btn-finish {
-            padding: 0.65rem 1.6rem;
+            padding: 0.7rem 1.75rem;
             border-radius: 12px;
             font-size: 0.88rem;
             font-weight: 600;
@@ -735,6 +840,7 @@
 
         .btn-back:hover {
             background: rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.7);
         }
 
         .btn-next,
@@ -772,7 +878,7 @@
         .btn-next:hover,
         .btn-finish:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 18px rgba(102, 126, 234, 0.25);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
         }
 
         .btn-next:disabled {
@@ -896,22 +1002,17 @@
 
     <div class="onboarding-wrap">
         <div class="mac-frame">
-            <!-- ═══ MacBook Title Bar ═══ -->
             <div class="mac-titlebar">
                 <div class="mac-dots"><span></span><span></span><span></span></div>
                 <span class="mac-titlebar-text">Setup Wizard — Behavioral Agentic AI</span>
             </div>
 
-            <!-- ═══ Card Body ═══ -->
             <div class="wizard-card">
-
-                <!-- ════ LEFT SIDEBAR ════ -->
                 <div class="wizard-sidebar">
                     <div class="sidebar-brand">
                         <h1>✨ Setup Wizard</h1>
                         <p>Get your AI support widget ready in minutes</p>
                     </div>
-
                     <div class="sidebar-label">Progress</div>
                     <div class="sidebar-steps">
                         <div class="sidebar-step active" data-step="1">
@@ -941,7 +1042,6 @@
                     </div>
                 </div>
 
-                <!-- ════ RIGHT — Content ════ -->
                 <div class="wizard-content">
 
                     <!-- Step 1: Business Profile -->
@@ -1013,40 +1113,71 @@
                             </select>
 
                             <label
-                                style="font-size:0.8rem;font-weight:500;color:rgba(255,255,255,0.55);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.4rem;display:block;">Platform</label>
+                                style="display:block;font-size:0.8rem;font-weight:500;color:rgba(255,255,255,0.55);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.45rem;">Platform</label>
                             <div class="platform-grid">
                                 <div class="platform-card" data-platform="shopify"
                                     onclick="selectPlatform(this,'shopify')">
-                                    <span class="platform-card-icon">🛍️</span>
+                                    <svg class="platform-card-icon" viewBox="0 0 24 24" fill="none" stroke="white"
+                                        stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M15 3l-1.5 13.5L8 18l-5-2V5l5 2 3.5-1.5L15 3z" />
+                                        <path d="M11 5.5L8.5 7" />
+                                        <path d="M15 3l4 1v11l-5.5 3" />
+                                    </svg>
                                     <span class="platform-card-name">Shopify</span>
                                     <span class="platform-card-sub">Hosted store</span>
                                 </div>
                                 <div class="platform-card" data-platform="woocommerce"
                                     onclick="selectPlatform(this,'woocommerce')">
-                                    <span class="platform-card-icon">🔌</span>
+                                    <svg class="platform-card-icon" viewBox="0 0 24 24" fill="none" stroke="white"
+                                        stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="2" y="3" width="20" height="14" rx="2" />
+                                        <path d="M2 7h20" />
+                                        <path d="M9 21h6" />
+                                        <path d="M12 17v4" />
+                                    </svg>
                                     <span class="platform-card-name">WooCommerce</span>
                                     <span class="platform-card-sub">WordPress</span>
                                 </div>
                                 <div class="platform-card" data-platform="alibaba"
                                     onclick="selectPlatform(this,'alibaba')">
-                                    <span class="platform-card-icon">🌏</span>
+                                    <svg class="platform-card-icon" viewBox="0 0 24 24" fill="none" stroke="white"
+                                        stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="10" />
+                                        <path d="M2 12h20" />
+                                        <path
+                                            d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                                    </svg>
                                     <span class="platform-card-name">Alibaba</span>
                                     <span class="platform-card-sub">AliExpress</span>
                                 </div>
                                 <div class="platform-card" data-platform="magento"
                                     onclick="selectPlatform(this,'magento')">
-                                    <span class="platform-card-icon">🧱</span>
+                                    <svg class="platform-card-icon" viewBox="0 0 24 24" fill="none" stroke="white"
+                                        stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <rect x="3" y="3" width="18" height="18" rx="2" />
+                                        <path d="M3 9h18" />
+                                        <path d="M9 3v18" />
+                                    </svg>
                                     <span class="platform-card-name">Magento</span>
                                     <span class="platform-card-sub">Adobe</span>
                                 </div>
                                 <div class="platform-card" data-platform="custom"
                                     onclick="selectPlatform(this,'custom')">
-                                    <span class="platform-card-icon">🌐</span>
+                                    <svg class="platform-card-icon" viewBox="0 0 24 24" fill="none" stroke="white"
+                                        stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                                    </svg>
                                     <span class="platform-card-name">Custom</span>
                                     <span class="platform-card-sub">Any site</span>
                                 </div>
                                 <div class="platform-card" data-platform="other" onclick="selectPlatform(this,'other')">
-                                    <span class="platform-card-icon">➕</span>
+                                    <svg class="platform-card-icon" viewBox="0 0 24 24" fill="none" stroke="white"
+                                        stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="1" />
+                                        <circle cx="19" cy="12" r="1" />
+                                        <circle cx="5" cy="12" r="1" />
+                                    </svg>
                                     <span class="platform-card-name">Other</span>
                                     <span class="platform-card-sub">Tell us</span>
                                 </div>
@@ -1143,27 +1274,36 @@
                                 <div class="focus-line"></div>
                             </div>
                             <p style="color:rgba(255,255,255,0.2);font-size:0.7rem;">
-                                You can skip this and add knowledge later from your dashboard.
+                                You can skip this step and add knowledge later from your dashboard.
                             </p>
                         </div>
                     </div>
 
-                    <!-- Step 5: Complete -->
+                    <!-- Step 5: Complete — Redesigned -->
                     <div class="step-panel" id="step5">
                         <div class="complete-section">
                             <div class="complete-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                                    stroke-linecap="round" stroke-linejoin="round">
                                     <polyline points="20 6 9 17 4 12" />
                                 </svg>
                             </div>
-                            <h2>You're All Set! 🎉</h2>
-                            <p>Your AI widget is ready. Copy the embed code and paste it before your closing
-                                &lt;/body&gt; tag.</p>
-                            <div class="embed-code" id="embedCode">
-                                &lt;script src="https://sentimenta.snick.at/widget/embed.js"
-                                data-key="YOUR_API_KEY"&gt;&lt;/script&gt;
+                            <h2>You're All Set!</h2>
+                            <p class="complete-subtitle">Your AI widget is ready to go. Copy the embed code below and
+                                paste it before your closing &lt;/body&gt; tag to activate it on your site.</p>
+
+                            <div class="embed-window">
+                                <div class="embed-window-bar">
+                                    <span></span><span></span><span></span>
+                                    <span class="embed-window-label">embed.html</span>
+                                </div>
+                                <div class="embed-code" id="embedCode">
+                                    &lt;script src="https://sentimenta.snick.at/widget/embed.js"
+                                    data-key="YOUR_API_KEY"&gt;&lt;/script&gt;
+                                </div>
                             </div>
-                            <button class="copy-btn" onclick="copyEmbed()">📋 Copy Embed Code</button>
+
+                            <button class="copy-btn" onclick="copyEmbed()"><span>Copy Embed Code</span></button>
                         </div>
                     </div>
 
