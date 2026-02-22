@@ -768,11 +768,10 @@ Support hours: Mon-Fri 9am-5pm EST."></textarea>
                     await fetch(`${API_BASE}/api/onboarding/configure-widget`, {
                         method: 'POST', headers,
                         body: JSON.stringify({
-                            widget_title: document.getElementById('widgetTitle').value,
-                            greeting_message: document.getElementById('widgetGreeting').value,
-                            primary_color: document.getElementById('widgetColor').value,
-                            position: document.getElementById('widgetPosition').value,
-                            language: document.getElementById('widgetLang').value
+                            bot_name: document.getElementById('widgetTitle').value,
+                            welcome_message: document.getElementById('widgetGreeting').value,
+                            theme_color: document.getElementById('widgetColor').value,
+                            position: document.getElementById('widgetPosition').value
                         })
                     });
                 } else if (currentStep === 4) {

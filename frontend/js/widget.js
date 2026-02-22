@@ -189,13 +189,13 @@
     }
 
     function applyConfig() {
-        const color = config.primary_color || '#667eea';
+        const color = config.theme_color || '#667eea';
         root.style.setProperty('--bai-color', color);
-        if (config.widget_title) {
-            panel.querySelector('.title').textContent = config.widget_title;
+        if (config.bot_name) {
+            panel.querySelector('.title').textContent = config.bot_name;
         }
-        if (config.greeting_message) {
-            prechat.querySelector('h3').textContent = config.greeting_message;
+        if (config.welcome_message) {
+            prechat.querySelector('h3').textContent = config.welcome_message;
         }
     }
 
