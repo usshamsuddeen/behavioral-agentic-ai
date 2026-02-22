@@ -454,7 +454,7 @@
         }
 
         /* ═══════════════════════════════════════════════════════
-           LANGUAGES SECTION — ENHANCED
+           LANGUAGES — PREMIUM REDESIGN
            ═══════════════════════════════════════════════════════ */
         .lang-section {
             background: var(--bg-primary);
@@ -462,7 +462,7 @@
         }
 
         .lang-container {
-            max-width: 1100px;
+            max-width: 1000px;
             margin: 0 auto;
             padding: 0 2rem;
         }
@@ -470,80 +470,111 @@
         .lang-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
+            gap: 1.25rem;
         }
 
         .lang-card {
-            background: var(--glass-bg);
-            backdrop-filter: var(--glass-blur);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--radius-lg);
-            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 2rem 1.5rem 1.75rem;
             display: flex;
-            align-items: flex-start;
-            gap: 1rem;
-            transition: all var(--transition-normal);
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            gap: 0;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
+            cursor: default;
         }
 
+        /* Top accent glow line */
         .lang-card::before {
             content: '';
             position: absolute;
             top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+            left: 20%;
+            right: 20%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary-500), var(--secondary-500), transparent);
+            opacity: 0.5;
+            transition: opacity 0.35s, left 0.35s, right 0.35s;
+        }
+
+        .lang-card:hover::before {
+            left: 10%;
+            right: 10%;
+            opacity: 1;
+        }
+
+        /* Bottom glow reflection */
+        .lang-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 50%;
+            background: radial-gradient(ellipse at bottom, rgba(102, 126, 234, 0.06), transparent 70%);
+            pointer-events: none;
+            transition: opacity 0.35s;
+            opacity: 0;
+        }
+
+        .lang-card:hover::after {
+            opacity: 1;
         }
 
         .lang-card:hover {
-            background: var(--glass-bg-hover);
-            border-color: var(--glass-border-hover);
-            transform: translateY(-3px);
-            box-shadow: var(--glass-shadow-lg);
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.1);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(102, 126, 234, 0.08);
+        }
+
+        /* Flag with subtle glow backdrop */
+        .lang-flag-wrap {
+            width: 56px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 0.9rem;
+            position: relative;
+            transition: all 0.35s;
+        }
+
+        .lang-card:hover .lang-flag-wrap {
+            background: rgba(102, 126, 234, 0.08);
+            border-color: rgba(102, 126, 234, 0.15);
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.12);
         }
 
         .lang-flag {
-            font-size: 2.2rem;
-            flex-shrink: 0;
+            font-size: 1.75rem;
             line-height: 1;
-        }
-
-        .lang-info {
-            flex: 1;
-            min-width: 0;
         }
 
         .lang-name {
             font-size: 1rem;
             font-weight: 600;
             color: var(--text-primary);
-            margin-bottom: 2px;
+            margin-bottom: 0.3rem;
+            letter-spacing: -0.01em;
         }
 
         .lang-greeting {
             font-size: 0.78rem;
             color: var(--text-muted);
             font-style: italic;
-            margin-bottom: 0.6rem;
+            line-height: 1.4;
         }
-
-        .lang-bar-track {
-            width: 100%;
-            height: 4px;
-            background: rgba(255, 255, 255, 0.04);
-            border-radius: 2px;
-            overflow: hidden;
-        }
-
-        .lang-bar-fill {
-            height: 100%;
-            border-radius: 2px;
-            background: linear-gradient(90deg, var(--primary-500), var(--secondary-500));
-            transition: width 1.2s ease;
-        }
-
 
 
 
@@ -1156,65 +1187,35 @@
             </div>
 
             <div class="lang-grid">
-                <div class="lang-card" data-acc="96">
-                    <span class="lang-flag">🇺🇸</span>
-                    <div class="lang-info">
-                        <div class="lang-name">English</div>
-                        <div class="lang-greeting">"Hello, how can I help?"</div>
-                        <div class="lang-bar-track">
-                            <div class="lang-bar-fill" style="width: 0"></div>
-                        </div>
-                    </div>
+                <div class="lang-card">
+                    <div class="lang-flag-wrap"><span class="lang-flag">🇺🇸</span></div>
+                    <div class="lang-name">English</div>
+                    <div class="lang-greeting">"Hello, how can I help?"</div>
                 </div>
-                <div class="lang-card" data-acc="94">
-                    <span class="lang-flag">🇪🇸</span>
-                    <div class="lang-info">
-                        <div class="lang-name">Spanish</div>
-                        <div class="lang-greeting">"Hola, ¿en qué puedo ayudarle?"</div>
-                        <div class="lang-bar-track">
-                            <div class="lang-bar-fill" style="width: 0"></div>
-                        </div>
-                    </div>
+                <div class="lang-card">
+                    <div class="lang-flag-wrap"><span class="lang-flag">🇪🇸</span></div>
+                    <div class="lang-name">Spanish</div>
+                    <div class="lang-greeting">"Hola, ¿en qué puedo ayudarle?"</div>
                 </div>
-                <div class="lang-card" data-acc="93">
-                    <span class="lang-flag">🇫🇷</span>
-                    <div class="lang-info">
-                        <div class="lang-name">French</div>
-                        <div class="lang-greeting">"Bonjour, comment puis-je vous aider?"</div>
-                        <div class="lang-bar-track">
-                            <div class="lang-bar-fill" style="width: 0"></div>
-                        </div>
-                    </div>
+                <div class="lang-card">
+                    <div class="lang-flag-wrap"><span class="lang-flag">🇫🇷</span></div>
+                    <div class="lang-name">French</div>
+                    <div class="lang-greeting">"Bonjour, comment puis-je vous aider?"</div>
                 </div>
-                <div class="lang-card" data-acc="92">
-                    <span class="lang-flag">🇩🇪</span>
-                    <div class="lang-info">
-                        <div class="lang-name">German</div>
-                        <div class="lang-greeting">"Hallo, wie kann ich Ihnen helfen?"</div>
-                        <div class="lang-bar-track">
-                            <div class="lang-bar-fill" style="width: 0"></div>
-                        </div>
-                    </div>
+                <div class="lang-card">
+                    <div class="lang-flag-wrap"><span class="lang-flag">🇩🇪</span></div>
+                    <div class="lang-name">German</div>
+                    <div class="lang-greeting">"Hallo, wie kann ich Ihnen helfen?"</div>
                 </div>
-                <div class="lang-card" data-acc="91">
-                    <span class="lang-flag">🇮🇹</span>
-                    <div class="lang-info">
-                        <div class="lang-name">Italian</div>
-                        <div class="lang-greeting">"Ciao, come posso aiutarti?"</div>
-                        <div class="lang-bar-track">
-                            <div class="lang-bar-fill" style="width: 0"></div>
-                        </div>
-                    </div>
+                <div class="lang-card">
+                    <div class="lang-flag-wrap"><span class="lang-flag">🇮🇹</span></div>
+                    <div class="lang-name">Italian</div>
+                    <div class="lang-greeting">"Ciao, come posso aiutarti?"</div>
                 </div>
-                <div class="lang-card" data-acc="90">
-                    <span class="lang-flag">🇳🇱</span>
-                    <div class="lang-info">
-                        <div class="lang-name">Dutch</div>
-                        <div class="lang-greeting">"Hallo, waarmee kan ik u helpen?"</div>
-                        <div class="lang-bar-track">
-                            <div class="lang-bar-fill" style="width: 0"></div>
-                        </div>
-                    </div>
+                <div class="lang-card">
+                    <div class="lang-flag-wrap"><span class="lang-flag">🇳🇱</span></div>
+                    <div class="lang-name">Dutch</div>
+                    <div class="lang-greeting">"Hallo, waarmee kan ik u helpen?"</div>
                 </div>
             </div>
         </div>
@@ -1343,23 +1344,6 @@
                 }, { threshold: 0.05 });
                 sectionObserver.observe(hiwSection);
             }
-
-            // ═══════════════════════════════════════════════════════
-            // LANGUAGE ACCURACY BARS — Animate on scroll
-            // ═══════════════════════════════════════════════════════
-            const langCards = document.querySelectorAll('.lang-card[data-acc]');
-            const langObserver = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const acc = entry.target.dataset.acc;
-                        const fill = entry.target.querySelector('.lang-bar-fill');
-                        if (fill) fill.style.width = acc + '%';
-                        langObserver.unobserve(entry.target);
-                    }
-                });
-            }, { threshold: 0.3 });
-
-            langCards.forEach(c => langObserver.observe(c));
         });
     </script>
 </body>
