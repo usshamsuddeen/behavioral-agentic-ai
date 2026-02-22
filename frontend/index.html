@@ -48,7 +48,7 @@
         /* LEFT: scrolling text steps */
         .hiw-steps {
             flex: 1;
-            padding: 0 2rem 4rem 2rem;
+            padding: 0 2rem 1rem 2rem;
         }
 
         .hiw-step {
@@ -67,8 +67,8 @@
         }
 
         .hiw-step:last-child {
-            min-height: 45vh;
-            padding-bottom: 0;
+            min-height: auto;
+            padding-bottom: 2rem;
         }
 
         .hiw-step.active {
@@ -1298,19 +1298,38 @@
                 if (cardLabel) cardLabel.textContent = labels[index] || '';
             }
 
-            const stepObserver = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const idx = parseInt(entry.target.dataset.step);
-                        if (!isNaN(idx)) setActiveStep(idx);
+            // Scroll-based step detection — robust, always syncs last step
+            function updateActiveStep() {
+                const viewportCenter = window.innerHeight / 2;
+                let closest = 0;
+                let closestDist = Infinity;
+
+                steps.forEach((s, i) => {
+                    const rect = s.getBoundingClientRect();
+                    const stepCenter = rect.top + rect.height / 2;
+                    const dist = Math.abs(stepCenter - viewportCenter);
+                    if (dist < closestDist) {
+                        closestDist = dist;
+                        closest = i;
                     }
                 });
-            }, {
-                rootMargin: '-30% 0px -30% 0px',
-                threshold: 0.15
+
+                setActiveStep(closest);
+            }
+
+            // Throttled scroll listener
+            let scrollTick = false;
+            window.addEventListener('scroll', () => {
+                if (!scrollTick) {
+                    scrollTick = true;
+                    requestAnimationFrame(() => {
+                        updateActiveStep();
+                        scrollTick = false;
+                    });
+                }
             });
 
-            steps.forEach(s => stepObserver.observe(s));
+            updateActiveStep(); // initial sync
 
             // Fade out the sticky visual when HiW section leaves viewport
             const hiwSection = document.querySelector('.hiw-section');
