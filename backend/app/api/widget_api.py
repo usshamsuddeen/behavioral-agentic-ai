@@ -257,15 +257,23 @@ async def send_chat_message(
     # Step 2: Sentiment Analysis (FR-5.1)
     # Uses 3-tier fallback: BERT → VADER → Dictionary
     # ══════════════════════════════════════════════════════════════
-    sentiment_result = {"sentiment": "neutral", "score": 0.5, "label": "Neutral", "language": "en"}
+    detected_lang = "en"
+    try:
+        from app.services.language import detect_language
+        lang_result = detect_language(data.message)
+        detected_lang = lang_result.get("code", "en")
+    except Exception:
+        pass
+
+    sentiment_result = {"sentiment": "neutral", "score": 0.5, "label": "Neutral", "language": detected_lang}
     try:
         from app.services.sentiment import analyze_sentiment
-        sentiment_result = analyze_sentiment(data.message, "en")
+        sentiment_result = analyze_sentiment(data.message, detected_lang)
 
         customer_msg.sentiment = sentiment_result.get("sentiment", "neutral")
         customer_msg.sentiment_score = sentiment_result.get("score", 0.5)
         customer_msg.sentiment_label = sentiment_result.get("label", "Neutral")
-        customer_msg.detected_language = sentiment_result.get("language", "en")
+        customer_msg.detected_language = detected_lang
 
         # Update conversation-level sentiment
         conversation.current_sentiment = customer_msg.sentiment
@@ -355,6 +363,7 @@ async def send_chat_message(
                 company_name=tenant.name or "Our Store",
                 company_guidelines=tenant.description,
                 current_frustration=conversation.frustration_level or 0.0,
+                detected_language=detected_lang,
                 pre_sentiment={
                     "sentiment": sentiment_result.get("sentiment", "neutral"),
                     "score": sentiment_result.get("score", 0.5),

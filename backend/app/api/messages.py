@@ -107,7 +107,7 @@ async def send_message(
     # 1. Detect language
     try:
         lang_result = detect_language(content)
-        detected_lang = lang_result.get("language_code", "en")
+        detected_lang = lang_result.get("code", "en")
     except Exception:
         detected_lang = "en"
     

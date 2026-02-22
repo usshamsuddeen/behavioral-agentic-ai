@@ -128,7 +128,8 @@ class LLMService:
         conversation_history: Optional[List[Dict]] = None,
         guidelines: Optional[str] = None,
         sentiment: Optional[str] = None,
-        is_urgent: bool = False
+        is_urgent: bool = False,
+        language: str = "en"
     ) -> LLMResponse:
         """
         Generate a response using RAG approach.
@@ -157,7 +158,8 @@ class LLMService:
                 context_documents=context_documents,
                 guidelines=guidelines,
                 sentiment=sentiment,
-                is_urgent=is_urgent
+                is_urgent=is_urgent,
+                language=language
             )
             
             # Build messages
@@ -279,7 +281,8 @@ class LLMService:
         context_documents: List[str],
         guidelines: Optional[str],
         sentiment: Optional[str],
-        is_urgent: bool
+        is_urgent: bool,
+        language: str = "en"
     ) -> str:
         """Build the system prompt for LLM."""
         has_context = bool(context_documents and any(d.strip() for d in context_documents))
@@ -321,6 +324,11 @@ Keep answers concise (1-3 sentences).
 {context_str}
 
 Remember: Prefer the context documents above. If unsure, offer to connect to a human agent."""
+
+        # Language instruction — respond in the customer's language
+        LANG_NAMES = {"en": "English", "de": "German", "fr": "French", "es": "Spanish", "it": "Italian", "nl": "Dutch"}
+        if language != "en" and language in LANG_NAMES:
+            prompt += f"""\n\nIMPORTANT: The customer is writing in {LANG_NAMES[language]}. You MUST respond in {LANG_NAMES[language]}."""
 
         return prompt
     
