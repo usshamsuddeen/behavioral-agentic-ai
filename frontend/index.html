@@ -579,8 +579,359 @@
         }
 
         @media (max-width: 600px) {
+
             .lang-grid {
                 grid-template-columns: 1fr;
+            }
+        }
+
+
+        /* ═══════════════════════════════════════════════════════
+           CTA — MAGICAL STYLES
+           ═══════════════════════════════════════════════════════ */
+        .cta-magic {
+            padding: 100px 2rem 80px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-magic-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .cta-magic-card {
+            position: relative;
+            border-radius: 24px;
+            padding: 3px;
+            background: conic-gradient(from var(--cta-angle, 0deg), var(--primary-500), var(--primary-400), #a78bfa, #f472b6, var(--primary-500));
+            animation: ctaRotate 4s linear infinite;
+        }
+
+        @property --cta-angle {
+            syntax: "<angle>";
+            initial-value: 0deg;
+            inherits: false;
+        }
+
+        @keyframes ctaRotate {
+            to {
+                --cta-angle: 360deg;
+            }
+        }
+
+        .cta-magic-inner {
+            background: var(--bg-primary);
+            border-radius: 22px;
+            padding: 60px 48px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .cta-magic-badge {
+            display: inline-block;
+            padding: 6px 18px;
+            border-radius: 100px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            background: rgba(139, 92, 246, 0.15);
+            color: var(--primary-400);
+            border: 1px solid rgba(139, 92, 246, 0.25);
+            margin-bottom: 1.5rem;
+            letter-spacing: 0.02em;
+        }
+
+        .cta-magic-title {
+            font-size: 2.4rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .cta-magic-title span {
+            background: linear-gradient(135deg, var(--primary-400), #a78bfa, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .cta-magic-text {
+            font-size: 1rem;
+            line-height: 1.7;
+            color: var(--text-secondary);
+            max-width: 520px;
+            margin: 0 auto 2rem;
+        }
+
+        .cta-magic-actions {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 2.5rem;
+        }
+
+        .cta-magic-btn {
+            padding: 14px 32px !important;
+            font-size: 1rem !important;
+            gap: 10px;
+            box-shadow: 0 0 30px rgba(139, 92, 246, 0.3);
+        }
+
+        .cta-magic-btn:hover {
+            box-shadow: 0 0 50px rgba(139, 92, 246, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            border: 1px solid var(--glass-border);
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 28px;
+            border-radius: var(--radius-lg);
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: all var(--transition-normal);
+            text-decoration: none;
+        }
+
+        .btn-ghost:hover {
+            background: var(--glass-bg);
+            color: var(--text-primary);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .cta-magic-stats {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .cta-magic-stat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+        }
+
+        .cta-magic-stat-value {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+        }
+
+        .cta-magic-stat-label {
+            font-size: 0.72rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .cta-magic-stat-divider {
+            width: 1px;
+            height: 32px;
+            background: var(--glass-border);
+        }
+
+        /* Floating sparkle particles */
+        .cta-sparkle {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--primary-400);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 2;
+            animation: sparkleFloat 3s ease-in-out infinite;
+        }
+
+        .cta-sparkle--1 {
+            top: 15%;
+            left: 10%;
+            animation-delay: 0s;
+            background: #a78bfa;
+        }
+
+        .cta-sparkle--2 {
+            top: 25%;
+            right: 12%;
+            animation-delay: 0.5s;
+            background: #f472b6;
+        }
+
+        .cta-sparkle--3 {
+            bottom: 30%;
+            left: 8%;
+            animation-delay: 1s;
+            background: var(--primary-400);
+        }
+
+        .cta-sparkle--4 {
+            bottom: 20%;
+            right: 15%;
+            animation-delay: 1.5s;
+            background: #a78bfa;
+        }
+
+        .cta-sparkle--5 {
+            top: 50%;
+            left: 5%;
+            animation-delay: 2s;
+            width: 4px;
+            height: 4px;
+            background: #f472b6;
+        }
+
+        .cta-sparkle--6 {
+            top: 40%;
+            right: 6%;
+            animation-delay: 2.5s;
+            width: 4px;
+            height: 4px;
+            background: var(--primary-400);
+        }
+
+        @keyframes sparkleFloat {
+
+            0%,
+            100% {
+                opacity: 0;
+                transform: translateY(0) scale(0.5);
+            }
+
+            50% {
+                opacity: 0.8;
+                transform: translateY(-20px) scale(1);
+            }
+        }
+
+
+        /* ═══════════════════════════════════════════════════════
+           FOOTER — ENHANCED STYLES
+           ═══════════════════════════════════════════════════════ */
+        .footer-enhanced {
+            background: var(--bg-primary);
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .footer-enhanced-top {
+            padding: 60px 2rem 40px;
+        }
+
+        .footer-enhanced-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1.5fr 1fr 1fr 1fr;
+            gap: 40px;
+        }
+
+        .footer-col--brand {
+            padding-right: 2rem;
+        }
+
+        .footer-col-desc {
+            font-size: 0.88rem;
+            line-height: 1.7;
+            color: var(--text-muted);
+        }
+
+        .footer-col-title {
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .footer-links {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .footer-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.88rem;
+            transition: color var(--transition-fast);
+        }
+
+        .footer-links a:hover {
+            color: var(--text-primary);
+        }
+
+        .footer-enhanced-bottom {
+            border-top: 1px solid var(--glass-border);
+            padding: 20px 2rem;
+        }
+
+        .footer-enhanced-bottom .footer-enhanced-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-bottom-text {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        /* CTA + Footer responsive */
+        @media (max-width: 900px) {
+            .cta-magic-title {
+                font-size: 1.8rem;
+            }
+
+            .cta-magic-inner {
+                padding: 40px 24px;
+            }
+
+            .footer-enhanced-container {
+                grid-template-columns: 1fr 1fr;
+                gap: 32px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .cta-magic-title {
+                font-size: 1.5rem;
+            }
+
+            .cta-magic-stats {
+                gap: 16px;
+            }
+
+            .cta-magic-stat-divider {
+                height: 24px;
+            }
+
+            .footer-enhanced-container {
+                grid-template-columns: 1fr;
+                gap: 28px;
+            }
+
+            .footer-enhanced-bottom .footer-enhanced-container {
+                flex-direction: column;
+                gap: 6px;
+                text-align: center;
             }
         }
     </style>
@@ -1220,50 +1571,132 @@
         </div>
     </section>
 
-    <!-- CTA Section (UNCHANGED) -->
-    <section class="cta">
-        <div class="section-container">
-            <div class="cta-card glass-card">
-                <div class="cta-content">
-                    <h2 class="cta-title">Ready to Transform Your Customer Support?</h2>
-                    <p class="cta-text">
-                        Experience the power of emotionally intelligent AI. Start your journey today.
+    <!-- ═══════════════════════════════════════════════════════
+         CTA — MAGICAL SECTION
+         ═══════════════════════════════════════════════════════ -->
+    <section class="cta-magic">
+        <div class="cta-magic-container">
+            <div class="cta-magic-card">
+                <!-- Animated gradient border -->
+                <div class="cta-magic-border"></div>
+                <!-- Floating sparkle particles -->
+                <div class="cta-sparkle cta-sparkle--1"></div>
+                <div class="cta-sparkle cta-sparkle--2"></div>
+                <div class="cta-sparkle cta-sparkle--3"></div>
+                <div class="cta-sparkle cta-sparkle--4"></div>
+                <div class="cta-sparkle cta-sparkle--5"></div>
+                <div class="cta-sparkle cta-sparkle--6"></div>
+
+                <div class="cta-magic-inner">
+                    <div class="cta-magic-badge">✨ Start for Free</div>
+                    <h2 class="cta-magic-title">
+                        Ready to Transform Your<br>
+                        <span>Customer Support?</span>
+                    </h2>
+                    <p class="cta-magic-text">
+                        Deploy sentiment-aware AI on your store in under 5 minutes. No credit card required.
+                        Experience the power of emotionally intelligent customer support.
                     </p>
-                    <a href="pages/client-dashboard.html" class="btn btn-primary btn-lg">
-                        Get Started Now
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
-                    </a>
+                    <div class="cta-magic-actions">
+                        <a href="pages/signup.html" class="btn btn-primary btn-lg cta-magic-btn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                            </svg>
+                            Get Started Now
+                        </a>
+                        <a href="#how-it-works" class="btn btn-ghost btn-lg cta-magic-btn-ghost">
+                            Learn More
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M5 12h14M12 5l7 7-7 7" />
+                            </svg>
+                        </a>
+                    </div>
+                    <div class="cta-magic-stats">
+                        <div class="cta-magic-stat">
+                            <span class="cta-magic-stat-value">94%</span>
+                            <span class="cta-magic-stat-label">Accuracy</span>
+                        </div>
+                        <div class="cta-magic-stat-divider"></div>
+                        <div class="cta-magic-stat">
+                            <span class="cta-magic-stat-value">6</span>
+                            <span class="cta-magic-stat-label">Languages</span>
+                        </div>
+                        <div class="cta-magic-stat-divider"></div>
+                        <div class="cta-magic-stat">
+                            <span class="cta-magic-stat-value">&lt;2s</span>
+                            <span class="cta-magic-stat-label">Response</span>
+                        </div>
+                        <div class="cta-magic-stat-divider"></div>
+                        <div class="cta-magic-stat">
+                            <span class="cta-magic-stat-value">99.9%</span>
+                            <span class="cta-magic-stat-label">Uptime</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Footer (UNCHANGED) -->
-    <footer class="footer">
-        <div class="footer-container">
-            <div class="footer-brand">
-                <div class="landing-logo">
-                    <div class="landing-logo-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                            <path d="M2 17l10 5 10-5" />
-                            <path d="M2 12l10 5 10-5" />
-                        </svg>
-                    </div>
-                    <span class="landing-logo-text">Behavioral AI</span>
+    <!-- ═══════════════════════════════════════════════════════
+         FOOTER — ENHANCED WITH LINKS
+         ═══════════════════════════════════════════════════════ -->
+    <footer class="footer-enhanced">
+        <div class="footer-enhanced-top">
+            <div class="footer-enhanced-container">
+                <!-- Brand column -->
+                <div class="footer-col footer-col--brand">
+                    <a href="#" class="landing-logo" style="margin-bottom: 1rem; display: inline-flex;">
+                        <div class="landing-logo-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                                <path d="M2 17l10 5 10-5" />
+                                <path d="M2 12l10 5 10-5" />
+                            </svg>
+                        </div>
+                        <span class="landing-logo-text">Behavioral AI</span>
+                    </a>
+                    <p class="footer-col-desc">
+                        Sentiment-aware AI escalation system for multilingual global customer support.
+                    </p>
                 </div>
-                <p class="footer-brand-text">
-                    Sentiment-Aware Escalation System for Global Customer Support
-                </p>
+                <!-- Product links -->
+                <div class="footer-col">
+                    <h4 class="footer-col-title">Product</h4>
+                    <ul class="footer-links">
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#how-it-works">How it Works</a></li>
+                        <li><a href="#languages">Languages</a></li>
+                        <li><a href="widget-test.html">Widget Demo</a></li>
+                    </ul>
+                </div>
+                <!-- Company links -->
+                <div class="footer-col">
+                    <h4 class="footer-col-title">Company</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">About</a></li>
+                        <li><a href="#">Contact</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <!-- Connect links -->
+                <div class="footer-col">
+                    <h4 class="footer-col-title">Connect</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">GitHub</a></li>
+                        <li><a href="#">Documentation</a></li>
+                        <li><a href="#">Support</a></li>
+                        <li><a href="#">Status</a></li>
+                    </ul>
+                </div>
             </div>
-
-            <div class="footer-info">
-                <p class="footer-project">Final Year Project | KFUEIT</p>
-                <p class="footer-author">Usman Shams | SWEN221101044</p>
-                <p class="footer-year">© 2025 All Rights Reserved</p>
+        </div>
+        <div class="footer-enhanced-bottom">
+            <div class="footer-enhanced-container">
+                <p class="footer-bottom-text">© 2025 Behavioral AI — All Rights Reserved</p>
+                <p class="footer-bottom-text">Usman Shams | SWEN221101044 | Final Year Project — KFUEIT</p>
             </div>
         </div>
     </footer>
