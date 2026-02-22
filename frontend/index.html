@@ -20,6 +20,559 @@
 
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+
+    <style>
+        /* ═══════════════════════════════════════════════════════
+           HOW IT WORKS — SCROLL-ANIMATED STICKY SECTION
+           ═══════════════════════════════════════════════════════ */
+        .hiw-section {
+            position: relative;
+            background: var(--bg-secondary);
+        }
+
+        .hiw-header {
+            text-align: center;
+            padding: 80px 2rem 40px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .hiw-track {
+            display: flex;
+            max-width: 1200px;
+            margin: 0 auto;
+            gap: 0;
+            position: relative;
+        }
+
+        /* LEFT: scrolling text steps */
+        .hiw-steps {
+            flex: 1;
+            padding: 0 2rem 100vh 2rem;
+        }
+
+        .hiw-step {
+            min-height: 70vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 3rem 1rem 3rem 0;
+            opacity: 0.25;
+            transform: translateY(10px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .hiw-step.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .hiw-step-number {
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--primary-400);
+            margin-bottom: 0.75rem;
+        }
+
+        .hiw-step-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.6rem;
+            color: var(--text-primary);
+        }
+
+        .hiw-step-desc {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            line-height: 1.65;
+            max-width: 400px;
+        }
+
+        .hiw-step-tags {
+            display: flex;
+            gap: 6px;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .hiw-step-tag {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-muted);
+        }
+
+        /* RIGHT: sticky visual card */
+        .hiw-visual {
+            flex: 0 0 480px;
+            position: sticky;
+            top: 120px;
+            height: fit-content;
+            padding: 0 2rem 0 0;
+            align-self: flex-start;
+        }
+
+        .hiw-card {
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--glass-shadow-lg);
+            overflow: hidden;
+        }
+
+        .hiw-card-header {
+            padding: 12px 16px;
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .hiw-card-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .hiw-card-dots span {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--glass-border);
+        }
+
+        .hiw-card-dots span:first-child {
+            background: #ff5f56;
+        }
+
+        .hiw-card-dots span:nth-child(2) {
+            background: #ffbd2e;
+        }
+
+        .hiw-card-dots span:last-child {
+            background: #27ca40;
+        }
+
+        .hiw-card-label {
+            font-size: 0.78rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            transition: color 0.3s;
+        }
+
+        .hiw-card-body {
+            position: relative;
+            min-height: 340px;
+        }
+
+        /* Individual visual scenes */
+        .hiw-scene {
+            position: absolute;
+            inset: 0;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            opacity: 0;
+            transform: scale(0.97);
+            transition: opacity 0.45s ease, transform 0.45s ease;
+            pointer-events: none;
+        }
+
+        .hiw-scene.active {
+            opacity: 1;
+            transform: scale(1);
+            pointer-events: auto;
+        }
+
+        /* Scene building blocks */
+        .scene-msg {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+        }
+
+        .scene-msg--right {
+            flex-direction: row-reverse;
+        }
+
+        .scene-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-full);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .scene-avatar--user {
+            background: linear-gradient(135deg, var(--primary-500), var(--secondary-500));
+        }
+
+        .scene-avatar--ai {
+            background: linear-gradient(135deg, var(--secondary-500), var(--primary-500));
+        }
+
+        .scene-bubble {
+            background: var(--bg-elevated);
+            padding: 10px 14px;
+            border-radius: var(--radius-md);
+            max-width: 80%;
+        }
+
+        .scene-bubble--ai {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(59, 130, 246, 0.15));
+            border: 1px solid rgba(139, 92, 246, 0.25);
+        }
+
+        .scene-bubble-text {
+            font-size: 0.82rem;
+            color: var(--text-primary);
+            line-height: 1.5;
+        }
+
+        .scene-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: var(--radius-full);
+            font-size: 0.68rem;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        .scene-badge--neg {
+            background: var(--negative-bg);
+            color: var(--negative-light);
+            border: 1px solid var(--negative-border);
+        }
+
+        .scene-badge--pos {
+            background: var(--positive-bg);
+            color: var(--positive-light);
+            border: 1px solid var(--positive-border);
+        }
+
+        .scene-badge--warn {
+            background: var(--urgent-bg);
+            color: var(--urgent-light);
+            border: 1px solid var(--urgent-border);
+        }
+
+        .scene-badge-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: sceneDotPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes sceneDotPulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.5;
+                transform: scale(0.7);
+            }
+        }
+
+        .scene-analysis {
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .scene-analysis-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .scene-analysis-label {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            min-width: 85px;
+        }
+
+        .scene-analysis-bar {
+            flex: 1;
+            height: 6px;
+            background: var(--bg-primary);
+            border-radius: var(--radius-full);
+            overflow: hidden;
+        }
+
+        .scene-analysis-fill {
+            height: 100%;
+            border-radius: var(--radius-full);
+            transition: width 0.8s ease;
+        }
+
+        .scene-analysis-value {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            min-width: 35px;
+            text-align: right;
+        }
+
+        .scene-escalation {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border-radius: var(--radius-md);
+            background: rgba(245, 87, 108, 0.08);
+            border: 1px solid rgba(245, 87, 108, 0.15);
+        }
+
+        .scene-escalation-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: rgba(245, 87, 108, 0.12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .scene-escalation-icon svg {
+            width: 16px;
+            height: 16px;
+            color: #f5576c;
+        }
+
+        .scene-escalation-text {
+            font-size: 0.78rem;
+            color: rgba(255, 255, 255, 0.75);
+            line-height: 1.4;
+        }
+
+        .scene-escalation-text strong {
+            color: #f5576c;
+        }
+
+        .scene-response-card {
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-md);
+            padding: 12px 14px;
+            border-left: 3px solid var(--primary-500);
+        }
+
+        .scene-response-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--primary-400);
+            margin-bottom: 5px;
+        }
+
+        .scene-response-text {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .scene-lang-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .scene-lang-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            border-radius: var(--radius-sm);
+            background: var(--bg-tertiary);
+            transition: background 0.3s;
+        }
+
+        .scene-lang-item.highlight {
+            background: rgba(102, 126, 234, 0.12);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .scene-lang-flag {
+            font-size: 1.2rem;
+        }
+
+        .scene-lang-name {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .scene-lang-detect {
+            margin-left: auto;
+            font-size: 0.6rem;
+            font-weight: 700;
+            color: var(--positive-light);
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: var(--positive-bg);
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           LANGUAGES SECTION — ENHANCED
+           ═══════════════════════════════════════════════════════ */
+        .lang-section {
+            background: var(--bg-primary);
+            padding: 100px 0;
+        }
+
+        .lang-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .lang-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+
+        .lang-card {
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            transition: all var(--transition-normal);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .lang-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+        }
+
+        .lang-card:hover {
+            background: var(--glass-bg-hover);
+            border-color: var(--glass-border-hover);
+            transform: translateY(-3px);
+            box-shadow: var(--glass-shadow-lg);
+        }
+
+        .lang-flag {
+            font-size: 2.2rem;
+            flex-shrink: 0;
+            line-height: 1;
+        }
+
+        .lang-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .lang-name {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 2px;
+        }
+
+        .lang-greeting {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            font-style: italic;
+            margin-bottom: 0.6rem;
+        }
+
+        .lang-bar-track {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .lang-bar-fill {
+            height: 100%;
+            border-radius: 2px;
+            background: linear-gradient(90deg, var(--primary-500), var(--secondary-500));
+            transition: width 1.2s ease;
+        }
+
+        .lang-accuracy {
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: var(--primary-400);
+            margin-top: 4px;
+        }
+
+
+        /* ═══════════════════════════════════════════════════════
+           RESPONSIVE — HOW IT WORKS
+           ═══════════════════════════════════════════════════════ */
+        @media (max-width: 900px) {
+            .hiw-track {
+                flex-direction: column;
+            }
+
+            .hiw-visual {
+                position: relative;
+                top: 0;
+                flex: none;
+                width: 100%;
+                padding: 0 1rem;
+                margin-bottom: 2rem;
+            }
+
+            .hiw-steps {
+                padding: 0 1rem 2rem;
+            }
+
+            .hiw-step {
+                min-height: auto;
+                padding: 2rem 0;
+            }
+
+            .lang-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .lang-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -63,7 +616,7 @@
         </div>
     </nav>
 
-    <!-- Hero Section -->
+    <!-- Hero Section (KEPT — only buttons updated) -->
     <section class="hero">
         <div class="hero-container">
             <div class="hero-badge">
@@ -91,11 +644,12 @@
                     </svg>
                     Start Free Setup
                 </a>
-                <a href="#demo" class="btn btn-secondary btn-lg">
+                <a href="#how-it-works" class="btn btn-secondary btn-lg">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polygon points="5 3 19 12 5 21 5 3" />
+                        <circle cx="12" cy="12" r="10" />
+                        <polyline points="12 6 12 12 16 14" />
                     </svg>
-                    Watch Demo
+                    See How It Works
                 </a>
             </div>
 
@@ -117,7 +671,7 @@
             </div>
         </div>
 
-        <!-- Hero Visual -->
+        <!-- Hero Visual (UNCHANGED) -->
         <div class="hero-visual">
             <div class="hero-visual-card glass-card">
                 <div class="hero-visual-header">
@@ -166,7 +720,7 @@
         </div>
     </section>
 
-    <!-- Features Section -->
+    <!-- Features Section (UNCHANGED) -->
     <section id="features" class="features">
         <div class="section-container">
             <div class="section-header">
@@ -178,7 +732,6 @@
             </div>
 
             <div class="features-grid">
-                <!-- Feature 1 -->
                 <div class="feature-card glass-card">
                     <div class="feature-icon feature-icon--blue">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -200,7 +753,6 @@
                     </div>
                 </div>
 
-                <!-- Feature 2 -->
                 <div class="feature-card glass-card">
                     <div class="feature-icon feature-icon--purple">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -219,7 +771,6 @@
                     </div>
                 </div>
 
-                <!-- Feature 3 -->
                 <div class="feature-card glass-card">
                     <div class="feature-icon feature-icon--orange">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -241,7 +792,6 @@
                     </div>
                 </div>
 
-                <!-- Feature 4 -->
                 <div class="feature-card glass-card">
                     <div class="feature-icon feature-icon--green">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -263,112 +813,409 @@
         </div>
     </section>
 
-    <!-- How It Works -->
-    <section id="how-it-works" class="how-it-works">
-        <div class="section-container">
-            <div class="section-header">
-                <span class="section-badge">Process</span>
-                <h2 class="section-title">How It Works</h2>
-                <p class="section-subtitle">
-                    Our five-layer architecture processes customer messages in milliseconds.
-                </p>
+    <!-- ═══════════════════════════════════════════════════════
+         HOW IT WORKS — SCROLL-ANIMATED SECTION
+         ═══════════════════════════════════════════════════════ -->
+    <section id="how-it-works" class="hiw-section">
+        <div class="hiw-header">
+            <span class="section-badge">Process</span>
+            <h2 class="section-title">How It Works</h2>
+            <p class="section-subtitle">
+                Our five-layer architecture processes customer messages in milliseconds.
+            </p>
+        </div>
+
+        <div class="hiw-track">
+            <!-- LEFT: scrolling steps -->
+            <div class="hiw-steps">
+                <div class="hiw-step active" data-step="0">
+                    <div class="hiw-step-number">Step 01</div>
+                    <h3 class="hiw-step-title">Input Processing</h3>
+                    <p class="hiw-step-desc">
+                        A customer message arrives and the system instantly detects the language using XLM-RoBERTa
+                        with 99.2% accuracy — no configuration needed.
+                    </p>
+                    <div class="hiw-step-tags">
+                        <span class="hiw-step-tag">XLM-RoBERTa</span>
+                        <span class="hiw-step-tag">Auto-detection</span>
+                    </div>
+                </div>
+
+                <div class="hiw-step" data-step="1">
+                    <div class="hiw-step-number">Step 02</div>
+                    <h3 class="hiw-step-title">Sentiment Analysis</h3>
+                    <p class="hiw-step-desc">
+                        Multi-pipeline analysis detects the emotional state, intent, and cultural context
+                        behind every message. Frustration, joy, urgency — all scored in real-time.
+                    </p>
+                    <div class="hiw-step-tags">
+                        <span class="hiw-step-tag">Emotion Detection</span>
+                        <span class="hiw-step-tag">94% Accuracy</span>
+                    </div>
+                </div>
+
+                <div class="hiw-step" data-step="2">
+                    <div class="hiw-step-number">Step 03</div>
+                    <h3 class="hiw-step-title">Behavior Prediction</h3>
+                    <p class="hiw-step-desc">
+                        A dynamic state model tracks the customer's emotional trajectory across the
+                        conversation, predicting escalation probability in real-time.
+                    </p>
+                    <div class="hiw-step-tags">
+                        <span class="hiw-step-tag">State Tracking</span>
+                        <span class="hiw-step-tag">Predictive</span>
+                    </div>
+                </div>
+
+                <div class="hiw-step" data-step="3">
+                    <div class="hiw-step-number">Step 04</div>
+                    <h3 class="hiw-step-title">Response Generation</h3>
+                    <p class="hiw-step-desc">
+                        The AI generates contextually appropriate, empathetic responses in the customer's
+                        own language — matching tone and providing accurate product information.
+                    </p>
+                    <div class="hiw-step-tags">
+                        <span class="hiw-step-tag">Contextual</span>
+                        <span class="hiw-step-tag">Empathetic</span>
+                    </div>
+                </div>
+
+                <div class="hiw-step" data-step="4">
+                    <div class="hiw-step-number">Step 05</div>
+                    <h3 class="hiw-step-title">Escalation Decision</h3>
+                    <p class="hiw-step-desc">
+                        When frustration crosses the threshold, the system instantly routes the conversation
+                        to a human agent — with full emotional context and suggested responses.
+                    </p>
+                    <div class="hiw-step-tags">
+                        <span class="hiw-step-tag">Smart Routing</span>
+                        <span class="hiw-step-tag">Human Handoff</span>
+                    </div>
+                </div>
             </div>
 
-            <div class="process-steps">
-                <div class="process-step">
-                    <div class="process-step-number">01</div>
-                    <div class="process-step-content glass-card">
-                        <h4 class="process-step-title">Input Processing</h4>
-                        <p class="process-step-text">
-                            Message arrives and language is detected using XLM-RoBERTa with 99.2% accuracy.
-                        </p>
+            <!-- RIGHT: sticky interactive visual -->
+            <div class="hiw-visual">
+                <div class="hiw-card" id="hiwCard">
+                    <div class="hiw-card-header">
+                        <div class="hiw-card-dots"><span></span><span></span><span></span></div>
+                        <span class="hiw-card-label" id="hiwCardLabel">Input Processing</span>
                     </div>
-                </div>
+                    <div class="hiw-card-body">
 
-                <div class="process-step">
-                    <div class="process-step-number">02</div>
-                    <div class="process-step-content glass-card">
-                        <h4 class="process-step-title">Sentiment Analysis</h4>
-                        <p class="process-step-text">
-                            Multi-pipeline analysis detects emotional state, intent, and cultural context.
-                        </p>
-                    </div>
-                </div>
+                        <!-- Scene 0: Input Processing -->
+                        <div class="hiw-scene active" data-scene="0">
+                            <div class="scene-msg">
+                                <div class="scene-avatar scene-avatar--user">M</div>
+                                <div class="scene-bubble">
+                                    <div class="scene-bubble-text">This is the third time I'm asking about my
+                                        order! Very frustrated.</div>
+                                </div>
+                            </div>
+                            <div class="scene-analysis">
+                                <div class="scene-analysis-row">
+                                    <span class="scene-analysis-label">Language</span>
+                                    <span class="scene-analysis-value" style="color: var(--primary-400);">English</span>
+                                </div>
+                                <div class="scene-analysis-row">
+                                    <span class="scene-analysis-label">Confidence</span>
+                                    <div class="scene-analysis-bar">
+                                        <div class="scene-analysis-fill"
+                                            style="width:99%;background:linear-gradient(90deg,var(--primary-500),var(--secondary-500));">
+                                        </div>
+                                    </div>
+                                    <span class="scene-analysis-value">99.2%</span>
+                                </div>
+                                <div class="scene-analysis-row">
+                                    <span class="scene-analysis-label">Tokens</span>
+                                    <span class="scene-analysis-value">14</span>
+                                </div>
+                            </div>
+                            <div class="scene-lang-grid">
+                                <div class="scene-lang-item highlight">
+                                    <span class="scene-lang-flag">🇺🇸</span>
+                                    <span class="scene-lang-name">English</span>
+                                    <span class="scene-lang-detect">✓</span>
+                                </div>
+                                <div class="scene-lang-item">
+                                    <span class="scene-lang-flag">🇪🇸</span>
+                                    <span class="scene-lang-name">Spanish</span>
+                                </div>
+                                <div class="scene-lang-item">
+                                    <span class="scene-lang-flag">🇫🇷</span>
+                                    <span class="scene-lang-name">French</span>
+                                </div>
+                                <div class="scene-lang-item">
+                                    <span class="scene-lang-flag">🇩🇪</span>
+                                    <span class="scene-lang-name">German</span>
+                                </div>
+                            </div>
+                        </div>
 
-                <div class="process-step">
-                    <div class="process-step-number">03</div>
-                    <div class="process-step-content glass-card">
-                        <h4 class="process-step-title">Behavior Prediction</h4>
-                        <p class="process-step-text">
-                            Dynamic state model tracks emotional trajectory and predicts escalation probability.
-                        </p>
-                    </div>
-                </div>
+                        <!-- Scene 1: Sentiment Analysis -->
+                        <div class="hiw-scene" data-scene="1">
+                            <div class="scene-msg">
+                                <div class="scene-avatar scene-avatar--user">M</div>
+                                <div class="scene-bubble">
+                                    <div class="scene-bubble-text">This is the third time I'm asking about my
+                                        order! Very frustrated.</div>
+                                    <div class="scene-badge scene-badge--neg">
+                                        <span class="scene-badge-dot"></span>
+                                        Frustrated — 92%
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="scene-analysis">
+                                <div class="scene-analysis-row">
+                                    <span class="scene-analysis-label">Frustration</span>
+                                    <div class="scene-analysis-bar">
+                                        <div class="scene-analysis-fill"
+                                            style="width:92%;background:linear-gradient(90deg,var(--negative),#f5576c);">
+                                        </div>
+                                    </div>
+                                    <span class="scene-analysis-value">92%</span>
+                                </div>
+                                <div class="scene-analysis-row">
+                                    <span class="scene-analysis-label">Anger</span>
+                                    <div class="scene-analysis-bar">
+                                        <div class="scene-analysis-fill"
+                                            style="width:78%;background:linear-gradient(90deg,var(--urgent), #ffa726);">
+                                        </div>
+                                    </div>
+                                    <span class="scene-analysis-value">78%</span>
+                                </div>
+                                <div class="scene-analysis-row">
+                                    <span class="scene-analysis-label">Urgency</span>
+                                    <div class="scene-analysis-bar">
+                                        <div class="scene-analysis-fill"
+                                            style="width:85%;background:linear-gradient(90deg,var(--urgent), #ffa726);">
+                                        </div>
+                                    </div>
+                                    <span class="scene-analysis-value">85%</span>
+                                </div>
+                                <div class="scene-analysis-row">
+                                    <span class="scene-analysis-label">Satisfaction</span>
+                                    <div class="scene-analysis-bar">
+                                        <div class="scene-analysis-fill"
+                                            style="width:8%;background:linear-gradient(90deg,var(--positive),#2ed573);">
+                                        </div>
+                                    </div>
+                                    <span class="scene-analysis-value">8%</span>
+                                </div>
+                            </div>
+                        </div>
 
-                <div class="process-step">
-                    <div class="process-step-number">04</div>
-                    <div class="process-step-content glass-card">
-                        <h4 class="process-step-title">Response Generation</h4>
-                        <p class="process-step-text">
-                            AI generates contextually appropriate responses based on sentiment and predictions.
-                        </p>
-                    </div>
-                </div>
+                        <!-- Scene 2: Behavior Prediction -->
+                        <div class="hiw-scene" data-scene="2">
+                            <div class="scene-analysis" style="gap:10px;">
+                                <div class="scene-analysis-row">
+                                    <span class="scene-analysis-label">Escalation Risk</span>
+                                    <div class="scene-analysis-bar" style="height:8px;">
+                                        <div class="scene-analysis-fill"
+                                            style="width:87%;background:linear-gradient(90deg,var(--urgent),var(--negative));">
+                                        </div>
+                                    </div>
+                                    <span class="scene-analysis-value" style="color:var(--negative-light);">87%</span>
+                                </div>
+                                <div class="scene-analysis-row">
+                                    <span class="scene-analysis-label">Churn Risk</span>
+                                    <div class="scene-analysis-bar" style="height:8px;">
+                                        <div class="scene-analysis-fill"
+                                            style="width:72%;background:linear-gradient(90deg,var(--urgent),#f5576c);">
+                                        </div>
+                                    </div>
+                                    <span class="scene-analysis-value" style="color:var(--urgent-light);">72%</span>
+                                </div>
+                                <div class="scene-analysis-row">
+                                    <span class="scene-analysis-label">Resolution</span>
+                                    <div class="scene-analysis-bar" style="height:8px;">
+                                        <div class="scene-analysis-fill"
+                                            style="width:35%;background:linear-gradient(90deg,var(--positive),#2ed573);">
+                                        </div>
+                                    </div>
+                                    <span class="scene-analysis-value">35%</span>
+                                </div>
+                            </div>
+                            <div class="scene-badge scene-badge--warn" style="align-self:flex-start;">
+                                <span class="scene-badge-dot"></span>
+                                ⚠ High escalation probability — emotional trajectory rising
+                            </div>
+                            <div class="scene-analysis">
+                                <div class="scene-analysis-row">
+                                    <span class="scene-analysis-label">Trajectory</span>
+                                    <span class="scene-analysis-value" style="color:var(--negative-light);">↑
+                                        Worsening</span>
+                                </div>
+                                <div class="scene-analysis-row">
+                                    <span class="scene-analysis-label">Repeat Issue</span>
+                                    <span class="scene-analysis-value" style="color:var(--urgent-light);">Yes (3rd
+                                        contact)</span>
+                                </div>
+                            </div>
+                        </div>
 
-                <div class="process-step">
-                    <div class="process-step-number">05</div>
-                    <div class="process-step-content glass-card">
-                        <h4 class="process-step-title">Escalation Decision</h4>
-                        <p class="process-step-text">
-                            Smart routing to human agents with complete emotional context when needed.
-                        </p>
+                        <!-- Scene 3: Response Generation -->
+                        <div class="hiw-scene" data-scene="3">
+                            <div class="scene-msg">
+                                <div class="scene-avatar scene-avatar--user">M</div>
+                                <div class="scene-bubble">
+                                    <div class="scene-bubble-text">This is the third time I'm asking about my
+                                        order!</div>
+                                    <div class="scene-badge scene-badge--neg">
+                                        <span class="scene-badge-dot"></span>Frustrated — 92%
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="scene-response-card">
+                                <div class="scene-response-label">AI-Generated Response</div>
+                                <div class="scene-response-text">
+                                    I sincerely apologize for the repeated inconvenience, and I completely understand
+                                    your frustration. Let me locate your order right away. Can you share your order
+                                    number so I can give you an immediate update?
+                                </div>
+                            </div>
+                            <div class="scene-msg scene-msg--right">
+                                <div class="scene-avatar scene-avatar--ai">AI</div>
+                                <div class="scene-bubble scene-bubble--ai">
+                                    <div class="scene-bubble-text">I sincerely apologize. Let me locate your order
+                                        right away…</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Scene 4: Escalation Decision -->
+                        <div class="hiw-scene" data-scene="4">
+                            <div class="scene-escalation">
+                                <div class="scene-escalation-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path
+                                            d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                                        <line x1="12" y1="9" x2="12" y2="13" />
+                                        <line x1="12" y1="17" x2="12.01" y2="17" />
+                                    </svg>
+                                </div>
+                                <div class="scene-escalation-text">
+                                    <strong>Auto-Escalation Triggered</strong><br>
+                                    Frustration threshold exceeded — routing to human agent.
+                                </div>
+                            </div>
+                            <div class="scene-analysis">
+                                <div class="scene-analysis-row">
+                                    <span class="scene-analysis-label">Routed to</span>
+                                    <span class="scene-analysis-value" style="color:var(--positive-light);">Agent Sarah
+                                        M.</span>
+                                </div>
+                                <div class="scene-analysis-row">
+                                    <span class="scene-analysis-label">Context</span>
+                                    <span class="scene-analysis-value">Full history attached</span>
+                                </div>
+                                <div class="scene-analysis-row">
+                                    <span class="scene-analysis-label">Priority</span>
+                                    <span class="scene-analysis-value"
+                                        style="color:var(--negative-light);">Critical</span>
+                                </div>
+                            </div>
+                            <div class="scene-response-card" style="border-left-color:var(--positive);">
+                                <div class="scene-response-label" style="color:var(--positive-light);">Suggested
+                                    Response for Agent</div>
+                                <div class="scene-response-text">
+                                    "Hello! I can see this is your 3rd contact about this order. I'm personally going to
+                                    resolve this for you right now…"
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Languages Section -->
-    <section id="languages" class="languages">
-        <div class="section-container">
+    <!-- ═══════════════════════════════════════════════════════
+         LANGUAGES — ENHANCED SECTION
+         ═══════════════════════════════════════════════════════ -->
+    <section id="languages" class="lang-section">
+        <div class="lang-container">
             <div class="section-header">
                 <span class="section-badge">Global</span>
                 <h2 class="section-title">6 European Languages Supported</h2>
                 <p class="section-subtitle">
-                    Focused on quality over quantity - exceptional accuracy across 6 major European languages.
+                    Focused on quality over quantity — exceptional sentiment accuracy across 6 major European languages.
                 </p>
             </div>
 
-            <div class="languages-grid">
-                <div class="language-item glass-card">
-                    <span class="language-flag">🇺🇸</span>
-                    <span class="language-name">English</span>
+            <div class="lang-grid">
+                <div class="lang-card" data-acc="96">
+                    <span class="lang-flag">🇺🇸</span>
+                    <div class="lang-info">
+                        <div class="lang-name">English</div>
+                        <div class="lang-greeting">"Hello, how can I help?"</div>
+                        <div class="lang-bar-track">
+                            <div class="lang-bar-fill" style="width: 0"></div>
+                        </div>
+                        <div class="lang-accuracy">96% accuracy</div>
+                    </div>
                 </div>
-                <div class="language-item glass-card">
-                    <span class="language-flag">🇪🇸</span>
-                    <span class="language-name">Spanish</span>
+                <div class="lang-card" data-acc="94">
+                    <span class="lang-flag">🇪🇸</span>
+                    <div class="lang-info">
+                        <div class="lang-name">Spanish</div>
+                        <div class="lang-greeting">"Hola, ¿en qué puedo ayudarle?"</div>
+                        <div class="lang-bar-track">
+                            <div class="lang-bar-fill" style="width: 0"></div>
+                        </div>
+                        <div class="lang-accuracy">94% accuracy</div>
+                    </div>
                 </div>
-                <div class="language-item glass-card">
-                    <span class="language-flag">🇫🇷</span>
-                    <span class="language-name">French</span>
+                <div class="lang-card" data-acc="93">
+                    <span class="lang-flag">🇫🇷</span>
+                    <div class="lang-info">
+                        <div class="lang-name">French</div>
+                        <div class="lang-greeting">"Bonjour, comment puis-je vous aider?"</div>
+                        <div class="lang-bar-track">
+                            <div class="lang-bar-fill" style="width: 0"></div>
+                        </div>
+                        <div class="lang-accuracy">93% accuracy</div>
+                    </div>
                 </div>
-                <div class="language-item glass-card">
-                    <span class="language-flag">🇩🇪</span>
-                    <span class="language-name">German</span>
+                <div class="lang-card" data-acc="92">
+                    <span class="lang-flag">🇩🇪</span>
+                    <div class="lang-info">
+                        <div class="lang-name">German</div>
+                        <div class="lang-greeting">"Hallo, wie kann ich Ihnen helfen?"</div>
+                        <div class="lang-bar-track">
+                            <div class="lang-bar-fill" style="width: 0"></div>
+                        </div>
+                        <div class="lang-accuracy">92% accuracy</div>
+                    </div>
                 </div>
-                <div class="language-item glass-card">
-                    <span class="language-flag">🇮🇹</span>
-                    <span class="language-name">Italian</span>
+                <div class="lang-card" data-acc="91">
+                    <span class="lang-flag">🇮🇹</span>
+                    <div class="lang-info">
+                        <div class="lang-name">Italian</div>
+                        <div class="lang-greeting">"Ciao, come posso aiutarti?"</div>
+                        <div class="lang-bar-track">
+                            <div class="lang-bar-fill" style="width: 0"></div>
+                        </div>
+                        <div class="lang-accuracy">91% accuracy</div>
+                    </div>
                 </div>
-                <div class="language-item glass-card">
-                    <span class="language-flag">🇳🇱</span>
-                    <span class="language-name">Dutch</span>
+                <div class="lang-card" data-acc="90">
+                    <span class="lang-flag">🇳🇱</span>
+                    <div class="lang-info">
+                        <div class="lang-name">Dutch</div>
+                        <div class="lang-greeting">"Hallo, waarmee kan ik u helpen?"</div>
+                        <div class="lang-bar-track">
+                            <div class="lang-bar-fill" style="width: 0"></div>
+                        </div>
+                        <div class="lang-accuracy">90% accuracy</div>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- CTA Section -->
+    <!-- CTA Section (UNCHANGED) -->
     <section class="cta">
         <div class="section-container">
             <div class="cta-card glass-card">
@@ -389,7 +1236,7 @@
         </div>
     </section>
 
-    <!-- Footer -->
+    <!-- Footer (UNCHANGED) -->
     <footer class="footer">
         <div class="footer-container">
             <div class="footer-brand">
@@ -418,6 +1265,67 @@
 
     <!-- Scripts -->
     <script src="js/landing.js"></script>
+
+    <!-- How It Works scroll logic + Language bar animation -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // ═══════════════════════════════════════════════════════
+            // HOW IT WORKS — Scroll-driven step switcher
+            // ═══════════════════════════════════════════════════════
+            const steps = document.querySelectorAll('.hiw-step');
+            const scenes = document.querySelectorAll('.hiw-scene');
+            const cardLabel = document.getElementById('hiwCardLabel');
+            const labels = [
+                'Input Processing',
+                'Sentiment Analysis',
+                'Behavior Prediction',
+                'Response Generation',
+                'Escalation Decision'
+            ];
+
+            let currentStep = 0;
+
+            function setActiveStep(index) {
+                if (index === currentStep) return;
+                currentStep = index;
+
+                steps.forEach((s, i) => s.classList.toggle('active', i === index));
+                scenes.forEach((s, i) => s.classList.toggle('active', i === index));
+                if (cardLabel) cardLabel.textContent = labels[index] || '';
+            }
+
+            const stepObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const idx = parseInt(entry.target.dataset.step);
+                        if (!isNaN(idx)) setActiveStep(idx);
+                    }
+                });
+            }, {
+                rootMargin: '-35% 0px -35% 0px',
+                threshold: 0.1
+            });
+
+            steps.forEach(s => stepObserver.observe(s));
+
+            // ═══════════════════════════════════════════════════════
+            // LANGUAGE ACCURACY BARS — Animate on scroll
+            // ═══════════════════════════════════════════════════════
+            const langCards = document.querySelectorAll('.lang-card[data-acc]');
+            const langObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const acc = entry.target.dataset.acc;
+                        const fill = entry.target.querySelector('.lang-bar-fill');
+                        if (fill) fill.style.width = acc + '%';
+                        langObserver.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.3 });
+
+            langCards.forEach(c => langObserver.observe(c));
+        });
+    </script>
 </body>
 
 </html>

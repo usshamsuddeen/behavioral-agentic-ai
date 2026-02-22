@@ -76,7 +76,7 @@ function initAnimations() {
 
     // Observe elements with animation classes
     const animatedElements = document.querySelectorAll(
-        '.feature-card, .process-step, .language-item, .hero-stat'
+        '.feature-card, .lang-card, .hero-stat'
     );
 
     animatedElements.forEach(el => {
