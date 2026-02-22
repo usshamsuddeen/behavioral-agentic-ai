@@ -133,12 +133,58 @@
             padding: 1.75rem;
         }
 
+        /* ── Top-left Logo ────────────────────────────────────── */
+        .page-logo {
+            position: fixed;
+            top: 1.5rem;
+            left: 1.75rem;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .page-logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 14px rgba(102, 126, 234, 0.3);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .page-logo:hover .page-logo-icon {
+            transform: scale(1.08);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.45);
+        }
+
+        .page-logo-icon svg {
+            width: 18px;
+            height: 18px;
+            color: #fff;
+        }
+
+        .page-logo-name {
+            font-size: 0.88rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff 0%, rgba(255, 255, 255, 0.6) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.01em;
+        }
+
         /* ═══════════════════════════════════════════════════════
            MACBOOK FRAME
            ═══════════════════════════════════════════════════════ */
         .mac-frame {
             width: 100%;
-            max-width: 920px;
+            max-width: 1020px;
             display: flex;
             flex-direction: column;
             animation: cardEntry 0.7s 0.15s cubic-bezier(0.22, 1, 0.36, 1) both;
@@ -201,17 +247,14 @@
             font-weight: 600;
             letter-spacing: 0.04em;
             margin-right: 3rem;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, #a5b4fc 50%, #c4b5fd 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: rgba(255, 255, 255, 0.5);
         }
 
         /* ── Card body ───────────────────────────────────────── */
         .wizard-card {
             display: flex;
             flex: 1;
-            min-height: 520px;
+            min-height: 560px;
             background: rgba(255, 255, 255, 0.025);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
@@ -264,7 +307,7 @@
            LEFT SIDEBAR
            ═══════════════════════════════════════════════════════ */
         .wizard-sidebar {
-            flex: 0 0 210px;
+            flex: 0 0 220px;
             background: rgba(255, 255, 255, 0.012);
             border-right: 1px solid rgba(255, 255, 255, 0.04);
             padding: 2rem 1.5rem;
@@ -999,6 +1042,18 @@
         <div class="orb orb--2"></div>
         <div class="orb orb--3"></div>
     </div>
+
+    <!-- Logo — top left corner -->
+    <a href="/" class="page-logo">
+        <div class="page-logo-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                <path d="M2 17l10 5 10-5" />
+                <path d="M2 12l10 5 10-5" />
+            </svg>
+        </div>
+        <span class="page-logo-name">Behavioral AI</span>
+    </a>
 
     <div class="onboarding-wrap">
         <div class="mac-frame">
