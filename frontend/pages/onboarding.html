@@ -133,6 +133,47 @@
             padding: 1.75rem;
         }
 
+        /* ── Background logo ─────────────────────────────────── */
+        .bg-logo {
+            position: fixed;
+            top: 1.5rem;
+            left: 1.75rem;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            text-decoration: none;
+            transition: opacity 0.3s;
+        }
+
+        .bg-logo:hover {
+            opacity: 0.85;
+        }
+
+        .bg-logo-icon {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+        }
+
+        .bg-logo-icon svg {
+            width: 17px;
+            height: 17px;
+            color: #fff;
+        }
+
+        .bg-logo-text {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.45);
+            letter-spacing: -0.01em;
+        }
+
         /* ═══════════════════════════════════════════════════════
            MACBOOK FRAME
            ═══════════════════════════════════════════════════════ */
@@ -201,10 +242,7 @@
             font-weight: 600;
             letter-spacing: 0.04em;
             margin-right: 3rem;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.6) 0%, #a5b4fc 50%, #c4b5fd 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            color: rgba(255, 255, 255, 0.7);
         }
 
         /* ── Card body ───────────────────────────────────────── */
@@ -999,6 +1037,18 @@
         <div class="orb orb--2"></div>
         <div class="orb orb--3"></div>
     </div>
+
+    <!-- Background Logo -->
+    <a href="/index.html" class="bg-logo">
+        <div class="bg-logo-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                <path d="M2 17l10 5 10-5" />
+                <path d="M2 12l10 5 10-5" />
+            </svg>
+        </div>
+        <span class="bg-logo-text">Behavioral AI</span>
+    </a>
 
     <div class="onboarding-wrap">
         <div class="mac-frame">
