@@ -31,9 +31,9 @@
         }
 
         /* ═══════════════════════════════════════════════════════
-           BACKGROUND – canvas + orbs
+           BACKGROUND — full-screen canvas + orbs (identical to login)
            ═══════════════════════════════════════════════════════ */
-        .bg-layer {
+        #grainCanvas {
             position: fixed;
             top: 0;
             left: 0;
@@ -43,64 +43,85 @@
             pointer-events: none;
         }
 
-        .bg-layer canvas {
-            position: absolute;
+        .ambient-glow {
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
         }
 
-        .bg-orb {
+        .ambient-glow .orb {
             position: absolute;
             border-radius: 50%;
             filter: blur(120px);
             opacity: 0.18;
-            pointer-events: none;
         }
 
-        .bg-orb--1 {
+        .ambient-glow .orb--1 {
             width: 500px;
             height: 500px;
             background: radial-gradient(circle, #667eea, #764ba2);
-            top: -12%;
-            right: -10%;
-            animation: orbDrift 25s ease-in-out infinite;
+            top: -15%;
+            left: -10%;
+            animation: orbFloat1 30s ease-in-out infinite;
         }
 
-        .bg-orb--2 {
-            width: 400px;
-            height: 400px;
+        .ambient-glow .orb--2 {
+            width: 420px;
+            height: 420px;
             background: radial-gradient(circle, #f093fb, #c471f5);
-            bottom: -10%;
-            left: -8%;
-            animation: orbDrift 30s ease-in-out infinite reverse;
+            bottom: -12%;
+            right: -8%;
+            animation: orbFloat2 28s ease-in-out infinite;
         }
 
-        .bg-orb--3 {
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle, #2ed573, #1e90ff);
-            top: 50%;
-            left: 40%;
-            transform: translate(-50%, -50%);
-            animation: orbDrift 22s ease-in-out infinite 5s;
+        .ambient-glow .orb--3 {
+            width: 320px;
+            height: 320px;
+            background: radial-gradient(circle, #2ed573, #17c0eb);
+            top: 40%;
+            right: 25%;
+            animation: orbFloat1 24s ease-in-out infinite 8s;
         }
 
-        @keyframes orbDrift {
+        @keyframes orbFloat1 {
 
             0%,
             100% {
                 transform: translate(0, 0) scale(1);
             }
 
-            50% {
-                transform: translate(35px, 50px) scale(1.08);
+            33% {
+                transform: translate(40px, 60px) scale(1.08);
+            }
+
+            66% {
+                transform: translate(-30px, 30px) scale(0.95);
+            }
+        }
+
+        @keyframes orbFloat2 {
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            33% {
+                transform: translate(-50px, -40px) scale(1.1);
+            }
+
+            66% {
+                transform: translate(20px, -20px) scale(0.92);
             }
         }
 
         /* ═══════════════════════════════════════════════════════
-           LAYOUT
+           CENTERED LAYOUT
            ═══════════════════════════════════════════════════════ */
         .onboarding-container {
             position: relative;
@@ -117,13 +138,12 @@
         .onboarding-header {
             text-align: center;
             margin-bottom: 1.25rem;
-            animation: fadeSlideIn 0.6s ease both;
+            animation: fadeDown 0.6s ease both;
         }
 
         .onboarding-header h1 {
-            font-size: 1.6rem;
+            font-size: 1.5rem;
             font-weight: 700;
-            letter-spacing: -0.02em;
             background: linear-gradient(135deg, #fff, #a5b4fc);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -131,15 +151,15 @@
         }
 
         .onboarding-header p {
-            color: rgba(255, 255, 255, 0.42);
-            font-size: 0.88rem;
-            margin-top: 0.3rem;
+            color: rgba(255, 255, 255, 0.38);
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
         }
 
-        @keyframes fadeSlideIn {
+        @keyframes fadeDown {
             from {
                 opacity: 0;
-                transform: translateY(-12px);
+                transform: translateY(-10px);
             }
 
             to {
@@ -154,22 +174,22 @@
             align-items: center;
             justify-content: center;
             gap: 0;
-            margin-bottom: 1.5rem;
-            animation: fadeSlideIn 0.6s 0.1s ease both;
+            margin-bottom: 1.25rem;
+            animation: fadeDown 0.6s 0.08s ease both;
         }
 
         .step-dot {
-            width: 34px;
-            height: 34px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.04);
             border: 2px solid rgba(255, 255, 255, 0.1);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             font-weight: 600;
-            color: rgba(255, 255, 255, 0.3);
+            color: rgba(255, 255, 255, 0.25);
             transition: all 0.4s ease;
             flex-shrink: 0;
         }
@@ -178,7 +198,7 @@
             background: linear-gradient(135deg, #667eea, #764ba2);
             border-color: #667eea;
             color: #fff;
-            box-shadow: 0 0 18px rgba(102, 126, 234, 0.5);
+            box-shadow: 0 0 16px rgba(102, 126, 234, 0.45);
         }
 
         .step-dot.completed {
@@ -188,9 +208,9 @@
         }
 
         .step-line {
-            width: 36px;
+            width: 32px;
             height: 2px;
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.06);
             transition: background 0.4s ease;
         }
 
@@ -198,18 +218,20 @@
             background: #2ed573;
         }
 
-        /* ── WIZARD CARD (glass) ─────────────────────────────── */
+        /* ═══════════════════════════════════════════════════════
+           GLASS CARD — identical to login page
+           ═══════════════════════════════════════════════════════ */
         .wizard-card {
             width: 100%;
-            max-width: 640px;
+            max-width: 600px;
             background: rgba(255, 255, 255, 0.025);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
-            border-radius: 22px;
+            border-radius: 24px;
             border: 1px solid rgba(255, 255, 255, 0.06);
-            padding: 2rem 2.25rem;
+            padding: 2.5rem 3rem;
             box-shadow:
-                0 28px 56px rgba(0, 0, 0, 0.45),
+                0 32px 64px rgba(0, 0, 0, 0.5),
                 0 0 0 1px rgba(255, 255, 255, 0.04) inset,
                 0 1px 0 rgba(255, 255, 255, 0.06) inset;
             position: relative;
@@ -220,18 +242,18 @@
         @keyframes cardEntry {
             from {
                 opacity: 0;
-                transform: translateY(14px);
-                filter: blur(3px);
+                transform: translateY(16px) scale(0.98);
+                filter: blur(4px);
             }
 
             to {
                 opacity: 1;
-                transform: translateY(0);
+                transform: translateY(0) scale(1);
                 filter: blur(0);
             }
         }
 
-        /* Shimmer line */
+        /* Shimmer — login-identical gradient */
         .wizard-card::before {
             content: '';
             position: absolute;
@@ -240,8 +262,11 @@
             right: 0;
             height: 1px;
             background: linear-gradient(90deg,
-                    transparent 0%, rgba(102, 126, 234, 0.3) 25%,
-                    rgba(167, 139, 250, 0.5) 50%, rgba(102, 126, 234, 0.3) 75%, transparent 100%);
+                    transparent 0%,
+                    rgba(102, 126, 234, 0.4) 30%,
+                    rgba(167, 139, 250, 0.6) 50%,
+                    rgba(102, 126, 234, 0.4) 70%,
+                    transparent 100%);
             animation: shimmer 4s ease-in-out infinite;
         }
 
@@ -260,7 +285,7 @@
         /* ── STEP PANELS ─────────────────────────────────────── */
         .step-panel {
             display: none;
-            animation: fadeIn 0.4s ease;
+            animation: fadeIn 0.35s ease;
         }
 
         .step-panel.active {
@@ -270,7 +295,7 @@
         @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: translateY(8px);
+                transform: translateY(6px);
             }
 
             to {
@@ -280,91 +305,91 @@
         }
 
         .step-title {
-            font-size: 1.2rem;
+            font-size: 1.15rem;
             font-weight: 700;
-            margin-bottom: 0.35rem;
+            margin-bottom: 0.2rem;
             letter-spacing: -0.01em;
         }
 
         .step-description {
-            color: rgba(255, 255, 255, 0.42);
-            font-size: 0.85rem;
-            margin-bottom: 1.25rem;
-            line-height: 1.5;
+            color: rgba(255, 255, 255, 0.35);
+            font-size: 0.82rem;
+            margin-bottom: 1.15rem;
         }
 
-        /* ── FORM ELEMENTS ───────────────────────────────────── */
+        /* ═══════════════════════════════════════════════════════
+           FORM ELEMENTS — login-identical styling
+           ═══════════════════════════════════════════════════════ */
         .form-group {
-            margin-bottom: 0.9rem;
+            margin-bottom: 0.85rem;
             position: relative;
         }
 
         .form-group label {
             display: block;
-            font-size: 0.72rem;
+            font-size: 0.8rem;
             font-weight: 500;
-            color: rgba(255, 255, 255, 0.48);
-            margin-bottom: 0.3rem;
+            color: rgba(255, 255, 255, 0.55);
             text-transform: uppercase;
             letter-spacing: 0.06em;
+            margin-bottom: 0.35rem;
         }
 
         .form-group input,
         .form-group textarea,
         .form-group select {
             width: 100%;
-            padding: 0.65rem 0.85rem;
+            padding: 0.7rem 1rem;
             background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.07);
-            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
             color: #fff;
-            font-size: 0.88rem;
+            font-size: 0.9rem;
             font-family: inherit;
             transition: border-color 0.3s, background 0.3s, box-shadow 0.3s;
         }
 
         .form-group input::placeholder,
         .form-group textarea::placeholder {
-            color: rgba(255, 255, 255, 0.18);
+            color: rgba(255, 255, 255, 0.2);
         }
 
         .form-group input:focus,
         .form-group textarea:focus,
         .form-group select:focus {
             outline: none;
-            border-color: rgba(102, 126, 234, 0.5);
-            background: rgba(102, 126, 234, 0.04);
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.08);
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.06);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
         .form-group textarea {
             resize: none;
-            min-height: 70px;
         }
 
         .form-group select option {
-            background: #1a1a2e;
+            background: #12122a;
         }
 
-        /* Two columns */
+        /* Two-column row */
         .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 0.75rem;
         }
 
-        /* Focus underline */
+        /* Focus underline — login-identical */
         .form-group .focus-line {
             position: absolute;
             bottom: 0;
-            left: 10px;
-            right: 10px;
+            left: 12px;
+            right: 12px;
             height: 2px;
             border-radius: 1px;
             background: linear-gradient(90deg, #667eea, #a78bfa, #667eea);
             background-size: 200% 100%;
             transform: scaleX(0);
-            transition: transform 0.3s;
+            transition: transform 0.3s ease;
             transform-origin: left;
         }
 
@@ -398,14 +423,14 @@
         .color-input-wrap {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
         }
 
         .color-input-wrap input[type="color"] {
-            width: 36px;
-            height: 36px;
+            width: 38px;
+            height: 38px;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
             background: none;
             padding: 0;
@@ -413,15 +438,27 @@
 
         .color-input-wrap span {
             color: rgba(255, 255, 255, 0.4);
-            font-size: 0.82rem;
+            font-size: 0.85rem;
+            font-family: 'Courier New', monospace;
         }
 
-        /* ── STORE PLATFORM CARDS ────────────────────────────── */
+        /* ═══════════════════════════════════════════════════════
+           STORE PLATFORM CARDS
+           ═══════════════════════════════════════════════════════ */
+        .platform-label {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.55);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
         .platform-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 0.65rem;
-            margin-top: 0.5rem;
+            gap: 0.6rem;
         }
 
         .platform-card {
@@ -429,142 +466,84 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 6px;
-            padding: 1rem 0.5rem;
-            background: rgba(255, 255, 255, 0.03);
+            gap: 4px;
+            padding: 0.85rem 0.5rem;
+            background: rgba(255, 255, 255, 0.025);
             border: 1.5px solid rgba(255, 255, 255, 0.06);
             border-radius: 14px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.25s ease;
             position: relative;
         }
 
         .platform-card:hover {
-            border-color: rgba(102, 126, 234, 0.3);
-            background: rgba(102, 126, 234, 0.04);
-            transform: translateY(-2px);
+            border-color: rgba(102, 126, 234, 0.25);
+            background: rgba(102, 126, 234, 0.03);
+            transform: translateY(-1px);
         }
 
         .platform-card.selected {
             border-color: #667eea;
-            background: rgba(102, 126, 234, 0.08);
-            box-shadow: 0 0 16px rgba(102, 126, 234, 0.15);
+            background: rgba(102, 126, 234, 0.06);
+            box-shadow: 0 0 14px rgba(102, 126, 234, 0.12);
         }
 
         .platform-card.selected::after {
             content: '✓';
             position: absolute;
-            top: 6px;
-            right: 8px;
-            font-size: 0.65rem;
+            top: 5px;
+            right: 7px;
+            font-size: 0.6rem;
             color: #667eea;
             font-weight: 700;
         }
 
         .platform-card-icon {
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 10px;
-            font-size: 1.3rem;
+            font-size: 1.2rem;
+            line-height: 1;
         }
 
         .platform-card-name {
-            font-size: 0.72rem;
+            font-size: 0.7rem;
             font-weight: 600;
-            color: rgba(255, 255, 255, 0.75);
-            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
         }
 
         .platform-card-sub {
-            font-size: 0.6rem;
-            color: rgba(255, 255, 255, 0.3);
+            font-size: 0.55rem;
+            color: rgba(255, 255, 255, 0.25);
+            line-height: 1;
         }
 
-        /* Hidden real select */
+        /* Hidden real select for backend */
         #storePlatform {
             display: none;
         }
 
-        /* ── UPLOAD / KB ─────────────────────────────────────── */
-        .upload-area {
-            border: 2px dashed rgba(255, 255, 255, 0.1);
-            border-radius: 14px;
-            padding: 1.5rem;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .upload-area:hover {
-            border-color: #667eea;
-            background: rgba(102, 126, 234, 0.04);
-        }
-
-        .upload-area svg {
-            width: 36px;
-            height: 36px;
-            color: rgba(255, 255, 255, 0.25);
-            margin-bottom: 0.5rem;
-        }
-
-        .upload-area p {
-            color: rgba(255, 255, 255, 0.4);
-            font-size: 0.82rem;
-        }
-
-        .upload-area .highlight {
-            color: #667eea;
-            font-weight: 600;
-        }
-
-        .upload-list {
-            margin-top: 0.5rem;
-        }
-
-        .upload-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0.5rem 0.75rem;
-            background: rgba(255, 255, 255, 0.04);
-            border-radius: 8px;
-            margin-bottom: 0.35rem;
-            font-size: 0.8rem;
-        }
-
-        .upload-item button {
-            background: none;
-            border: none;
-            color: #f5576c;
-            cursor: pointer;
-            font-size: 0.8rem;
-        }
-
-        /* ── COMPLETION ──────────────────────────────────────── */
+        /* ═══════════════════════════════════════════════════════
+           COMPLETION STEP
+           ═══════════════════════════════════════════════════════ */
         .complete-section {
             text-align: center;
-            padding: 1.5rem 0;
+            padding: 1rem 0;
         }
 
         .complete-icon {
-            width: 64px;
-            height: 64px;
+            width: 60px;
+            height: 60px;
             margin: 0 auto 1rem;
             background: linear-gradient(135deg, #2ed573, #17c0eb);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 10px 28px rgba(46, 213, 115, 0.35);
+            box-shadow: 0 10px 24px rgba(46, 213, 115, 0.3);
             animation: completePop 0.5s ease both;
         }
 
         @keyframes completePop {
             from {
-                transform: scale(0.6);
+                transform: scale(0.5);
                 opacity: 0;
             }
 
@@ -575,41 +554,44 @@
         }
 
         .complete-icon svg {
-            width: 30px;
-            height: 30px;
+            width: 28px;
+            height: 28px;
             color: #fff;
         }
 
         .complete-section h2 {
-            font-size: 1.3rem;
-            margin-bottom: 0.4rem;
+            font-size: 1.25rem;
+            margin-bottom: 0.35rem;
         }
 
         .complete-section p {
-            color: rgba(255, 255, 255, 0.42);
-            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.38);
+            font-size: 0.82rem;
             margin-bottom: 0.75rem;
+            max-width: 380px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .embed-code {
             background: rgba(0, 0, 0, 0.35);
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 10px;
-            padding: 0.85rem;
+            padding: 0.85rem 1rem;
             text-align: left;
             font-family: 'Courier New', monospace;
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             color: #a5b4fc;
             word-break: break-all;
-            margin: 0.75rem 0;
+            margin: 0.65rem 0;
         }
 
         .copy-btn {
-            background: rgba(102, 126, 234, 0.15);
-            border: 1px solid rgba(102, 126, 234, 0.25);
+            background: rgba(102, 126, 234, 0.12);
+            border: 1px solid rgba(102, 126, 234, 0.2);
             color: #a5b4fc;
-            padding: 0.5rem 1.2rem;
-            border-radius: 8px;
+            padding: 0.5rem 1.25rem;
+            border-radius: 10px;
             cursor: pointer;
             font-size: 0.82rem;
             font-weight: 500;
@@ -617,22 +599,27 @@
         }
 
         .copy-btn:hover {
-            background: rgba(102, 126, 234, 0.3);
+            background: rgba(102, 126, 234, 0.25);
+            transform: translateY(-1px);
         }
 
-        /* ── STEP ACTIONS ────────────────────────────────────── */
+        /* ═══════════════════════════════════════════════════════
+           STEP ACTIONS
+           ═══════════════════════════════════════════════════════ */
         .step-actions {
             display: flex;
             justify-content: space-between;
             margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
         }
 
         .btn-back,
         .btn-next,
         .btn-finish {
             padding: 0.7rem 1.75rem;
-            border-radius: 10px;
-            font-size: 0.9rem;
+            border-radius: 12px;
+            font-size: 0.88rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
@@ -641,7 +628,7 @@
 
         .btn-back {
             background: rgba(255, 255, 255, 0.04);
-            color: rgba(255, 255, 255, 0.6);
+            color: rgba(255, 255, 255, 0.55);
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
 
@@ -684,7 +671,7 @@
         .btn-next:hover,
         .btn-finish:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
         }
 
         .btn-next:disabled {
@@ -698,7 +685,7 @@
             position: fixed;
             bottom: 1.5rem;
             right: 1.5rem;
-            padding: 0.75rem 1.25rem;
+            padding: 0.7rem 1.2rem;
             border-radius: 10px;
             font-size: 0.82rem;
             z-index: 1000;
@@ -713,19 +700,19 @@
         }
 
         .toast.success {
-            background: rgba(46, 213, 115, 0.12);
-            border: 1px solid rgba(46, 213, 115, 0.25);
+            background: rgba(46, 213, 115, 0.1);
+            border: 1px solid rgba(46, 213, 115, 0.2);
             color: #2ed573;
         }
 
         .toast.error {
-            background: rgba(245, 87, 108, 0.12);
-            border: 1px solid rgba(245, 87, 108, 0.25);
+            background: rgba(245, 87, 108, 0.1);
+            border: 1px solid rgba(245, 87, 108, 0.2);
             color: #f5576c;
         }
 
         /* ── RESPONSIVE ──────────────────────────────────────── */
-        @media (max-width: 700px) {
+        @media (max-width: 640px) {
             body {
                 overflow-y: auto;
                 height: auto;
@@ -740,10 +727,11 @@
 
             .wizard-card {
                 padding: 1.5rem;
+                border-radius: 18px;
             }
 
             .step-line {
-                width: 18px;
+                width: 16px;
             }
 
             .form-row {
@@ -759,21 +747,19 @@
 
 <body>
     <!-- ═══════ BACKGROUND ═══════ -->
-    <div class="bg-layer">
-        <div class="bg-orb bg-orb--1"></div>
-        <div class="bg-orb bg-orb--2"></div>
-        <div class="bg-orb bg-orb--3"></div>
-        <canvas id="grainCanvas"></canvas>
+    <canvas id="grainCanvas"></canvas>
+    <div class="ambient-glow">
+        <div class="orb orb--1"></div>
+        <div class="orb orb--2"></div>
+        <div class="orb orb--3"></div>
     </div>
 
     <div class="onboarding-container">
-        <!-- Header -->
         <div class="onboarding-header">
             <h1>✨ Setup Wizard</h1>
             <p>Let's get your AI support widget ready in minutes</p>
         </div>
 
-        <!-- Step Progress -->
         <div class="step-progress">
             <div class="step-dot active" data-step="1">1</div>
             <div class="step-line" data-line="1"></div>
@@ -787,10 +773,11 @@
         </div>
 
         <div class="wizard-card">
-            <!-- Step 1: Business Profile -->
+
+            <!-- ════ Step 1: Business Profile ════ -->
             <div class="step-panel active" id="step1">
                 <h2 class="step-title">📋 Business Profile</h2>
-                <p class="step-description">Tell us about your business so the AI can represent you perfectly.</p>
+                <p class="step-description">Tell us about your business so the AI can represent you.</p>
                 <div class="form-row">
                     <div class="form-group">
                         <label for="bizName">Business Name</label>
@@ -800,7 +787,7 @@
                     <div class="form-group">
                         <label for="bizIndustry">Industry</label>
                         <select id="bizIndustry">
-                            <option value="">Select industry…</option>
+                            <option value="">Select…</option>
                             <option value="electronics">Electronics</option>
                             <option value="fashion">Fashion & Apparel</option>
                             <option value="health">Health & Beauty</option>
@@ -812,34 +799,35 @@
                         <div class="focus-line"></div>
                     </div>
                 </div>
-                <div class="form-group">
-                    <label for="bizDesc">Brief Description</label>
-                    <textarea id="bizDesc" rows="3"
-                        placeholder="What does your business do? This helps the AI craft better responses."></textarea>
-                    <div class="focus-line"></div>
-                </div>
-                <div class="form-group">
-                    <label for="bizTimezone">Timezone</label>
-                    <select id="bizTimezone">
-                        <option value="UTC">UTC</option>
-                        <option value="US/Eastern">US Eastern</option>
-                        <option value="US/Pacific">US Pacific</option>
-                        <option value="Europe/London">Europe/London</option>
-                        <option value="Europe/Berlin">Europe/Berlin</option>
-                        <option value="Asia/Dubai">Asia/Dubai</option>
-                        <option value="Asia/Kolkata">Asia/Kolkata</option>
-                        <option value="Asia/Shanghai">Asia/Shanghai</option>
-                    </select>
-                    <div class="focus-line"></div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="bizDesc">Brief Description</label>
+                        <textarea id="bizDesc" rows="2" placeholder="What does your business do?"></textarea>
+                        <div class="focus-line"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="bizTimezone">Timezone</label>
+                        <select id="bizTimezone">
+                            <option value="UTC">UTC</option>
+                            <option value="US/Eastern">US Eastern</option>
+                            <option value="US/Pacific">US Pacific</option>
+                            <option value="Europe/London">Europe/London</option>
+                            <option value="Europe/Berlin">Europe/Berlin</option>
+                            <option value="Asia/Dubai">Asia/Dubai</option>
+                            <option value="Asia/Kolkata">Asia/Kolkata</option>
+                            <option value="Asia/Shanghai">Asia/Shanghai</option>
+                        </select>
+                        <div class="focus-line"></div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Step 2: Connect Store -->
+            <!-- ════ Step 2: Connect Store ════ -->
             <div class="step-panel" id="step2">
                 <h2 class="step-title">🔗 Connect Your Store</h2>
                 <p class="step-description">Choose your platform and provide your store URL.</p>
 
-                <!-- Hidden select (keeps backend logic intact) -->
+                <!-- Hidden native select for backend -->
                 <select id="storePlatform">
                     <option value="">Select platform…</option>
                     <option value="shopify">Shopify</option>
@@ -849,53 +837,51 @@
                     <option value="other">Other</option>
                 </select>
 
-                <label
-                    style="font-size:0.72rem;font-weight:500;color:rgba(255,255,255,0.48);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.4rem;display:block;">Select
-                    Platform</label>
+                <span class="platform-label">Platform</span>
                 <div class="platform-grid">
                     <div class="platform-card" data-platform="shopify" onclick="selectPlatform(this,'shopify')">
-                        <div class="platform-card-icon">🛍️</div>
+                        <span class="platform-card-icon">🛍️</span>
                         <span class="platform-card-name">Shopify</span>
                         <span class="platform-card-sub">Hosted store</span>
                     </div>
                     <div class="platform-card" data-platform="woocommerce" onclick="selectPlatform(this,'woocommerce')">
-                        <div class="platform-card-icon">🔌</div>
+                        <span class="platform-card-icon">🔌</span>
                         <span class="platform-card-name">WooCommerce</span>
-                        <span class="platform-card-sub">WordPress plugin</span>
+                        <span class="platform-card-sub">WordPress</span>
                     </div>
                     <div class="platform-card" data-platform="alibaba" onclick="selectPlatform(this,'alibaba')">
-                        <div class="platform-card-icon">🌏</div>
+                        <span class="platform-card-icon">🌏</span>
                         <span class="platform-card-name">Alibaba</span>
                         <span class="platform-card-sub">AliExpress</span>
                     </div>
                     <div class="platform-card" data-platform="magento" onclick="selectPlatform(this,'magento')">
-                        <div class="platform-card-icon">🧱</div>
+                        <span class="platform-card-icon">🧱</span>
                         <span class="platform-card-name">Magento</span>
-                        <span class="platform-card-sub">Adobe Commerce</span>
+                        <span class="platform-card-sub">Adobe</span>
                     </div>
                     <div class="platform-card" data-platform="custom" onclick="selectPlatform(this,'custom')">
-                        <div class="platform-card-icon">🌐</div>
-                        <span class="platform-card-name">Custom Site</span>
-                        <span class="platform-card-sub">Any website</span>
+                        <span class="platform-card-icon">🌐</span>
+                        <span class="platform-card-name">Custom</span>
+                        <span class="platform-card-sub">Any site</span>
                     </div>
                     <div class="platform-card" data-platform="other" onclick="selectPlatform(this,'other')">
-                        <div class="platform-card-icon">➕</div>
+                        <span class="platform-card-icon">➕</span>
                         <span class="platform-card-name">Other</span>
-                        <span class="platform-card-sub">Tell us more</span>
+                        <span class="platform-card-sub">Tell us</span>
                     </div>
                 </div>
 
-                <div class="form-group" style="margin-top: 1rem;">
+                <div class="form-group" style="margin-top:1rem;">
                     <label for="storeUrl">Store URL</label>
                     <input type="url" id="storeUrl" placeholder="https://your-store.com">
                     <div class="focus-line"></div>
                 </div>
             </div>
 
-            <!-- Step 3: Configure Widget -->
+            <!-- ════ Step 3: Configure Widget ════ -->
             <div class="step-panel" id="step3">
                 <h2 class="step-title">🎨 Configure Widget</h2>
-                <p class="step-description">Customize how the chat widget looks on your site.</p>
+                <p class="step-description">Customize the look of the chat widget on your site.</p>
                 <div class="form-row">
                     <div class="form-group">
                         <label for="widgetTitle">Widget Title</label>
@@ -903,12 +889,12 @@
                         <div class="focus-line"></div>
                     </div>
                     <div class="form-group">
-                        <label for="widgetGreeting">Greeting Message</label>
+                        <label for="widgetGreeting">Greeting</label>
                         <input type="text" id="widgetGreeting" placeholder="Hi! How can we help?">
                         <div class="focus-line"></div>
                     </div>
                 </div>
-                <div class="color-row">
+                <div class="form-row">
                     <div class="form-group">
                         <label>Primary Color</label>
                         <div class="color-input-wrap">
@@ -926,7 +912,7 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="widgetLang">Default Language</label>
+                    <label for="widgetLang">Language</label>
                     <select id="widgetLang">
                         <option value="en">English</option>
                         <option value="es">Spanish</option>
@@ -939,14 +925,13 @@
                 </div>
             </div>
 
-            <!-- Step 4: Knowledge Base -->
+            <!-- ════ Step 4: Knowledge Base ════ -->
             <div class="step-panel" id="step4">
-                <h2 class="step-title">📚 Add Product Knowledge</h2>
-                <p class="step-description">Paste product details, FAQs, or policies so the AI can answer intelligently.
-                </p>
+                <h2 class="step-title">📚 Product Knowledge</h2>
+                <p class="step-description">Paste product details, FAQs, or policies for the AI.</p>
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="kbTitle">Knowledge Title</label>
+                        <label for="kbTitle">Title</label>
                         <input type="text" id="kbTitle" placeholder="e.g. Product Catalog">
                         <div class="focus-line"></div>
                     </div>
@@ -962,20 +947,17 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="kbText">Knowledge Content</label>
-                    <textarea id="kbText" rows="6" placeholder="Paste your product details, FAQs, policies here...
-
-Example:
-Our store sells premium wireless headphones ($49.99), Bluetooth speakers ($29.99).
-Return policy: 30-day returns with receipt. Free shipping on orders over $50."></textarea>
+                    <label for="kbText">Content</label>
+                    <textarea id="kbText" rows="5"
+                        placeholder="Paste your product details, FAQs, or policies here…"></textarea>
                     <div class="focus-line"></div>
                 </div>
-                <p style="color:rgba(255,255,255,0.3);font-size:0.75rem;margin-top:0.25rem;">
-                    You can skip this step and add knowledge later from your dashboard.
+                <p style="color:rgba(255,255,255,0.25);font-size:0.72rem;">
+                    You can skip this and add knowledge later from your dashboard.
                 </p>
             </div>
 
-            <!-- Step 5: Complete -->
+            <!-- ════ Step 5: Complete ════ -->
             <div class="step-panel" id="step5">
                 <div class="complete-section">
                     <div class="complete-icon">
@@ -984,8 +966,8 @@ Return policy: 30-day returns with receipt. Free shipping on orders over $50."><
                         </svg>
                     </div>
                     <h2>You're All Set! 🎉</h2>
-                    <p>Your AI support widget is ready. Copy the embed code and paste it before the closing
-                        &lt;/body&gt; tag.</p>
+                    <p>Your AI widget is ready. Copy the embed code and paste it before your closing &lt;/body&gt; tag.
+                    </p>
                     <div class="embed-code" id="embedCode">
                         &lt;script src="https://sentimenta.snick.at/widget/embed.js"
                         data-key="YOUR_API_KEY"&gt;&lt;/script&gt;
@@ -994,9 +976,9 @@ Return policy: 30-day returns with receipt. Free shipping on orders over $50."><
                 </div>
             </div>
 
-            <!-- Navigation Actions -->
+            <!-- Navigation -->
             <div class="step-actions">
-                <button class="btn-back" id="btnBack" onclick="prevStep()" style="visibility: hidden;"><span>←
+                <button class="btn-back" id="btnBack" onclick="prevStep()" style="visibility:hidden;"><span>←
                         Back</span></button>
                 <button class="btn-next" id="btnNext" onclick="nextStep()"><span>Continue →</span></button>
                 <button class="btn-finish" id="btnFinish" onclick="goToDashboard()" style="display:none;"><span>Go to
@@ -1012,7 +994,7 @@ Return policy: 30-day returns with receipt. Free shipping on orders over $50."><
     <script src="/js/sidebar.js"></script>
     <script>
         // ═══════════════════════════════════════════════════════
-        // PARTICLE GRAIN SYSTEM (100+ grains)
+        // PARTICLE GRAIN SYSTEM — 120 grains, full viewport
         // ═══════════════════════════════════════════════════════
         (function () {
             const canvas = document.getElementById('grainCanvas');
@@ -1032,7 +1014,6 @@ Return policy: 30-day returns with receipt. Free shipping on orders over $50."><
             document.addEventListener('mousemove', e => {
                 mouseX = e.clientX; mouseY = e.clientY;
             });
-            document.addEventListener('mouseleave', () => { mouseX = -9999; mouseY = -9999; });
 
             class P {
                 constructor() { this.init(); }
@@ -1099,12 +1080,11 @@ Return policy: 30-day returns with receipt. Free shipping on orders over $50."><
 
 
         // ═══════════════════════════════════════════════════════
-        // ONBOARDING LOGIC (unchanged backend calls)
+        // ONBOARDING LOGIC (all backend calls unchanged)
         // ═══════════════════════════════════════════════════════
         const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
             ? 'http://localhost:8000' : window.location.origin;
 
-        // Auth guard — redirect to login if not authenticated
         if (!Auth.isAuthenticated()) {
             Auth.redirectToLogin();
         }
@@ -1114,7 +1094,6 @@ Return policy: 30-day returns with receipt. Free shipping on orders over $50."><
         const totalSteps = 5;
         const uploadedFiles = [];
 
-        // Color picker sync
         document.getElementById('widgetColor').addEventListener('input', e => {
             document.getElementById('colorLabel').textContent = e.target.value;
         });
@@ -1139,7 +1118,6 @@ Return policy: 30-day returns with receipt. Free shipping on orders over $50."><
         }
 
         async function nextStep() {
-            // Save current step via API
             try {
                 const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
 
@@ -1172,7 +1150,6 @@ Return policy: 30-day returns with receipt. Free shipping on orders over $50."><
                         })
                     });
                 } else if (currentStep === 4) {
-                    // Send knowledge text to the knowledge pipeline
                     const kbText = document.getElementById('kbText').value.trim();
                     if (kbText) {
                         const kbTitle = document.getElementById('kbTitle').value.trim() || 'Onboarding Knowledge';
@@ -1192,10 +1169,8 @@ Return policy: 30-day returns with receipt. Free shipping on orders over $50."><
                         }
                     }
 
-                    // Mark KB step as complete
                     await fetch(`${API_BASE}/api/onboarding/upload-kb-complete`, { method: 'POST', headers });
 
-                    // Finalize onboarding
                     const completeRes = await fetch(`${API_BASE}/api/onboarding/complete`, { method: 'POST', headers });
                     const completeData = await completeRes.json();
                     if (completeData.widget_api_key) {
@@ -1236,11 +1211,9 @@ Return policy: 30-day returns with receipt. Free shipping on orders over $50."><
             setTimeout(() => toast.classList.remove('show'), 3000);
         }
 
-        // Init — pre-populate from user data
         document.addEventListener('DOMContentLoaded', () => {
             const user = JSON.parse(localStorage.getItem('user') || '{}');
             if (user.company_name) document.getElementById('bizName').value = user.company_name;
-            // Resume from saved step
             if (user.onboarding_step && user.onboarding_step > 0) {
                 currentStep = Math.min(user.onboarding_step + 1, totalSteps);
                 updateProgress();
