@@ -595,69 +595,116 @@
 
         /* Tabs (left) */
         .setup-tabs {
-            flex: 0 0 340px;
+            flex: 0 0 360px;
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 4px;
         }
 
         .setup-tab {
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 16px;
             width: 100%;
-            padding: 16px 18px;
-            background: transparent;
-            border: 1px solid transparent;
-            border-radius: 12px;
+            padding: 18px 20px;
+            background: rgba(255, 255, 255, 0.015);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-left: 3px solid transparent;
+            border-radius: 14px;
             cursor: pointer;
             text-align: left;
-            transition: all 0.3s;
-            color: var(--text-muted);
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            color: rgba(255, 255, 255, 0.55);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .setup-tab::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.06), rgba(124, 58, 237, 0.03));
+            opacity: 0;
+            transition: opacity 0.35s;
         }
 
         .setup-tab:hover {
-            background: rgba(255, 255, 255, 0.03);
-            border-color: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.08);
+            border-left-color: rgba(102, 126, 234, 0.35);
+            color: rgba(255, 255, 255, 0.8);
+            transform: translateX(3px);
+        }
+
+        .setup-tab:hover::before {
+            opacity: 1;
         }
 
         .setup-tab.active {
-            background: rgba(102, 126, 234, 0.06);
-            border-color: rgba(102, 126, 234, 0.15);
-            border-left: 3px solid var(--primary-500);
+            background: rgba(102, 126, 234, 0.08);
+            border-color: rgba(102, 126, 234, 0.2);
+            border-left: 3px solid var(--primary-400);
             color: var(--text-primary);
+            transform: translateX(3px);
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.08), inset 0 0 20px rgba(102, 126, 234, 0.03);
+        }
+
+        .setup-tab.active::before {
+            opacity: 1;
         }
 
         .setup-tab-num {
-            font-size: 0.72rem;
-            font-weight: 700;
+            font-size: 0.82rem;
+            font-weight: 800;
             letter-spacing: 0.08em;
-            color: var(--primary-400);
-            min-width: 24px;
+            min-width: 28px;
+            transition: all 0.3s;
+            position: relative;
+            z-index: 1;
         }
 
         .setup-tab .setup-tab-num {
-            color: var(--text-muted);
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        .setup-tab:hover .setup-tab-num {
+            color: rgba(102, 126, 234, 0.7);
         }
 
         .setup-tab.active .setup-tab-num {
-            color: var(--primary-400);
+            background: linear-gradient(135deg, var(--primary-400), #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .setup-tab-info {
             display: flex;
             flex-direction: column;
-            gap: 2px;
+            gap: 3px;
+            position: relative;
+            z-index: 1;
         }
 
         .setup-tab-title {
-            font-size: 0.92rem;
+            font-size: 1.02rem;
             font-weight: 600;
+            letter-spacing: -0.01em;
+            transition: color 0.3s;
+        }
+
+        .setup-tab:hover .setup-tab-title {
+            color: rgba(255, 255, 255, 0.95);
+        }
+
+        .setup-tab.active .setup-tab-title {
+            color: #fff;
         }
 
         .setup-tab-desc {
-            font-size: 0.74rem;
-            color: var(--text-muted);
+            font-size: 0.82rem;
+            color: rgba(255, 255, 255, 0.35);
+            transition: color 0.3s;
         }
 
         /* Card (right) — matches HiW card design */
@@ -894,7 +941,7 @@
         }
 
         .ss-config-right {
-            flex: 0 0 140px;
+            flex: 0 0 180px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -976,6 +1023,240 @@
             50% {
                 transform: scale(1.1);
             }
+        }
+
+        /* — Connection Progress Timeline (Scene 1) — */
+        .ss-connect-progress {
+            margin-top: 6px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+        }
+
+        .ss-prog-step {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 4px 0;
+        }
+
+        .ss-prog-dot {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: rgba(39, 202, 64, 0.12);
+            border: 1.5px solid rgba(39, 202, 64, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .ss-prog-dot-pulse {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: rgba(102, 126, 234, 0.15);
+            border: 1.5px solid rgba(102, 126, 234, 0.4);
+            animation: prog-pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes prog-pulse {
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.3);
+            }
+
+            50% {
+                box-shadow: 0 0 0 6px rgba(102, 126, 234, 0);
+            }
+        }
+
+        .ss-prog-info {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+
+        .ss-prog-name {
+            font-size: 0.78rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .ss-prog-meta {
+            font-size: 0.66rem;
+            color: var(--text-muted);
+        }
+
+        .ss-prog-line {
+            width: 1.5px;
+            height: 14px;
+            margin-left: 10px;
+            border-radius: 1px;
+        }
+
+        .ss-prog-line-done {
+            background: rgba(39, 202, 64, 0.25);
+        }
+
+        .ss-prog-line-active {
+            background: linear-gradient(to bottom, rgba(39, 202, 64, 0.25), rgba(102, 126, 234, 0.25));
+        }
+
+        /* — Larger Widget Preview (Scene 2) — */
+        .ss-widget-preview-lg {
+            position: relative;
+            width: 100%;
+        }
+
+        .ss-wpl-site {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            min-height: 200px;
+        }
+
+        .ss-wpl-bar {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 7px 10px;
+            background: rgba(255, 255, 255, 0.04);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .ss-wpl-bar>span {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+        }
+
+        .ss-wpl-bar>span:first-child {
+            background: #ff5f56;
+        }
+
+        .ss-wpl-bar>span:nth-child(2) {
+            background: #ffbd2e;
+        }
+
+        .ss-wpl-bar>span:nth-child(3) {
+            background: #27ca40;
+        }
+
+        .ss-wpl-url {
+            flex: 1;
+            text-align: center;
+            font-size: 0.58rem;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 4px;
+            padding: 2px 6px;
+            margin-left: 4px;
+        }
+
+        .ss-wpl-body {
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .ss-wpl-line {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 2px;
+        }
+
+        .ss-wpl-chat {
+            position: absolute;
+            bottom: 40px;
+            right: 8px;
+            width: 130px;
+            background: rgba(20, 20, 30, 0.95);
+            border: 1px solid rgba(124, 58, 237, 0.3);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            animation: chat-slide-up 0.5s ease-out;
+        }
+
+        @keyframes chat-slide-up {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .ss-wpl-chat-head {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 8px;
+            background: rgba(124, 58, 237, 0.15);
+            border-bottom: 1px solid rgba(124, 58, 237, 0.2);
+            font-size: 0.62rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .ss-wpl-chat-avatar {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-400), #a78bfa);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.48rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .ss-wpl-chat-msgs {
+            padding: 6px 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .ss-wpl-msg {
+            font-size: 0.58rem;
+            padding: 4px 7px;
+            border-radius: 6px;
+            max-width: 90%;
+            line-height: 1.3;
+        }
+
+        .ss-wpl-msg-bot {
+            background: rgba(102, 126, 234, 0.15);
+            color: rgba(255, 255, 255, 0.8);
+            align-self: flex-start;
+        }
+
+        .ss-wpl-bubble {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: #7c3aed;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: bubble-pulse 2s ease-in-out infinite;
+            box-shadow: 0 2px 12px rgba(124, 58, 237, 0.5);
         }
 
         /* — Scene 3: Knowledge Base — */
@@ -1237,18 +1518,46 @@
                 flex: none;
                 flex-direction: row;
                 overflow-x: auto;
-                gap: 8px;
+                gap: 6px;
                 padding-bottom: 8px;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+            }
+
+            .setup-tabs::-webkit-scrollbar {
+                display: none;
             }
 
             .setup-tab {
                 flex: 0 0 auto;
-                padding: 10px 14px;
+                padding: 12px 16px;
                 white-space: nowrap;
+                border-left: none;
+                border-bottom: 2px solid transparent;
+                border-radius: 10px;
+                transform: none !important;
+            }
+
+            .setup-tab.active {
+                border-left: none;
+                border-bottom: 2px solid var(--primary-400);
             }
 
             .setup-tab-desc {
                 display: none;
+            }
+
+            .setup-tab-num {
+                font-size: 0.72rem;
+                min-width: 20px;
+            }
+
+            .setup-tab-title {
+                font-size: 0.88rem;
+            }
+
+            .setup-card-body {
+                min-height: 340px;
             }
 
             .ss-platform-grid {
@@ -1262,11 +1571,96 @@
             .ss-config-right {
                 flex: none;
             }
+
+            .ss-wpl-site {
+                min-height: 160px;
+            }
+
+            .ss-wpl-chat {
+                width: 120px;
+                bottom: 32px;
+            }
         }
 
         @media (max-width: 600px) {
             .lang-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .setup-section {
+                padding: 60px 0;
+            }
+
+            .setup-card-body {
+                min-height: 300px;
+                padding: 0;
+            }
+
+            .setup-scene {
+                padding: 1rem;
+            }
+
+            .ss-platform-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 6px;
+            }
+
+            .ss-plat {
+                padding: 8px 4px;
+                font-size: 0.65rem;
+            }
+
+            .ss-plat svg {
+                width: 14px;
+                height: 14px;
+            }
+
+            .ss-connect-progress {
+                padding: 8px;
+            }
+
+            .ss-prog-name {
+                font-size: 0.72rem;
+            }
+
+            .ss-prog-meta {
+                font-size: 0.6rem;
+            }
+
+            .ss-config-right {
+                flex: 0 0 auto;
+            }
+
+            .ss-wpl-site {
+                min-height: 140px;
+            }
+
+            .ss-wpl-chat {
+                width: 110px;
+                bottom: 28px;
+                right: 6px;
+            }
+
+            .ss-wpl-chat-head {
+                padding: 4px 6px;
+                font-size: 0.56rem;
+            }
+
+            .ss-wpl-msg {
+                font-size: 0.52rem;
+            }
+
+            .ss-embed-code {
+                border-radius: 8px;
+            }
+
+            .ss-code-block {
+                font-size: 0.68rem;
+                padding: 10px;
+            }
+
+            .ss-ed-browser {
+                width: 170px;
             }
         }
     </style>
@@ -1673,6 +2067,38 @@
                                         </svg>
                                         Store connected
                                     </div>
+                                    <!-- Connection progress timeline -->
+                                    <div class="ss-connect-progress">
+                                        <div class="ss-prog-step ss-prog-done">
+                                            <div class="ss-prog-dot"><svg width="10" height="10" viewBox="0 0 24 24"
+                                                    fill="none" stroke="#27ca40" stroke-width="3">
+                                                    <polyline points="20 6 9 17 4 12" />
+                                                </svg></div>
+                                            <div class="ss-prog-info">
+                                                <span class="ss-prog-name">Authenticating</span>
+                                                <span class="ss-prog-meta">API key validated</span>
+                                            </div>
+                                        </div>
+                                        <div class="ss-prog-line ss-prog-line-done"></div>
+                                        <div class="ss-prog-step ss-prog-done">
+                                            <div class="ss-prog-dot"><svg width="10" height="10" viewBox="0 0 24 24"
+                                                    fill="none" stroke="#27ca40" stroke-width="3">
+                                                    <polyline points="20 6 9 17 4 12" />
+                                                </svg></div>
+                                            <div class="ss-prog-info">
+                                                <span class="ss-prog-name">Syncing Products</span>
+                                                <span class="ss-prog-meta">148 products imported</span>
+                                            </div>
+                                        </div>
+                                        <div class="ss-prog-line ss-prog-line-active"></div>
+                                        <div class="ss-prog-step ss-prog-active">
+                                            <div class="ss-prog-dot ss-prog-dot-pulse"></div>
+                                            <div class="ss-prog-info">
+                                                <span class="ss-prog-name">Verifying Webhook</span>
+                                                <span class="ss-prog-meta">Setting up real-time sync…</span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -1706,21 +2132,36 @@
                                         </div>
                                     </div>
                                     <div class="ss-config-right">
-                                        <div class="ss-widget-preview">
-                                            <div class="ss-wp-window">
-                                                <div class="ss-wp-bar"></div>
-                                                <div class="ss-wp-body">
-                                                    <div class="ss-wp-line" style="width:80%"></div>
-                                                    <div class="ss-wp-line" style="width:60%"></div>
-                                                    <div class="ss-wp-line" style="width:70%"></div>
+                                        <div class="ss-widget-preview-lg">
+                                            <div class="ss-wpl-site">
+                                                <div class="ss-wpl-bar">
+                                                    <span></span><span></span><span></span>
+                                                    <div class="ss-wpl-url">mystore.com</div>
                                                 </div>
-                                            </div>
-                                            <div class="ss-wp-bubble">
-                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="white"
-                                                    stroke="none">
-                                                    <path
-                                                        d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-                                                </svg>
+                                                <div class="ss-wpl-body">
+                                                    <div class="ss-wpl-line" style="width:80%"></div>
+                                                    <div class="ss-wpl-line" style="width:55%"></div>
+                                                    <div class="ss-wpl-line" style="width:70%"></div>
+                                                    <div class="ss-wpl-line" style="width:45%"></div>
+                                                </div>
+                                                <!-- Chat widget overlay -->
+                                                <div class="ss-wpl-chat">
+                                                    <div class="ss-wpl-chat-head">
+                                                        <div class="ss-wpl-chat-avatar">AI</div>
+                                                        <span>Assistant</span>
+                                                    </div>
+                                                    <div class="ss-wpl-chat-msgs">
+                                                        <div class="ss-wpl-msg ss-wpl-msg-bot">Hello! 👋</div>
+                                                        <div class="ss-wpl-msg ss-wpl-msg-bot">How can I help?</div>
+                                                    </div>
+                                                </div>
+                                                <!-- Floating bubble -->
+                                                <div class="ss-wpl-bubble">
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+                                                        <path
+                                                            d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+                                                    </svg>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
