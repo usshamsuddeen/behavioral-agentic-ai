@@ -582,7 +582,7 @@
            ═══════════════════════════════════════════════════════ */
         .setup-section {
             background: var(--bg-secondary);
-            padding: 80px 0;
+            padding: 60px 0;
         }
 
         .setup-layout {
@@ -1061,6 +1061,39 @@
             width: 1px;
             height: 28px;
             background: rgba(255, 255, 255, 0.08);
+        }
+
+        /* — API Info (Scene 1) — */
+        .ss-api-info {
+            margin-top: 6px;
+            padding: 8px 10px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .ss-api-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .ss-api-key-label {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .ss-api-key-val {
+            font-size: 0.68rem;
+            color: var(--primary-300);
+            font-family: 'Courier New', monospace;
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
 
         /* — Larger Widget Preview (Scene 2) — */
@@ -1543,7 +1576,7 @@
             }
 
             .setup-section {
-                padding: 60px 0;
+                padding: 40px 0;
             }
 
             .setup-card-body {
@@ -2019,7 +2052,20 @@
                                         </svg>
                                         Store connected
                                     </div>
-                                    <!-- Sync stats row -->
+                                    <!-- API info gathered -->
+                                    <div class="ss-api-info">
+                                        <div class="ss-api-row">
+                                            <span class="ss-api-key-label">API Key</span>
+                                            <span class="ss-api-key-val">sk-••••••••3f8a <svg width="11" height="11"
+                                                    viewBox="0 0 24 24" fill="none" stroke="#27ca40" stroke-width="3">
+                                                    <polyline points="20 6 9 17 4 12" />
+                                                </svg></span>
+                                        </div>
+                                        <div class="ss-api-row">
+                                            <span class="ss-api-key-label">Store ID</span>
+                                            <span class="ss-api-key-val">woo_mystore_7x2k</span>
+                                        </div>
+                                    </div>
                                     <div class="ss-sync-stats">
                                         <div class="ss-sync-item">
                                             <span class="ss-sync-val">148</span>
