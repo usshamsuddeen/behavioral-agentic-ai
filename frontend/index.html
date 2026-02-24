@@ -582,7 +582,7 @@
            ═══════════════════════════════════════════════════════ */
         .setup-section {
             background: var(--bg-secondary);
-            padding: 100px 0;
+            padding: 80px 0;
         }
 
         .setup-layout {
@@ -609,7 +609,6 @@
             padding: 18px 20px;
             background: rgba(255, 255, 255, 0.015);
             border: 1px solid rgba(255, 255, 255, 0.04);
-            border-left: 3px solid transparent;
             border-radius: 14px;
             cursor: pointer;
             text-align: left;
@@ -630,8 +629,8 @@
 
         .setup-tab:hover {
             background: rgba(255, 255, 255, 0.04);
-            border-color: rgba(255, 255, 255, 0.08);
-            border-left-color: rgba(102, 126, 234, 0.35);
+            border-color: rgba(102, 126, 234, 0.2);
+            border-left-color: transparent;
             color: rgba(255, 255, 255, 0.8);
             transform: translateX(3px);
         }
@@ -642,8 +641,8 @@
 
         .setup-tab.active {
             background: rgba(102, 126, 234, 0.08);
-            border-color: rgba(102, 126, 234, 0.2);
-            border-left: 3px solid var(--primary-400);
+            border-color: rgba(102, 126, 234, 0.35);
+            border-left-color: transparent;
             color: var(--text-primary);
             transform: translateX(3px);
             box-shadow: 0 0 20px rgba(102, 126, 234, 0.08), inset 0 0 20px rgba(102, 126, 234, 0.03);
@@ -1025,85 +1024,43 @@
             }
         }
 
-        /* — Connection Progress Timeline (Scene 1) — */
-        .ss-connect-progress {
-            margin-top: 6px;
-            padding: 12px;
+        /* — Sync Stats Row (Scene 1) — */
+        .ss-sync-stats {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            margin-top: 8px;
+            padding: 10px 14px;
             background: rgba(255, 255, 255, 0.02);
             border: 1px solid rgba(255, 255, 255, 0.05);
             border-radius: 10px;
         }
 
-        .ss-prog-step {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 4px 0;
-        }
-
-        .ss-prog-dot {
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            background: rgba(39, 202, 64, 0.12);
-            border: 1.5px solid rgba(39, 202, 64, 0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .ss-prog-dot-pulse {
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            background: rgba(102, 126, 234, 0.15);
-            border: 1.5px solid rgba(102, 126, 234, 0.4);
-            animation: prog-pulse 1.5s ease-in-out infinite;
-        }
-
-        @keyframes prog-pulse {
-
-            0%,
-            100% {
-                box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.3);
-            }
-
-            50% {
-                box-shadow: 0 0 0 6px rgba(102, 126, 234, 0);
-            }
-        }
-
-        .ss-prog-info {
+        .ss-sync-item {
             display: flex;
             flex-direction: column;
-            gap: 1px;
+            align-items: center;
+            gap: 2px;
         }
 
-        .ss-prog-name {
-            font-size: 0.78rem;
-            font-weight: 500;
-            color: var(--text-primary);
+        .ss-sync-val {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary-300);
         }
 
-        .ss-prog-meta {
-            font-size: 0.66rem;
+        .ss-sync-label {
+            font-size: 0.65rem;
             color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
         }
 
-        .ss-prog-line {
-            width: 1.5px;
-            height: 14px;
-            margin-left: 10px;
-            border-radius: 1px;
-        }
-
-        .ss-prog-line-done {
-            background: rgba(39, 202, 64, 0.25);
-        }
-
-        .ss-prog-line-active {
-            background: linear-gradient(to bottom, rgba(39, 202, 64, 0.25), rgba(102, 126, 234, 0.25));
+        .ss-sync-divider {
+            width: 1px;
+            height: 28px;
+            background: rgba(255, 255, 255, 0.08);
         }
 
         /* — Larger Widget Preview (Scene 2) — */
@@ -1532,14 +1489,12 @@
                 flex: 0 0 auto;
                 padding: 12px 16px;
                 white-space: nowrap;
-                border-left: none;
                 border-bottom: 2px solid transparent;
                 border-radius: 10px;
                 transform: none !important;
             }
 
             .setup-tab.active {
-                border-left: none;
                 border-bottom: 2px solid var(--primary-400);
             }
 
@@ -1615,16 +1570,13 @@
                 height: 14px;
             }
 
-            .ss-connect-progress {
-                padding: 8px;
+            .ss-sync-stats {
+                gap: 10px;
+                padding: 8px 10px;
             }
 
-            .ss-prog-name {
-                font-size: 0.72rem;
-            }
-
-            .ss-prog-meta {
-                font-size: 0.6rem;
+            .ss-sync-val {
+                font-size: 0.95rem;
             }
 
             .ss-config-right {
@@ -2067,36 +2019,24 @@
                                         </svg>
                                         Store connected
                                     </div>
-                                    <!-- Connection progress timeline -->
-                                    <div class="ss-connect-progress">
-                                        <div class="ss-prog-step ss-prog-done">
-                                            <div class="ss-prog-dot"><svg width="10" height="10" viewBox="0 0 24 24"
-                                                    fill="none" stroke="#27ca40" stroke-width="3">
-                                                    <polyline points="20 6 9 17 4 12" />
-                                                </svg></div>
-                                            <div class="ss-prog-info">
-                                                <span class="ss-prog-name">Authenticating</span>
-                                                <span class="ss-prog-meta">API key validated</span>
-                                            </div>
+                                    <!-- Sync stats row -->
+                                    <div class="ss-sync-stats">
+                                        <div class="ss-sync-item">
+                                            <span class="ss-sync-val">148</span>
+                                            <span class="ss-sync-label">Products</span>
                                         </div>
-                                        <div class="ss-prog-line ss-prog-line-done"></div>
-                                        <div class="ss-prog-step ss-prog-done">
-                                            <div class="ss-prog-dot"><svg width="10" height="10" viewBox="0 0 24 24"
-                                                    fill="none" stroke="#27ca40" stroke-width="3">
-                                                    <polyline points="20 6 9 17 4 12" />
-                                                </svg></div>
-                                            <div class="ss-prog-info">
-                                                <span class="ss-prog-name">Syncing Products</span>
-                                                <span class="ss-prog-meta">148 products imported</span>
-                                            </div>
+                                        <div class="ss-sync-divider"></div>
+                                        <div class="ss-sync-item">
+                                            <span class="ss-sync-val">12</span>
+                                            <span class="ss-sync-label">Categories</span>
                                         </div>
-                                        <div class="ss-prog-line ss-prog-line-active"></div>
-                                        <div class="ss-prog-step ss-prog-active">
-                                            <div class="ss-prog-dot ss-prog-dot-pulse"></div>
-                                            <div class="ss-prog-info">
-                                                <span class="ss-prog-name">Verifying Webhook</span>
-                                                <span class="ss-prog-meta">Setting up real-time sync…</span>
-                                            </div>
+                                        <div class="ss-sync-divider"></div>
+                                        <div class="ss-sync-item">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#27ca40"
+                                                stroke-width="2.5">
+                                                <polyline points="20 6 9 17 4 12" />
+                                            </svg>
+                                            <span class="ss-sync-label">Webhook</span>
                                         </div>
                                     </div>
                                 </div>
