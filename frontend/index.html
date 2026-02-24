@@ -577,6 +577,627 @@
         }
 
 
+        /* ═══════════════════════════════════════════════════════
+           SETUP GUIDE — GET STARTED SECTION
+           ═══════════════════════════════════════════════════════ */
+        .setup-section {
+            background: var(--bg-secondary);
+            padding: 100px 0;
+        }
+
+        .setup-layout {
+            display: flex;
+            gap: 2.5rem;
+            max-width: 1100px;
+            margin: 0 auto;
+            align-items: flex-start;
+        }
+
+        /* Tabs (left) */
+        .setup-tabs {
+            flex: 0 0 340px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .setup-tab {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            width: 100%;
+            padding: 16px 18px;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 12px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.3s;
+            color: var(--text-muted);
+        }
+
+        .setup-tab:hover {
+            background: rgba(255, 255, 255, 0.03);
+            border-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .setup-tab.active {
+            background: rgba(102, 126, 234, 0.06);
+            border-color: rgba(102, 126, 234, 0.15);
+            border-left: 3px solid var(--primary-500);
+            color: var(--text-primary);
+        }
+
+        .setup-tab-num {
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            color: var(--primary-400);
+            min-width: 24px;
+        }
+
+        .setup-tab .setup-tab-num {
+            color: var(--text-muted);
+        }
+
+        .setup-tab.active .setup-tab-num {
+            color: var(--primary-400);
+        }
+
+        .setup-tab-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .setup-tab-title {
+            font-size: 0.92rem;
+            font-weight: 600;
+        }
+
+        .setup-tab-desc {
+            font-size: 0.74rem;
+            color: var(--text-muted);
+        }
+
+        /* Card (right) — matches HiW card design */
+        .setup-visual {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .setup-card {
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--glass-shadow-lg);
+            overflow: hidden;
+        }
+
+        .setup-card-header {
+            padding: 12px 16px;
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .setup-card-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .setup-card-dots span {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--glass-border);
+        }
+
+        .setup-card-dots span:first-child {
+            background: #ff5f56;
+        }
+
+        .setup-card-dots span:nth-child(2) {
+            background: #ffbd2e;
+        }
+
+        .setup-card-dots span:last-child {
+            background: #27ca40;
+        }
+
+        .setup-card-label {
+            font-size: 0.78rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            transition: color 0.3s;
+        }
+
+        .setup-card-body {
+            position: relative;
+            min-height: 360px;
+        }
+
+        /* Scenes — same pattern as HiW */
+        .setup-scene {
+            position: absolute;
+            inset: 0;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            opacity: 0;
+            transform: translateY(8px);
+            transition: opacity 0.45s ease, transform 0.45s ease;
+            pointer-events: none;
+        }
+
+        .setup-scene.active {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        /* — Shared form primitives — */
+        .ss-form {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .ss-field {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .ss-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        .ss-input {
+            padding: 10px 14px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 0.85rem;
+            color: var(--text-primary);
+        }
+
+        .ss-input-typed {
+            display: flex;
+            align-items: center;
+            gap: 1px;
+        }
+
+        .ss-typed-text {
+            color: var(--text-primary);
+        }
+
+        .ss-cursor {
+            color: var(--primary-400);
+            animation: blink-cursor 1s step-end infinite;
+        }
+
+        @keyframes blink-cursor {
+            50% {
+                opacity: 0;
+            }
+        }
+
+        .ss-select {
+            padding: 10px 14px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 0.85rem;
+            color: var(--text-primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .ss-tone-chips {
+            display: flex;
+            gap: 8px;
+        }
+
+        .ss-chip {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.76rem;
+            font-weight: 500;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: transparent;
+            color: var(--text-muted);
+            transition: all 0.25s;
+        }
+
+        .ss-chip-active {
+            background: rgba(102, 126, 234, 0.15);
+            border-color: rgba(102, 126, 234, 0.3);
+            color: var(--primary-300);
+        }
+
+        .ss-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.76rem;
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 8px;
+            margin-top: 4px;
+        }
+
+        .ss-status-ok {
+            color: #27ca40;
+            background: rgba(39, 202, 64, 0.08);
+            border: 1px solid rgba(39, 202, 64, 0.15);
+        }
+
+        /* — Scene 1: Platform Grid — */
+        .ss-platform-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        .ss-plat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 12px 8px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            background: rgba(255, 255, 255, 0.02);
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            position: relative;
+            transition: all 0.25s;
+        }
+
+        .ss-plat-active {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: rgba(102, 126, 234, 0.25);
+            color: var(--primary-300);
+        }
+
+        .ss-plat-check {
+            position: absolute;
+            top: 4px;
+            right: 6px;
+            font-size: 0.65rem;
+            color: #27ca40;
+        }
+
+        /* — Scene 2: Widget Config — */
+        .ss-widget-config {
+            display: flex;
+            gap: 18px;
+            height: 100%;
+        }
+
+        .ss-config-left {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .ss-config-right {
+            flex: 0 0 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ss-color-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .ss-swatch {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+
+        .ss-swatch-active {
+            border-color: white;
+            box-shadow: 0 0 10px rgba(124, 58, 237, 0.4);
+        }
+
+        .ss-widget-preview {
+            position: relative;
+        }
+
+        .ss-wp-window {
+            width: 120px;
+            height: 90px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .ss-wp-bar {
+            height: 10px;
+            background: rgba(255, 255, 255, 0.06);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .ss-wp-body {
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .ss-wp-line {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 2px;
+        }
+
+        .ss-wp-bubble {
+            position: absolute;
+            bottom: -6px;
+            right: -6px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #7c3aed;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 14px rgba(124, 58, 237, 0.4);
+            animation: bubble-pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes bubble-pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        /* — Scene 3: Knowledge Base — */
+        .ss-kb-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .ss-kb-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .ss-kb-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .ss-kb-icon {
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .ss-kb-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+
+        .ss-kb-name {
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .ss-kb-meta {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+        }
+
+        .ss-kb-badge {
+            font-size: 0.65rem;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .ss-kb-badge-ok {
+            color: #27ca40;
+            background: rgba(39, 202, 64, 0.1);
+        }
+
+        .ss-kb-badge-load {
+            color: #ffbd2e;
+            background: rgba(255, 189, 46, 0.1);
+            animation: pulse-badge 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse-badge {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        /* — Scene 4: Embed & Go Live — */
+        .ss-embed {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .ss-embed-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.92rem;
+            font-weight: 600;
+            color: #27ca40;
+        }
+
+        .ss-embed-code {
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .ss-code-bar {
+            padding: 8px 14px;
+            background: rgba(255, 255, 255, 0.06);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.72rem;
+            color: var(--text-muted);
+        }
+
+        .ss-copy-badge {
+            color: #27ca40;
+            font-weight: 600;
+            font-size: 0.68rem;
+        }
+
+        .ss-code-block {
+            padding: 14px;
+            margin: 0;
+            background: rgba(0, 0, 0, 0.3);
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.76rem;
+            color: #a5b4fc;
+            line-height: 1.6;
+            overflow-x: auto;
+        }
+
+        .ss-embed-demo {
+            margin-top: 4px;
+            text-align: center;
+        }
+
+        .ss-ed-browser {
+            width: 200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .ss-ed-bar {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 8px;
+            background: rgba(255, 255, 255, 0.04);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .ss-ed-bar>span {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .ss-ed-bar>span:first-child {
+            background: #ff5f56;
+        }
+
+        .ss-ed-bar>span:nth-child(2) {
+            background: #ffbd2e;
+        }
+
+        .ss-ed-bar>span:nth-child(3) {
+            background: #27ca40;
+        }
+
+        .ss-ed-url {
+            flex: 1;
+            text-align: center;
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 4px;
+            padding: 2px 6px;
+            margin-left: 4px;
+        }
+
+        .ss-ed-body {
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .ss-ed-line {
+            height: 3px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 2px;
+        }
+
+        .ss-ed-widget-dot {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #7c3aed;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: bubble-pulse 2s ease-in-out infinite;
+            box-shadow: 0 2px 10px rgba(124, 58, 237, 0.5);
+        }
+
+        .ss-ed-label {
+            display: block;
+            margin-top: 10px;
+            font-size: 0.76rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
 
         /* ═══════════════════════════════════════════════════════
            RESPONSIVE — HOW IT WORKS
@@ -606,6 +1227,40 @@
 
             .lang-grid {
                 grid-template-columns: repeat(2, 1fr);
+            }
+
+            .setup-layout {
+                flex-direction: column;
+            }
+
+            .setup-tabs {
+                flex: none;
+                flex-direction: row;
+                overflow-x: auto;
+                gap: 8px;
+                padding-bottom: 8px;
+            }
+
+            .setup-tab {
+                flex: 0 0 auto;
+                padding: 10px 14px;
+                white-space: nowrap;
+            }
+
+            .setup-tab-desc {
+                display: none;
+            }
+
+            .ss-platform-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .ss-widget-config {
+                flex-direction: column;
+            }
+
+            .ss-config-right {
+                flex: none;
             }
         }
 
@@ -641,6 +1296,7 @@
 
             <div class="landing-nav-links">
                 <a href="#features" class="landing-nav-link">Features</a>
+                <a href="#setup" class="landing-nav-link">Setup</a>
                 <a href="#how-it-works" class="landing-nav-link">How it Works</a>
                 <a href="#demo" class="landing-nav-link">Demo</a>
                 <a href="#languages" class="landing-nav-link">Languages</a>
@@ -849,6 +1505,320 @@
                     <div class="feature-tags">
                         <span class="feature-tag">API-First</span>
                         <span class="feature-tag">Plug & Play</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════
+         GET STARTED — SETUP GUIDE SECTION
+         ═══════════════════════════════════════════════════════ -->
+    <section id="setup" class="setup-section">
+        <div class="section-container">
+            <div class="section-header">
+                <span class="section-badge">Setup</span>
+                <h2 class="section-title">Get Started in Minutes</h2>
+                <p class="section-subtitle">
+                    Five simple steps from sign-up to a live AI widget on your store — no coding required.
+                </p>
+            </div>
+
+            <div class="setup-layout">
+                <!-- LEFT: step tabs -->
+                <div class="setup-tabs">
+                    <button class="setup-tab active" data-setup="0">
+                        <span class="setup-tab-num">01</span>
+                        <div class="setup-tab-info">
+                            <span class="setup-tab-title">Business Profile</span>
+                            <span class="setup-tab-desc">Company name, industry & tone</span>
+                        </div>
+                    </button>
+                    <button class="setup-tab" data-setup="1">
+                        <span class="setup-tab-num">02</span>
+                        <div class="setup-tab-info">
+                            <span class="setup-tab-title">Connect Your Store</span>
+                            <span class="setup-tab-desc">Choose platform & enter URL</span>
+                        </div>
+                    </button>
+                    <button class="setup-tab" data-setup="2">
+                        <span class="setup-tab-num">03</span>
+                        <div class="setup-tab-info">
+                            <span class="setup-tab-title">Configure Widget</span>
+                            <span class="setup-tab-desc">Colors, position & branding</span>
+                        </div>
+                    </button>
+                    <button class="setup-tab" data-setup="3">
+                        <span class="setup-tab-num">04</span>
+                        <div class="setup-tab-info">
+                            <span class="setup-tab-title">Product Knowledge</span>
+                            <span class="setup-tab-desc">Upload FAQs & product info</span>
+                        </div>
+                    </button>
+                    <button class="setup-tab" data-setup="4">
+                        <span class="setup-tab-num">05</span>
+                        <div class="setup-tab-info">
+                            <span class="setup-tab-title">Embed & Go Live</span>
+                            <span class="setup-tab-desc">Copy one line of code</span>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- RIGHT: interactive visual card -->
+                <div class="setup-visual">
+                    <div class="setup-card">
+                        <div class="setup-card-header">
+                            <div class="setup-card-dots"><span></span><span></span><span></span></div>
+                            <span class="setup-card-label" id="setupCardLabel">Business Profile</span>
+                        </div>
+                        <div class="setup-card-body">
+
+                            <!-- Scene 0: Business Profile -->
+                            <div class="setup-scene active" data-sscene="0">
+                                <div class="ss-form">
+                                    <div class="ss-field">
+                                        <span class="ss-label">Company Name</span>
+                                        <div class="ss-input ss-input-typed">
+                                            <span class="ss-typed-text">Acme Electronics</span>
+                                            <span class="ss-cursor">|</span>
+                                        </div>
+                                    </div>
+                                    <div class="ss-field">
+                                        <span class="ss-label">Industry</span>
+                                        <div class="ss-select">
+                                            <span>E-Commerce</span>
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                                                stroke="currentColor" stroke-width="2">
+                                                <polyline points="6 9 12 15 18 9" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                    <div class="ss-field">
+                                        <span class="ss-label">AI Tone</span>
+                                        <div class="ss-tone-chips">
+                                            <span class="ss-chip">Formal</span>
+                                            <span class="ss-chip ss-chip-active">Friendly</span>
+                                            <span class="ss-chip">Casual</span>
+                                        </div>
+                                    </div>
+                                    <div class="ss-status ss-status-ok">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2.5">
+                                            <polyline points="20 6 9 17 4 12" />
+                                        </svg>
+                                        Profile saved
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Scene 1: Connect Store -->
+                            <div class="setup-scene" data-sscene="1">
+                                <div class="ss-form">
+                                    <div class="ss-field">
+                                        <span class="ss-label">Platform</span>
+                                        <div class="ss-platform-grid">
+                                            <div class="ss-plat">
+                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                                    stroke="currentColor" stroke-width="1.5">
+                                                    <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
+                                                    <line x1="3" y1="6" x2="21" y2="6" />
+                                                    <path d="M16 10a4 4 0 01-8 0" />
+                                                </svg>
+                                                <span>Shopify</span>
+                                            </div>
+                                            <div class="ss-plat ss-plat-active">
+                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                                    stroke="currentColor" stroke-width="1.5">
+                                                    <circle cx="9" cy="21" r="1" />
+                                                    <circle cx="20" cy="21" r="1" />
+                                                    <path
+                                                        d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6" />
+                                                </svg>
+                                                <span>WooCommerce</span>
+                                                <span class="ss-plat-check">✓</span>
+                                            </div>
+                                            <div class="ss-plat">
+                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                                    stroke="currentColor" stroke-width="1.5">
+                                                    <rect x="1" y="3" width="15" height="13" />
+                                                    <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
+                                                    <circle cx="5.5" cy="18.5" r="2.5" />
+                                                    <circle cx="18.5" cy="18.5" r="2.5" />
+                                                </svg>
+                                                <span>Alibaba</span>
+                                            </div>
+                                            <div class="ss-plat">
+                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                                    stroke="currentColor" stroke-width="1.5">
+                                                    <circle cx="12" cy="12" r="10" />
+                                                    <line x1="2" y1="12" x2="22" y2="12" />
+                                                    <path
+                                                        d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
+                                                </svg>
+                                                <span>Custom</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="ss-field">
+                                        <span class="ss-label">Store URL</span>
+                                        <div class="ss-input ss-input-typed">
+                                            <span class="ss-typed-text">https://mystore.com</span>
+                                            <span class="ss-cursor">|</span>
+                                        </div>
+                                    </div>
+                                    <div class="ss-status ss-status-ok">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2.5">
+                                            <polyline points="20 6 9 17 4 12" />
+                                        </svg>
+                                        Store connected
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Scene 2: Configure Widget -->
+                            <div class="setup-scene" data-sscene="2">
+                                <div class="ss-widget-config">
+                                    <div class="ss-config-left">
+                                        <div class="ss-field">
+                                            <span class="ss-label">Brand Color</span>
+                                            <div class="ss-color-row">
+                                                <span class="ss-swatch" style="background:#667eea;"></span>
+                                                <span class="ss-swatch ss-swatch-active"
+                                                    style="background:#7c3aed;"></span>
+                                                <span class="ss-swatch" style="background:#059669;"></span>
+                                                <span class="ss-swatch" style="background:#dc2626;"></span>
+                                                <span class="ss-swatch" style="background:#ea580c;"></span>
+                                            </div>
+                                        </div>
+                                        <div class="ss-field">
+                                            <span class="ss-label">Position</span>
+                                            <div class="ss-tone-chips">
+                                                <span class="ss-chip">Left</span>
+                                                <span class="ss-chip ss-chip-active">Right</span>
+                                            </div>
+                                        </div>
+                                        <div class="ss-field">
+                                            <span class="ss-label">Welcome Text</span>
+                                            <div class="ss-input ss-input-typed" style="font-size:0.72rem;">
+                                                <span class="ss-typed-text">Hi! How can I help?</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="ss-config-right">
+                                        <div class="ss-widget-preview">
+                                            <div class="ss-wp-window">
+                                                <div class="ss-wp-bar"></div>
+                                                <div class="ss-wp-body">
+                                                    <div class="ss-wp-line" style="width:80%"></div>
+                                                    <div class="ss-wp-line" style="width:60%"></div>
+                                                    <div class="ss-wp-line" style="width:70%"></div>
+                                                </div>
+                                            </div>
+                                            <div class="ss-wp-bubble">
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="white"
+                                                    stroke="none">
+                                                    <path
+                                                        d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Scene 3: Product Knowledge -->
+                            <div class="setup-scene" data-sscene="3">
+                                <div class="ss-form">
+                                    <div class="ss-kb-header">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="1.5">
+                                            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                                            <polyline points="14 2 14 8 20 8" />
+                                        </svg>
+                                        <span>Knowledge Base</span>
+                                    </div>
+                                    <div class="ss-kb-list">
+                                        <div class="ss-kb-item">
+                                            <div class="ss-kb-icon">📄</div>
+                                            <div class="ss-kb-info">
+                                                <span class="ss-kb-name">Product Catalog</span>
+                                                <span class="ss-kb-meta">2,340 tokens • indexed</span>
+                                            </div>
+                                            <span class="ss-kb-badge ss-kb-badge-ok">Ready</span>
+                                        </div>
+                                        <div class="ss-kb-item">
+                                            <div class="ss-kb-icon">❓</div>
+                                            <div class="ss-kb-info">
+                                                <span class="ss-kb-name">FAQ & Returns Policy</span>
+                                                <span class="ss-kb-meta">1,120 tokens • indexed</span>
+                                            </div>
+                                            <span class="ss-kb-badge ss-kb-badge-ok">Ready</span>
+                                        </div>
+                                        <div class="ss-kb-item">
+                                            <div class="ss-kb-icon">📋</div>
+                                            <div class="ss-kb-info">
+                                                <span class="ss-kb-name">Shipping Guidelines</span>
+                                                <span class="ss-kb-meta">890 tokens • indexing…</span>
+                                            </div>
+                                            <span class="ss-kb-badge ss-kb-badge-load">Processing</span>
+                                        </div>
+                                    </div>
+                                    <div class="ss-status ss-status-ok">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2.5">
+                                            <polyline points="20 6 9 17 4 12" />
+                                        </svg>
+                                        2 of 3 documents indexed
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Scene 4: Embed & Go Live -->
+                            <div class="setup-scene" data-sscene="4">
+                                <div class="ss-embed">
+                                    <div class="ss-embed-title">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#27ca40"
+                                            stroke-width="2">
+                                            <polyline points="20 6 9 17 4 12" />
+                                        </svg>
+                                        Your widget is ready!
+                                    </div>
+                                    <div class="ss-embed-code">
+                                        <div class="ss-code-bar">
+                                            <span>embed.html</span>
+                                            <span class="ss-copy-badge">Copied ✓</span>
+                                        </div>
+                                        <pre class="ss-code-block"><code>&lt;script
+  src="https://sentimenta.snick.at
+       /widget/embed.js"
+  data-key="ak_9f3x..."
+&gt;&lt;/script&gt;</code></pre>
+                                    </div>
+                                    <div class="ss-embed-demo">
+                                        <div class="ss-ed-browser">
+                                            <div class="ss-ed-bar">
+                                                <span></span><span></span><span></span>
+                                                <div class="ss-ed-url">mystore.com</div>
+                                            </div>
+                                            <div class="ss-ed-body">
+                                                <div class="ss-ed-line" style="width:75%"></div>
+                                                <div class="ss-ed-line" style="width:55%"></div>
+                                                <div class="ss-ed-line" style="width:65%"></div>
+                                            </div>
+                                            <div class="ss-ed-widget-dot">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+                                                    <path
+                                                        d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+                                                </svg>
+                                            </div>
+                                        </div>
+                                        <span class="ss-ed-label">Widget live on your site ✨</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1344,6 +2314,31 @@
                 }, { threshold: 0.05 });
                 sectionObserver.observe(hiwSection);
             }
+            // ═══════════════════════════════════════════════════════
+            // SETUP GUIDE — Tab switching
+            // ═══════════════════════════════════════════════════════
+            const setupTabs = document.querySelectorAll('.setup-tab');
+            const setupScenes = document.querySelectorAll('.setup-scene');
+            const setupLabel = document.getElementById('setupCardLabel');
+            const setupLabels = [
+                'Business Profile',
+                'Connect Your Store',
+                'Configure Widget',
+                'Product Knowledge',
+                'Embed & Go Live'
+            ];
+
+            setupTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const idx = parseInt(tab.dataset.setup);
+                    setupTabs.forEach(t => t.classList.remove('active'));
+                    setupScenes.forEach(s => s.classList.remove('active'));
+                    tab.classList.add('active');
+                    const target = document.querySelector(`.setup-scene[data-sscene="${idx}"]`);
+                    if (target) target.classList.add('active');
+                    if (setupLabel) setupLabel.textContent = setupLabels[idx] || '';
+                });
+            });
         });
     </script>
 </body>
