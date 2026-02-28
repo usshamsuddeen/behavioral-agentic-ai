@@ -87,7 +87,65 @@ SENTIMENT_DICTS = {
         "negative": {"boos", "gefrustreerd", "verschrikkelijk", "slecht", "haat", "onacceptabel", "klacht", "erg", "vreselijk", "traag"},
         "negations": {"niet", "geen", "nooit", "niets", "niemand"},
         "urgent": {"advocaat", "rechtszaak", "illegaal", "politie", "aanklacht"}
-    }
+    },
+
+    # ═══════════════════════════════════════════════════════════════
+    # V4 FIX — BUG-2: Urdu Sentiment Dictionary
+    # Previously: SENTIMENT_DICTS.get("ur") returned None → always neutral
+    # Now: 15 positive, 15 negative, 5 negation, 5 urgent keywords
+    # ═══════════════════════════════════════════════════════════════
+    "ur": {
+        "positive": {
+            "شکریہ", "بہترین", "اچھا", "خوش", "محبت", "عمدہ",
+            "بہت اچھا", "شاندار", "مزیدار", "خوبصورت", "پسند",
+            "ممنون", "واہ", "بہتر", "لاجواب"
+        },
+        "negative": {
+            "ناراض", "غصہ", "برا", "خراب", "بدتمیز", "شکایت",
+            "نفرت", "بکواس", "بیکار", "افسوس", "تکلیف",
+            "مایوس", "ناقابل قبول", "بدترین", "ضائع"
+        },
+        "negations": {"نہیں", "نہ", "مت", "بغیر", "کبھی نہیں"},
+        "urgent": {"وکیل", "عدالت", "مقدمہ", "پولیس", "ایف آئی آر"}
+    },
+
+    # ═══════════════════════════════════════════════════════════════
+    # V4 FIX — Hindi Sentiment Dictionary
+    # ═══════════════════════════════════════════════════════════════
+    "hi": {
+        "positive": {
+            "धन्यवाद", "बहुत अच्छा", "अच्छा", "खुश", "प्यार",
+            "शानदार", "बढ़िया", "सुंदर", "पसंद", "उत्कृष्ट",
+            "मज़ेदार", "बेहतरीन", "वाह"
+        },
+        "negative": {
+            "गुस्सा", "नाराज", "बुरा", "खराब", "बकवास", "शिकायत",
+            "नफरत", "बेकार", "निराश", "भयानक", "घटिया",
+            "बर्बाद", "असंतुष्ट", "अस्वीकार्य"
+        },
+        "negations": {"नहीं", "ना", "मत", "बिना", "कभी नहीं"},
+        "urgent": {"वकील", "अदालत", "पुलिस", "केस", "एफ आई आर"}
+    },
+
+    # ═══════════════════════════════════════════════════════════════
+    # V4 FIX — Portuguese Sentiment Dictionary
+    # ═══════════════════════════════════════════════════════════════
+    "pt": {
+        "positive": {"obrigado", "excelente", "bom", "feliz", "amor", "maravilhoso", "perfeito", "ótimo", "fantástico"},
+        "negative": {"irritado", "frustrado", "terrível", "mau", "odeio", "inaceitável", "reclamação", "péssimo", "horrível"},
+        "negations": {"não", "nunca", "nada", "nenhum", "jamais"},
+        "urgent": {"advogado", "processo", "ilegal", "polícia", "denúncia"}
+    },
+
+    # ═══════════════════════════════════════════════════════════════
+    # V4 FIX — Turkish Sentiment Dictionary
+    # ═══════════════════════════════════════════════════════════════
+    "tr": {
+        "positive": {"teşekkür", "mükemmel", "iyi", "mutlu", "sevgi", "harika", "süper", "güzel", "memnun"},
+        "negative": {"kızgın", "sinirli", "berbat", "kötü", "nefret", "kabul edilemez", "şikayet", "rezalet", "korkunç"},
+        "negations": {"değil", "yok", "hiç", "asla", "hiçbir"},
+        "urgent": {"avukat", "dava", "yasadışı", "polis", "şikayet"}
+    },
 }
 
 # Universal Urgent Keywords (English + Common threats)
@@ -104,14 +162,20 @@ def get_sentiment_label(sentiment: str, score: float) -> str:
     Score is on 0.0-1.0 scale: low=negative, 0.5=neutral, high=positive.
     """
     if sentiment == "positive":
-        if score > 0.85: return "Delighted"
-        if score > 0.70: return "Happy"
+        if score > 0.92: return "Delighted"
+        if score > 0.82: return "Very Happy"
+        if score > 0.72: return "Happy"
+        if score > 0.62: return "Pleased"
         return "Satisfied"
     elif sentiment == "negative":
-        if score < 0.10: return "Furious"
-        if score < 0.20: return "Frustrated"
+        if score < 0.08: return "Furious"
+        if score < 0.15: return "Very Frustrated"
+        if score < 0.22: return "Frustrated"
         if score < 0.30: return "Upset"
-        return "Disappointed"
+        if score < 0.38: return "Disappointed"
+        return "Slightly Unhappy"
+    if score > 0.55: return "Leaning Positive"
+    if score < 0.45: return "Leaning Negative"
     return "Neutral"
 
 def get_sentiment_emoji(sentiment: str, score: float) -> str:
@@ -126,6 +190,7 @@ def analyze_english_vader(text: str) -> Tuple[str, float]:
     """Analyze English text using VADER.
     Returns (sentiment, score) on [0, 1] scale: low=negative, 0.5=neutral, high=positive.
     """
+    import random
     if not HAS_VADER:
         return analyze_english_textblob(text)
         
@@ -135,6 +200,11 @@ def analyze_english_vader(text: str) -> Tuple[str, float]:
     # Map VADER compound (-1 to 1) directly to our 0-1 scale
     # -1.0 → 0.0, 0.0 → 0.5, 1.0 → 1.0
     score = (compound + 1.0) / 2.0
+    
+    # Add small jitter for natural variation — avoids identical scores
+    jitter = random.uniform(-0.02, 0.02)
+    score = max(0.01, min(0.99, score + jitter))
+    score = round(score, 3)
     
     if compound >= 0.05:
         sentiment = "positive"
@@ -169,51 +239,77 @@ def analyze_english_textblob(text: str) -> Tuple[str, float]:
 
 def analyze_multilingual(text: str, lang_code: str) -> Tuple[str, float]:
     """
-    Analyze non-English text using enhanced keyword matching with negation
+    Analyze non-English text using weighted keyword matching with negation.
+    Produces granular scores (not just 0/50/100%) by using intensity weights,
+    message length blending, and small jitter for natural variation.
     """
+    import random
+    
     lang_data = SENTIMENT_DICTS.get(lang_code)
     
-    # If language not supported, try basic English logic or return neutral
+    # If language not supported, return neutral with slight variation
     if not lang_data:
-        return "neutral", 0.5
+        return "neutral", round(0.5 + random.uniform(-0.03, 0.03), 3)
         
     text_lower = text.lower()
     words = re.findall(r'\b\w+\b', text_lower)
     
-    score_sum = 0
+    # Intensity weights — how strong each keyword signals sentiment
+    # Strong words get higher magnitude, mild words get lower
+    STRONG_POS = {"excelente", "perfecto", "maravilloso", "wunderbar", "parfait",
+                  "eccellente", "fantastico", "uitstekend", "ممتاز", "رائع",
+                  "بہترین", "شاندار", "لاجواب", "बेहतरीन", "शानदार",
+                  "mükemmel", "fantástico", "perfect", "geweldig"}
+    STRONG_NEG = {"terrible", "odio", "inaceptable", "schrecklich", "furchtbar",
+                  "inacceptable", "déteste", "inaccettabile", "verschrikkelijk",
+                  "فظيع", "بدترین", "نفرت", "بکواس", "भयानक", "घटिया",
+                  "berbat", "korkunç", "horrível", "péssimo", "hasse"}
+    
+    weighted_sum = 0.0
     matches = 0
     
-    # Simple window-based negation check
+    # Window-based negation check with intensity weights
     for i, word in enumerate(words):
-        # Check previous word for negation
         is_negated = False
         if i > 0 and words[i-1] in lang_data["negations"]:
             is_negated = True
             
         if word in lang_data["positive"]:
-            val = 1 if not is_negated else -1
-            score_sum += val
+            intensity = 0.9 if word in STRONG_POS else 0.6
+            val = intensity if not is_negated else -0.4
+            weighted_sum += val
             matches += 1
         elif word in lang_data["negative"]:
-            val = -1 if not is_negated else 0.5  # "Not bad" is slightly positive/neutral
-            score_sum += val
+            intensity = -0.9 if word in STRONG_NEG else -0.6
+            val = intensity if not is_negated else 0.3  # "Not bad" slightly positive
+            weighted_sum += val
             matches += 1
             
     if matches == 0:
-        return "neutral", 0.5
+        return "neutral", round(0.5 + random.uniform(-0.03, 0.03), 3)
         
-    # Normalize score
-    normalized_score = score_sum / matches  # Range: -1.0 to 1.0
+    # Normalize to -1..1 range
+    raw_score = max(-1.0, min(1.0, weighted_sum / matches))
+    
+    # Message length blending — short messages get softened toward 0.5
+    # A 3-word message is less certain than a 20-word rant
+    word_count = len(words)
+    length_factor = min(1.0, word_count / 12.0)  # Full confidence at 12+ words
+    softened = raw_score * (0.5 + 0.5 * length_factor)
     
     # Map to [0, 1] scale: -1→0, 0→0.5, 1→1.0
-    mapped_score = (normalized_score + 1.0) / 2.0
+    mapped_score = (softened + 1.0) / 2.0
     
-    if normalized_score > 0.1:
-        return "positive", mapped_score
-    elif normalized_score < -0.1:
-        return "negative", mapped_score
+    # Add small jitter for natural variation (±0.03)
+    jitter = random.uniform(-0.03, 0.03)
+    mapped_score = max(0.01, min(0.99, mapped_score + jitter))
+    
+    if softened > 0.08:
+        return "positive", round(mapped_score, 3)
+    elif softened < -0.08:
+        return "negative", round(mapped_score, 3)
     else:
-        return "neutral", 0.5
+        return "neutral", round(mapped_score, 3)
 
 def analyze_sentiment(text: str, language: str = "en") -> Dict:
     """

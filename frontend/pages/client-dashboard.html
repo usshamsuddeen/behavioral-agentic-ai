@@ -91,6 +91,26 @@
                     Knowledge Base
                 </a>
 
+                <!-- ★ V4: Order Data -->
+                <a class="nav-item" data-tab="orders" href="#orders">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="1" y="3" width="15" height="13"></rect>
+                        <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                        <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                        <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                    </svg>
+                    Order Data
+                </a>
+
+                <!-- ★ V4: Product Listings -->
+                <a class="nav-item" data-tab="products" href="#products">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <path d="M16 10a4 4 0 0 1-8 0"></path>
+                    </svg>
+                    Products
+                </a>
                 <!-- Widget -->
                 <a class="nav-item" data-tab="widget" href="#widget">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -584,6 +604,154 @@ Support hours: Mon-Fri 9am-5pm EST."></textarea>
                 </section>
 
                 <!-- ═══════════════════════════════════════════
+                     ★ V4 TAB: ORDER DATA
+                     ═══════════════════════════════════════════ -->
+                <section class="tab-panel" id="panel-orders">
+                    <!-- Order Stats -->
+                    <div class="metrics-grid" id="orderMetrics">
+                        <div class="metric-card">
+                            <div class="metric-icon metric-icon--blue">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <rect x="1" y="3" width="15" height="13"></rect>
+                                    <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                                    <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                                    <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                                </svg>
+                            </div>
+                            <div class="metric-value" id="orderTotal">—</div>
+                            <div class="metric-label">Total Orders</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon metric-icon--green">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </div>
+                            <div class="metric-value" id="orderDelivered">—</div>
+                            <div class="metric-label">Delivered</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon metric-icon--orange">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <polyline points="12 6 12 12 16 14"></polyline>
+                                </svg>
+                            </div>
+                            <div class="metric-value" id="orderPending">—</div>
+                            <div class="metric-label">Pending/Shipped</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon metric-icon--red">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="15" y1="9" x2="9" y2="15"></line>
+                                    <line x1="9" y1="9" x2="15" y2="15"></line>
+                                </svg>
+                            </div>
+                            <div class="metric-value" id="orderCancelled">—</div>
+                            <div class="metric-label">Cancelled</div>
+                        </div>
+                    </div>
+
+                    <!-- Import Section -->
+                    <div class="overview-grid" style="margin-bottom:var(--space-lg);">
+                        <div class="overview-card">
+                            <div class="overview-card-header">
+                                <span class="overview-card-title">📄 Upload CSV</span>
+                            </div>
+                            <div style="padding:var(--space-md);">
+                                <input type="file" id="dashOrderCsvInput" accept=".csv"
+                                    style="font-size:0.8rem;margin-bottom:var(--space-sm);">
+                                <button class="btn btn-primary btn-sm" id="dashOrderUploadBtn">Upload Orders</button>
+                                <div id="dashOrderUploadStatus"
+                                    style="display:none;margin-top:var(--space-sm);font-size:0.8rem;"></div>
+                            </div>
+                        </div>
+                        <div class="overview-card">
+                            <div class="overview-card-header">
+                                <span class="overview-card-title">🧪 Demo Orders</span>
+                            </div>
+                            <div style="padding:var(--space-md);">
+                                <div style="display:flex;gap:var(--space-sm);align-items:center;">
+                                    <input type="number" class="config-input" id="dashDemoCount" value="50" min="10"
+                                        max="200" style="width:80px;">
+                                    <button class="btn btn-secondary btn-sm" id="dashDemoBtn">Generate</button>
+                                </div>
+                                <div id="dashDemoStatus"
+                                    style="display:none;margin-top:var(--space-sm);font-size:0.8rem;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Order Table -->
+                    <div class="kb-header-row">
+                        <h4 style="font-size:0.9375rem;font-weight:600;color:var(--text-primary)">Orders</h4>
+                        <input type="text" class="conv-search" id="dashOrderSearch"
+                            placeholder="Search by ID, email, name…" style="max-width:260px;">
+                    </div>
+                    <div style="overflow-x:auto;">
+                        <table class="data-table" id="dashOrderTable">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Customer</th>
+                                    <th>Email</th>
+                                    <th>Status</th>
+                                    <th>Total</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dashOrderTableBody">
+                                <tr>
+                                    <td colspan="7" style="text-align:center;color:var(--text-muted)">Loading…</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination" id="orderPagination"
+                        style="margin-top:var(--space-md);display:flex;gap:var(--space-xs);justify-content:center;">
+                    </div>
+                </section>
+
+                <!-- ═══════════════════════════════════════════
+                     ★ V4 TAB: PRODUCT LISTINGS
+                     ═══════════════════════════════════════════ -->
+                <section class="tab-panel" id="panel-products">
+                    <!-- Actions -->
+                    <div style="display:flex;gap:var(--space-sm);margin-bottom:var(--space-lg);flex-wrap:wrap;">
+                        <button class="btn btn-primary" id="addProductBtn">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2" style="margin-right:4px;">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            Add Product
+                        </button>
+                        <button class="btn btn-secondary" id="importProductCsvBtn">📄 Import CSV</button>
+                        <input type="file" id="productCsvInput" accept=".csv" hidden>
+                        <input type="text" class="conv-search" id="dashProductSearch" placeholder="Search products…"
+                            style="max-width:220px;margin-left:auto;">
+                    </div>
+
+                    <!-- Product Grid -->
+                    <div class="overview-grid" id="productGrid"
+                        style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr));">
+                        <div class="loading-state">
+                            <div class="spinner"></div>
+                            <p>Loading products…</p>
+                        </div>
+                    </div>
+                    <div class="pagination" id="productPagination"
+                        style="margin-top:var(--space-md);display:flex;gap:var(--space-xs);justify-content:center;">
+                    </div>
+                </section>
+
+                <!-- ═══════════════════════════════════════════
                      TAB 5: WIDGET
                      ═══════════════════════════════════════════ -->
                 <section class="tab-panel" id="panel-widget">
@@ -615,6 +783,16 @@ Support hours: Mon-Fri 9am-5pm EST."></textarea>
                                     <select class="config-input" id="widgetPosition">
                                         <option value="bottom-right">Bottom Right</option>
                                         <option value="bottom-left">Bottom Left</option>
+                                    </select>
+                                </div>
+                                <!-- ★ V4: Widget Type -->
+                                <div class="config-field">
+                                    <label class="config-label">Widget Type</label>
+                                    <select class="config-input" id="widgetType">
+                                        <option value="full">Full — All-in-One</option>
+                                        <option value="info">Info — FAQ/General Only</option>
+                                        <option value="order">Order — Tracking & Status</option>
+                                        <option value="verify">Verify — Self-Service Verification</option>
                                     </select>
                                 </div>
                             </div>

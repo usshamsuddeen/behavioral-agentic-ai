@@ -216,34 +216,67 @@ def analyze_sentiment_transformer(text: str) -> Dict:
             text_lower = text.lower().strip()
             text_stripped = text.strip()
             
-            # Detect questions (most common misclassification)
+            # ═══════════════════════════════════════════════════════
+            # V4 FIX — Extended question detection (multilingual)
+            # ═══════════════════════════════════════════════════════
             is_question = (
                 text_stripped.endswith("?")
-                or text_lower.startswith(("what ", "how ", "do ", "does ", "can ",
-                    "could ", "would ", "is ", "are ", "where ", "when ", "which ",
-                    "who ", "will ", "have ", "has ", "should ", "may ", "tell me",
-                    "any ", "please "))
+                or text_lower.startswith((
+                    # English (V3 — kept)
+                    "what ", "how ", "do ", "does ", "can ", "could ",
+                    "would ", "is ", "are ", "where ", "when ", "which ",
+                    "who ", "will ", "have ", "has ", "should ", "may ",
+                    "tell me", "any ", "please",  # V4: removed trailing space from "please"
+                    # German (V4 NEW)
+                    "was ", "wie ", "wo ", "wann ", "können ", "ist ",
+                    "welch", "warum ",
+                    # French (V4 NEW)
+                    "est-ce ", "qu'", "comment ", "où ", "quand ",
+                    "quel", "pourquoi ",
+                    # Spanish (V4 NEW)
+                    "qué ", "cómo ", "dónde ", "cuándo ", "cuál ",
+                    "por qué ",
+                ))
             )
             
-            # Detect greetings and short neutral messages
+            # Detect greetings and short neutral messages (V3 — kept as-is)
             greeting_words = {"hi", "hello", "hey", "hola", "good morning",
                 "good afternoon", "good evening", "thanks", "thank you",
                 "ok", "okay", "yes", "no", "sure", "alright", "fine",
                 "i see", "got it", "understood", "bye", "goodbye"}
             is_greeting = text_lower.rstrip("!., ") in greeting_words
             
-            # Detect informational intent (not emotional)
+            # Detect informational intent (not emotional) (V3 — kept as-is)
             info_keywords = ("information", "info", "details", "price",
                 "cost", "how much", "available", "offer", "product",
                 "service", "policy", "return", "shipping", "delivery",
                 "catalog", "menu", "options", "feature")
             is_info_seeking = any(kw in text_lower for kw in info_keywords)
+
+            # ═══════════════════════════════════════════════════════
+            # V4 FIX — Action verb detection (NEW)
+            # E-commerce actions are NEUTRAL intent, not negative:
+            # "I want to cancel my order" → action request, not anger
+            # ═══════════════════════════════════════════════════════
+            action_verbs = (
+                "cancel", "exchange", "help", "change",
+                "update", "track", "modify", "check", "find",
+                "looking for", "need", "want to", "can i", "how to"
+            )
+            is_action_request = any(v in text_lower for v in action_verbs)
+
+            # ═══════════════════════════════════════════════════════
+            # V4 FIX — "please" anywhere in message (NEW)
+            # V3 bug: startswith("please ") missed "help me please"
+            # ═══════════════════════════════════════════════════════
+            has_please = "please" in text_lower
             
-            if is_question or is_greeting or is_info_seeking:
+            if is_question or is_greeting or is_info_seeking or is_action_request or has_please:
                 logger.info(
                     f"Chat guard: BERT gave {star_rating} stars to chat text "
                     f"(question={is_question}, greeting={is_greeting}, "
-                    f"info={is_info_seeking}), overriding to 3 stars (neutral)"
+                    f"info={is_info_seeking}, action={is_action_request}, "
+                    f"please={has_please}), overriding to 3 stars (neutral)"
                 )
                 star_rating = 3
                 confidence = 0.6  # Lower confidence since we overrode

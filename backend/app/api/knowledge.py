@@ -16,6 +16,7 @@ Endpoints:
 - GET /knowledge/stats: Get statistics
 """
 
+import os
 import logging
 from typing import Optional, List
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Query, Depends
@@ -122,7 +123,7 @@ async def upload_document(
     """
     Upload and index a document (tenant-scoped).
     
-    Supports: PDF, DOCX, TXT, JSON, CSV, MD
+    Supports: PDF, DOCX, TXT, JSON, CSV, MD, PNG, JPG, JPEG, WEBP
     
     - **file**: Document file to upload
     - **doc_type**: Document type (product, policy, faq, general)
@@ -136,14 +137,41 @@ async def upload_document(
         if not content:
             raise HTTPException(status_code=400, detail="Empty file")
         
+        # ★ V4.1: Save image files to disk so they can be served in chat
+        file_url = None
+        filename = file.filename or "unnamed_document"
+        ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
+        IMAGE_EXTENSIONS = {"png", "jpg", "jpeg", "webp", "gif"}
+        
+        if ext in IMAGE_EXTENSIONS:
+            import uuid
+            uploads_dir = os.path.join(
+                os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+                "data", "kb_uploads"
+            )
+            os.makedirs(uploads_dir, exist_ok=True)
+            
+            # Unique filename: tenant_id + uuid + original ext
+            safe_name = f"{client_id}_{uuid.uuid4().hex[:8]}_{filename}"
+            save_path = os.path.join(uploads_dir, safe_name)
+            with open(save_path, "wb") as f:
+                f.write(content)
+            
+            file_url = f"/uploads/{safe_name}"
+            logger.info(f"📸 Image saved: {file_url}")
+        
         manager = get_knowledge_manager()
+        
+        # Pass file_url as additional metadata so chunks carry the image reference
+        additional_meta = {"file_url": file_url} if file_url else None
         
         result = manager.upload_document(
             client_id=client_id,
             content=content,
-            filename=file.filename or "unnamed_document",
+            filename=filename,
             doc_type=doc_type,
-            category=category
+            category=category,
+            additional_metadata=additional_meta
         )
 
         # ── Track in SQL (FRD §12: knowledge_documents table) ──
@@ -152,7 +180,7 @@ async def upload_document(
                 tenant = get_tenant_for_user(current_user, db)
                 doc_record = KnowledgeDocument(
                     tenant_id=tenant.id if tenant else None,
-                    filename=file.filename or "unnamed_document",
+                    filename=filename,
                     doc_type=doc_type,
                     category=category,
                     file_size=len(content),
@@ -160,6 +188,7 @@ async def upload_document(
                     chromadb_doc_id=result.get("document_id"),
                     status="indexed",
                     uploaded_by=current_user.id,
+                    file_url=file_url,  # ★ V4.1: Store image URL
                 )
                 db.add(doc_record)
                 db.commit()

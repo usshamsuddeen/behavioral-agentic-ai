@@ -416,6 +416,37 @@
                 Audit Logs
             </a>
 
+            <span class="sidebar-label">★ V4</span>
+            <a href="#" class="sidebar-link" data-section="global-convos">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
+                </svg>
+                Global Conversations
+            </a>
+            <a href="#" class="sidebar-link" data-section="all-orders">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="1" y="3" width="15" height="13" />
+                    <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
+                    <circle cx="5.5" cy="18.5" r="2.5" />
+                    <circle cx="18.5" cy="18.5" r="2.5" />
+                </svg>
+                All Orders
+            </a>
+            <a href="#" class="sidebar-link" data-section="all-products">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
+                    <line x1="3" y1="6" x2="21" y2="6" />
+                    <path d="M16 10a4 4 0 01-8 0" />
+                </svg>
+                All Products
+            </a>
+            <a href="#" class="sidebar-link" data-section="system-health">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                </svg>
+                System Health
+            </a>
+
             <div class="sidebar-bottom">
                 <div class="sidebar-user">
                     <div class="sidebar-avatar" id="sidebarAvatar">SA</div>
@@ -567,6 +598,158 @@
                     </div>
                 </div>
             </div>
+
+            <!-- ★ V4: GLOBAL CONVERSATIONS -->
+            <div class="admin-section" id="section-global-convos">
+                <div class="admin-header">
+                    <h1>💬 Global Conversations</h1>
+                </div>
+                <div style="display:flex; gap:0.75rem; margin-bottom:1rem; flex-wrap:wrap;">
+                    <select id="convTenantFilter" onchange="loadGlobalConversations()"
+                        style="padding:0.6rem 0.9rem; border-radius:10px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:#fff; font-size:0.85rem; font-family:'Inter',sans-serif; min-width:160px;">
+                        <option value="">All Tenants</option>
+                    </select>
+                    <select id="convSentimentFilter" onchange="loadGlobalConversations()"
+                        style="padding:0.6rem 0.9rem; border-radius:10px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:#fff; font-size:0.85rem; font-family:'Inter',sans-serif; min-width:140px;">
+                        <option value="">All Sentiments</option>
+                        <option value="positive">Positive</option>
+                        <option value="neutral">Neutral</option>
+                        <option value="negative">Negative</option>
+                    </select>
+                </div>
+                <div class="panel">
+                    <div class="panel-body" style="overflow-x:auto;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Tenant</th>
+                                    <th>Session</th>
+                                    <th>Sentiment</th>
+                                    <th>Status</th>
+                                    <th>Updated</th>
+                                </tr>
+                            </thead>
+                            <tbody id="globalConvosBody">
+                                <tr>
+                                    <td colspan="5" style="color:rgba(255,255,255,0.4);">Select a tab to load…</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ★ V4: ALL ORDERS -->
+            <div class="admin-section" id="section-all-orders">
+                <div class="admin-header">
+                    <h1>📦 All Order Data</h1>
+                </div>
+                <div style="margin-bottom:1rem;">
+                    <select id="orderTenantSelect" onchange="loadAdminOrders()"
+                        style="padding:0.6rem 0.9rem; border-radius:10px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:#fff; font-size:0.85rem; font-family:'Inter',sans-serif; min-width:200px;">
+                        <option value="">-- Select Tenant --</option>
+                    </select>
+                </div>
+                <div class="panel">
+                    <div class="panel-body" style="overflow-x:auto;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Order ID</th>
+                                    <th>Customer</th>
+                                    <th>Email</th>
+                                    <th>Status</th>
+                                    <th>Total</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminOrderBody">
+                                <tr>
+                                    <td colspan="6" style="color:rgba(255,255,255,0.4);">Select a tenant…</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ★ V4: ALL PRODUCTS -->
+            <div class="admin-section" id="section-all-products">
+                <div class="admin-header">
+                    <h1>🏷️ All Products</h1>
+                </div>
+                <div style="margin-bottom:1rem;">
+                    <select id="productTenantSelect" onchange="loadAdminProducts()"
+                        style="padding:0.6rem 0.9rem; border-radius:10px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.04); color:#fff; font-size:0.85rem; font-family:'Inter',sans-serif; min-width:200px;">
+                        <option value="">-- Select Tenant --</option>
+                    </select>
+                    <span id="adminProductCount"
+                        style="margin-left:1rem; color:rgba(255,255,255,0.5); font-size:0.85rem;"></span>
+                </div>
+                <div class="panel">
+                    <div class="panel-body" style="overflow-x:auto;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>SKU</th>
+                                    <th>Price</th>
+                                    <th>Stock</th>
+                                    <th>Category</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminProductBody">
+                                <tr>
+                                    <td colspan="5" style="color:rgba(255,255,255,0.4);">Select a tenant…</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ★ V4: SYSTEM HEALTH -->
+            <div class="admin-section" id="section-system-health">
+                <div class="admin-header">
+                    <h1>🏥 System Health</h1>
+                </div>
+                <div class="stats-grid" id="healthGrid">
+                    <div class="stat-card">
+                        <div class="stat-label">Database</div>
+                        <div class="stat-value green" id="healthDB">—</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">BERT Model</div>
+                        <div class="stat-value" id="healthBERT">—</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">LLM API</div>
+                        <div class="stat-value" id="healthLLM">—</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">WebSocket</div>
+                        <div class="stat-value green" id="healthWS">—</div>
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-header"><span class="panel-title">Vector Store by Tenant</span></div>
+                    <div class="panel-body" style="overflow-x:auto;">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Tenant</th>
+                                    <th>Documents</th>
+                                </tr>
+                            </thead>
+                            <tbody id="vsTenantsBody">
+                                <tr>
+                                    <td colspan="2" style="color:rgba(255,255,255,0.4);">Loading…</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </main>
     </div>
 
@@ -615,6 +798,11 @@
                 if (section === 'clients') loadClients();
                 if (section === 'analytics') loadAnalytics();
                 if (section === 'audit') loadAuditLogs();
+                // ★ V4 sections
+                if (section === 'global-convos') { populateTenantSelectors(); loadGlobalConversations(); }
+                if (section === 'all-orders') { populateTenantSelectors(); }
+                if (section === 'all-products') { populateTenantSelectors(); }
+                if (section === 'system-health') loadSystemHealth();
             });
         });
 
@@ -784,6 +972,120 @@
 
         // Init
         loadOverview();
+
+        // ═══ ★ V4: New Functions ═══
+
+        async function populateTenantSelectors() {
+            try {
+                const res = await fetch(`${API_BASE}/api/admin/clients?per_page=100`, { headers });
+                const data = await res.json();
+                const clients = data.clients || [];
+                ['convTenantFilter', 'orderTenantSelect', 'productTenantSelect'].forEach(id => {
+                    const sel = document.getElementById(id);
+                    if (!sel || sel.options.length > 1) return;
+                    clients.forEach(c => {
+                        const opt = document.createElement('option');
+                        opt.value = c.id;
+                        opt.textContent = c.business_name || c.name;
+                        sel.appendChild(opt);
+                    });
+                });
+            } catch (e) { console.error(e); }
+        }
+
+        async function loadGlobalConversations() {
+            const tid = document.getElementById('convTenantFilter')?.value || '';
+            const sent = document.getElementById('convSentimentFilter')?.value || '';
+            let url = `${API_BASE}/api/admin/global-conversations?per_page=50`;
+            if (tid) url += `&tenant_id=${tid}`;
+            if (sent) url += `&sentiment=${sent}`;
+            try {
+                const res = await fetch(url, { headers });
+                const data = await res.json();
+                const body = document.getElementById('globalConvosBody');
+                const convos = data.conversations || [];
+                if (!convos.length) { body.innerHTML = '<tr><td colspan="5" style="color:rgba(255,255,255,0.4);">No conversations found.</td></tr>'; return; }
+                body.innerHTML = convos.map(c => `
+                    <tr>
+                        <td>${c.tenant_name || c.tenant_id}</td>
+                        <td style="font-size:0.8rem;">${c.session_id ? c.session_id.substring(0, 12) + '…' : '—'}</td>
+                        <td><span class="badge ${c.current_sentiment === 'positive' ? 'badge-active' : c.current_sentiment === 'negative' ? 'badge-suspended' : 'badge-trial'}">${c.current_sentiment || '—'}</span></td>
+                        <td>${c.status || 'active'}</td>
+                        <td>${c.updated_at ? new Date(c.updated_at).toLocaleString() : '—'}</td>
+                    </tr>
+                `).join('');
+            } catch (e) { console.error(e); }
+        }
+
+        async function loadAdminOrders() {
+            const tid = document.getElementById('orderTenantSelect')?.value;
+            if (!tid) return;
+            try {
+                const res = await fetch(`${API_BASE}/api/admin/tenant/${tid}/orders?per_page=50`, { headers });
+                const data = await res.json();
+                const body = document.getElementById('adminOrderBody');
+                const orders = data.orders || [];
+                if (!orders.length) { body.innerHTML = '<tr><td colspan="6" style="color:rgba(255,255,255,0.4);">No orders.</td></tr>'; return; }
+                body.innerHTML = orders.map(o => `
+                    <tr>
+                        <td style="font-weight:600;">${o.order_id}</td>
+                        <td>${o.customer_name || '—'}</td>
+                        <td>${o.customer_email || '—'}</td>
+                        <td><span class="badge badge-trial">${o.status || '—'}</span></td>
+                        <td>$${(o.total_amount || 0).toFixed(2)}</td>
+                        <td>${o.created_at ? new Date(o.created_at).toLocaleDateString() : '—'}</td>
+                    </tr>
+                `).join('');
+            } catch (e) { console.error(e); }
+        }
+
+        async function loadAdminProducts() {
+            const tid = document.getElementById('productTenantSelect')?.value;
+            if (!tid) return;
+            try {
+                const res = await fetch(`${API_BASE}/api/admin/tenant/${tid}/products?per_page=50`, { headers });
+                const data = await res.json();
+                const body = document.getElementById('adminProductBody');
+                const count = document.getElementById('adminProductCount');
+                const products = data.products || [];
+                count.textContent = `${data.total || products.length} products`;
+                if (!products.length) { body.innerHTML = '<tr><td colspan="5" style="color:rgba(255,255,255,0.4);">No products.</td></tr>'; return; }
+                body.innerHTML = products.map(p => `
+                    <tr>
+                        <td style="font-weight:600;">${p.name || '—'}</td>
+                        <td>${p.sku || '—'}</td>
+                        <td>$${(p.price || 0).toFixed(2)}</td>
+                        <td>${p.stock_quantity != null ? p.stock_quantity : '—'}</td>
+                        <td>${p.category || '—'}</td>
+                    </tr>
+                `).join('');
+            } catch (e) { console.error(e); }
+        }
+
+        async function loadSystemHealth() {
+            try {
+                const res = await fetch(`${API_BASE}/api/admin/system-health`, { headers });
+                const data = await res.json();
+                document.getElementById('healthDB').textContent = data.database?.status === 'connected' ? '✅ Connected' : '❌ Error';
+                document.getElementById('healthDB').className = 'stat-value ' + (data.database?.status === 'connected' ? 'green' : 'red');
+                document.getElementById('healthBERT').textContent = data.bert_model?.loaded ? '✅ Loaded' : '⚠️ Not Loaded';
+                document.getElementById('healthBERT').className = 'stat-value ' + (data.bert_model?.loaded ? 'green' : 'orange');
+                document.getElementById('healthLLM').textContent = data.llm?.available ? '✅ Available' : '⚠️ No Key';
+                document.getElementById('healthLLM').className = 'stat-value ' + (data.llm?.available ? 'green' : 'orange');
+                document.getElementById('healthWS').textContent = '✅ Active';
+
+                // Vector store table
+                const vsTenants = data.vector_store?.tenants || [];
+                const vsBody = document.getElementById('vsTenantsBody');
+                if (vsTenants.length) {
+                    vsBody.innerHTML = vsTenants.map(t => `
+                        <tr><td>${t.tenant}</td><td>${t.documents}</td></tr>
+                    `).join('');
+                } else {
+                    vsBody.innerHTML = '<tr><td colspan="2" style="color:rgba(255,255,255,0.4);">No data</td></tr>';
+                }
+            } catch (e) { console.error(e); }
+        }
     </script>
 </body>
 

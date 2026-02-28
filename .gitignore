@@ -31,7 +31,7 @@ ENV/
 
 # ── Data Directories (generated at runtime) ──────────────────────
 data/vector_store/
-data/chroma_db/
+data/kb_uploads/
 data/*.db
 data/*.db-journal
 

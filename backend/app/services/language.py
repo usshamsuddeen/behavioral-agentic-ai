@@ -35,6 +35,24 @@ def detect_language(text: str) -> Dict:
     Detect language of given text.
     Uses langdetect library with fallback to simple heuristics.
     """
+    # ═══════════════════════════════════════════════════════════════
+    # V4 FIX — BUG-1: Short Text Guard
+    # langdetect is UNRELIABLE on < 3 words:
+    #   "Hi" → German, "OK" → Turkish, "No" → Portuguese
+    # For short ASCII text, default to English safely.
+    # ═══════════════════════════════════════════════════════════════
+    words = text.strip().split()
+    if len(words) < 3:
+        # Check if text is primarily ASCII (Latin characters)
+        cleaned = text.replace(' ', '').replace('!', '').replace('?', '').replace('.', '').replace(',', '')
+        if cleaned and all(ord(c) < 128 for c in cleaned):
+            return {
+                "code": "en",
+                "name": "English",
+                "flag": "🇺🇸",
+                "confidence": 0.90
+            }
+
     try:
         from langdetect import detect, detect_langs
         
@@ -44,6 +62,19 @@ def detect_language(text: str) -> Dict:
         # Get confidence from probability
         lang_probs = detect_langs(text)
         confidence = lang_probs[0].prob if lang_probs else 0.8
+
+        # ═══════════════════════════════════════════════════════════
+        # V4 FIX — Confidence Gate
+        # Reject low-confidence non-English detection.
+        # Only trust non-English result if confidence > 85%.
+        # ═══════════════════════════════════════════════════════════
+        if lang_code != "en" and confidence < 0.85:
+            return {
+                "code": "en",
+                "name": "English",
+                "flag": "🇺🇸",
+                "confidence": 0.80
+            }
         
         # Map to our format
         lang_info = LANGUAGE_MAP.get(lang_code, {"name": "Unknown", "flag": "🌐"})

@@ -27,6 +27,8 @@ from app.api import admin as admin_api
 from app.api import widget_api
 from app.api import settings_api
 from app.api import widget_config_api
+from app.api import orders_api              # ★ V4 NEW — Zone 8: Order Gateway
+from app.api import products_api            # ★ V4 NEW — Zone 3: Product Listings
 from app.websocket.manager import get_manager
 
 # Configure logging
@@ -87,7 +89,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Behavioral Agentic AI",
     description="Sentiment-Aware Escalation System for Multilingual Customer Support",
-    version="3.0.0",
+    version="4.0.0",
     lifespan=lifespan
 )
 
@@ -123,6 +125,8 @@ app.include_router(admin_api.router)        # Zone 4: Super Admin
 app.include_router(widget_api.router)       # Zone 6: Customer Widget
 app.include_router(settings_api.router)     # Zone 3: Settings & Team (FR-3.6)
 app.include_router(widget_config_api.router) # Zone 3: Widget Config (FR-3.5)
+app.include_router(orders_api.router)        # ★ V4 Zone 8: Order Gateway
+app.include_router(products_api.router)      # ★ V4 Zone 3: Product Listings
 
 
 @app.get("/")
@@ -136,7 +140,7 @@ async def root():
         frontend_index = "/app/frontend/index.html"
     if os.path.exists(frontend_index):
         return FileResponse(frontend_index)
-    return {"name": "Behavioral Agentic AI", "version": "3.1.0", "status": "running"}
+    return {"name": "Behavioral Agentic AI", "version": "4.0.0", "status": "running"}
 
 
 @app.get("/api/info")
@@ -144,7 +148,7 @@ async def api_info():
     """API info endpoint"""
     return {
         "name": "Behavioral Agentic AI",
-        "version": "3.1.0",
+        "version": "4.0.0",
         "status": "running",
         "docs": "/docs",
         "websocket": "/ws/{client_id}"
@@ -336,6 +340,11 @@ if FRONTEND_DIR:
     app.mount("/css", StaticFiles(directory=os.path.join(FRONTEND_DIR, "css")), name="css")
     app.mount("/js", StaticFiles(directory=os.path.join(FRONTEND_DIR, "js")), name="js")
     app.mount("/widget", StaticFiles(directory=os.path.join(FRONTEND_DIR, "widget")), name="widget-static")
+
+    # ★ V4.1: Serve uploaded KB images so the widget can display them in chat
+    _uploads_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data", "kb_uploads")
+    os.makedirs(_uploads_dir, exist_ok=True)
+    app.mount("/uploads", StaticFiles(directory=_uploads_dir), name="kb-uploads")
 
     # Serve HTML pages
     @app.get("/login")

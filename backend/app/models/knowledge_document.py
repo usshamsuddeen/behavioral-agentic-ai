@@ -45,6 +45,8 @@ class KnowledgeDocument(Base):
     # Upload Context
     uploaded_by = Column(Integer, ForeignKey("users.id"), nullable=True)
     error_message = Column(Text, nullable=True)  # If status == "failed"
+    # ★ V4: Original file URL for image uploads
+    file_url = Column(String(500), nullable=True)
 
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -62,6 +64,7 @@ class KnowledgeDocument(Base):
             "chunk_count": self.chunk_count,
             "status": self.status,
             "uploaded_by": self.uploaded_by,
+            "file_url": self.file_url,  # ★ V4
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }

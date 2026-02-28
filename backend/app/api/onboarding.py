@@ -1,13 +1,14 @@
 """
-Onboarding API — Zone 2: 5-Step Onboarding Wizard
-FRD v3.0 (FR-2.1 through FR-2.5)
+Onboarding API — Zone 2: 6-Step Onboarding Wizard
+FRD v4.0 (FR-2.1 through FR-2.6)
 
 Steps:
   1. Business Profile (FR-2.1)
   2. Connect Store (FR-2.2)
-  3. Configure Widget (FR-2.3)
-  4. Upload Knowledge Base (FR-2.4) — uses existing /api/knowledge/upload
-  5. Test & Deploy / Complete (FR-2.5)
+  3. Configure Widget (FR-2.3) — ★ V4: includes widget_type
+  4. Upload Knowledge Base (FR-2.4) — ★ V4: includes images + product CSV
+  5. Import Order Data (FR-2.5) — ★ V4 NEW
+  6. Test & Deploy / Complete (FR-2.6)
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -53,6 +54,7 @@ class ConfigureWidgetRequest(BaseModel):
     bot_name: Optional[str] = "AI Assistant"
     pre_chat_form_enabled: Optional[bool] = False
     pre_chat_fields: Optional[List[str]] = ["name", "email"]
+    widget_type: Optional[str] = "full"  # ★ V4: full | info | order | verify
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -185,6 +187,8 @@ async def configure_widget(
     widget_config.pre_chat_form_enabled = data.pre_chat_form_enabled
     if data.pre_chat_fields:
         widget_config.set_pre_chat_fields(data.pre_chat_fields)
+    # ★ V4: Save widget type
+    widget_config.widget_type = data.widget_type or "full"
 
     # Advance onboarding step
     if tenant.onboarding_step < 3:
@@ -232,7 +236,35 @@ async def mark_kb_upload_complete(
 
 
 # ═══════════════════════════════════════════════════════════════════
-# STEP 5: Complete Onboarding (FR-2.5)
+# STEP 5: ★ Import Order Data (V4 NEW — FR-2.5)
+# ═══════════════════════════════════════════════════════════════════
+
+@router.post("/import-orders-complete")
+async def mark_order_import_complete(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Step 5: Import Order Data (optional — mark as visited).
+    Actual upload uses /api/orders/upload-csv or /api/orders/simulate separately.
+    This endpoint just advances the onboarding step.
+    """
+    tenant = get_user_tenant(current_user, db)
+
+    if tenant.onboarding_step < 5:
+        tenant.onboarding_step = 5
+        current_user.onboarding_step = 5
+
+    db.commit()
+
+    return {
+        "message": "Order import step completed",
+        "step": 5
+    }
+
+
+# ═══════════════════════════════════════════════════════════════════
+# STEP 6: Complete Onboarding (FR-2.6) — was Step 5 in V3
 # ═══════════════════════════════════════════════════════════════════
 
 @router.post("/complete")
@@ -241,7 +273,7 @@ async def complete_onboarding(
     db: Session = Depends(get_db)
 ):
     """
-    Step 5: Complete the onboarding process.
+    Step 6: Complete the onboarding process.
     Marks tenant and user as onboarded, activates widget.
     Returns the embed code for the widget.
     """
@@ -249,10 +281,10 @@ async def complete_onboarding(
 
     # Mark as complete
     tenant.onboarding_completed = True
-    tenant.onboarding_step = 5
+    tenant.onboarding_step = 6
     tenant.is_active = True
     current_user.onboarding_completed = True
-    current_user.onboarding_step = 5
+    current_user.onboarding_step = 6
 
     # Ensure widget is active
     widget_config = db.query(WidgetConfig).filter(
@@ -263,12 +295,13 @@ async def complete_onboarding(
 
     db.commit()
 
-    # Generate embed code
-    embed_code = f'<script src="{BACKEND_URL}/widget/embed.js" data-widget-key="{tenant.widget_api_key}"></script>'
+    # ★ V4: Generate embed code with data-widget-type attribute
+    widget_type = getattr(widget_config, 'widget_type', 'full') if widget_config else 'full'
+    embed_code = f'<script src="{BACKEND_URL}/widget/embed.js" data-widget-key="{tenant.widget_api_key}" data-widget-type="{widget_type}"></script>'
 
     return {
         "message": "Onboarding complete! Your widget is now active.",
-        "step": 5,
+        "step": 6,
         "onboarding_completed": True,
         "embed_code": embed_code,
         "widget_api_key": tenant.widget_api_key
@@ -301,7 +334,8 @@ async def get_onboarding_status(
             "2_connect_store": tenant.onboarding_step >= 2,
             "3_configure_widget": tenant.onboarding_step >= 3,
             "4_upload_kb": tenant.onboarding_step >= 4,
-            "5_complete": tenant.onboarding_completed,
+            "5_import_orders": tenant.onboarding_step >= 5,  # ★ V4 NEW
+            "6_complete": tenant.onboarding_completed,        # ★ V4: was 5_complete
         },
         "tenant": tenant.to_dict(),
         "widget_config": widget_config.to_dict() if widget_config else None,

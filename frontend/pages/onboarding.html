@@ -606,6 +606,33 @@
         /* ═══════════════════════════════════════════════════════
            PLATFORM CARDS — minimal white SVG icons
            ═══════════════════════════════════════════════════════ */
+        /* ── Order import 2-col grid (Step 5) ──────────────── */
+        .order-import-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .order-import-grid>div {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            padding: 1.2rem;
+        }
+
+        .order-import-grid h3 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 0.5rem;
+        }
+
+        .order-import-grid p {
+            font-size: 0.78rem;
+            color: rgba(255, 255, 255, 0.4);
+            margin-bottom: 0.8rem;
+        }
+
         .platform-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -956,12 +983,29 @@
             color: #f5576c;
         }
 
-        /* ── RESPONSIVE ──────────────────────────────────────── */
+        /* ═══════════════════════════════════════════════════════
+           RESPONSIVE — TABLET (≤ 700px)
+           ═══════════════════════════════════════════════════════ */
         @media (max-width: 700px) {
             body {
                 overflow-y: auto;
                 height: auto;
                 min-height: 100vh;
+            }
+
+            .ambient-glow .orb--1 {
+                width: 300px;
+                height: 300px;
+            }
+
+            .ambient-glow .orb--2 {
+                width: 250px;
+                height: 250px;
+            }
+
+            .ambient-glow .orb--3 {
+                width: 180px;
+                height: 180px;
             }
 
             .onboarding-wrap {
@@ -970,9 +1014,8 @@
                 padding: 1rem;
             }
 
-            .wizard-card {
-                flex-direction: column;
-                min-height: auto;
+            .mac-frame {
+                max-width: 100%;
             }
 
             .mac-titlebar {
@@ -980,17 +1023,26 @@
             }
 
             .wizard-card {
+                flex-direction: column;
+                min-height: auto;
                 border-radius: 0 0 14px 14px;
             }
 
+            /* Sidebar → horizontal stepper */
             .wizard-sidebar {
                 flex: 0 0 auto;
                 flex-direction: row;
                 border-right: none;
                 border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-                padding: 1rem;
+                padding: 0.75rem 1rem;
                 overflow-x: auto;
                 align-items: center;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+            }
+
+            .wizard-sidebar::-webkit-scrollbar {
+                display: none;
             }
 
             .sidebar-brand {
@@ -1004,6 +1056,8 @@
             .sidebar-steps {
                 flex-direction: row;
                 gap: 0.5rem;
+                width: 100%;
+                justify-content: center;
             }
 
             .sidebar-connector {
@@ -1014,16 +1068,315 @@
                 display: none;
             }
 
-            .wizard-content {
-                padding: 1.5rem;
+            .sidebar-step-dot {
+                width: 32px;
+                height: 32px;
+                font-size: 0.72rem;
             }
 
+            /* Wizard content area */
+            .wizard-content {
+                padding: 1.5rem 1.25rem;
+            }
+
+            .step-title {
+                font-size: 1.15rem;
+            }
+
+            .step-description {
+                font-size: 0.78rem;
+                margin-bottom: 1rem;
+            }
+
+            /* Forms */
             .form-row {
                 grid-template-columns: 1fr;
             }
 
+            .color-row {
+                flex-direction: column;
+                gap: 0;
+            }
+
+            .form-group {
+                margin-bottom: 0.75rem;
+            }
+
+            .form-group input,
+            .form-group textarea,
+            .form-group select {
+                padding: 0.7rem 0.95rem;
+                font-size: 0.85rem;
+                border-radius: 10px;
+            }
+
+            .form-group label {
+                font-size: 0.72rem;
+                margin-bottom: 0.3rem;
+            }
+
+            .form-group textarea {
+                min-height: 80px;
+            }
+
+            /* Order import grid — stack on tablet */
+            .order-import-grid {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+
+            .order-import-grid>div {
+                padding: 1rem;
+            }
+
+            .order-import-grid h3 {
+                font-size: 0.88rem;
+            }
+
+            .order-import-grid p {
+                font-size: 0.72rem;
+            }
+
+            /* Platform grid */
+            .platform-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 0.5rem;
+            }
+
+            .platform-card {
+                padding: 0.7rem 0.4rem;
+                border-radius: 10px;
+            }
+
+            .platform-card-icon {
+                width: 20px;
+                height: 20px;
+            }
+
+            .platform-card-name {
+                font-size: 0.65rem;
+            }
+
+            .platform-card-sub {
+                font-size: 0.48rem;
+            }
+
+            /* Step actions */
+            .step-actions {
+                padding-top: 0.9rem;
+            }
+
+            .btn-back,
+            .btn-next,
+            .btn-finish {
+                padding: 0.65rem 1.25rem;
+                font-size: 0.82rem;
+                border-radius: 10px;
+            }
+
+            /* Completion */
+            .complete-section h2 {
+                font-size: 1.2rem;
+            }
+
+            .complete-section .complete-subtitle {
+                font-size: 0.78rem;
+                max-width: 100%;
+            }
+
+            .embed-window {
+                max-width: 100%;
+            }
+
+            .embed-code {
+                font-size: 0.65rem;
+                padding: 0.7rem 0.85rem;
+                word-break: break-all;
+            }
+
+            .copy-btn {
+                padding: 0.5rem 1.25rem;
+                font-size: 0.78rem;
+            }
+        }
+
+        /* ═══════════════════════════════════════════════════════
+           RESPONSIVE — PHONE (≤ 480px)
+           ═══════════════════════════════════════════════════════ */
+        @media (max-width: 480px) {
+            .onboarding-wrap {
+                padding: 0.5rem;
+            }
+
+            .bg-logo {
+                top: 0.6rem;
+                left: 0.6rem;
+            }
+
+            .bg-logo-icon {
+                width: 28px;
+                height: 28px;
+                border-radius: 8px;
+            }
+
+            .bg-logo-icon svg {
+                width: 14px;
+                height: 14px;
+            }
+
+            .bg-logo-text {
+                font-size: 0.82rem;
+            }
+
+            .mac-titlebar {
+                padding: 0.4rem 0.65rem;
+            }
+
+            .mac-titlebar-text {
+                font-size: 0.58rem;
+            }
+
+            .mac-dots span {
+                width: 7px;
+                height: 7px;
+            }
+
+            .wizard-sidebar {
+                padding: 0.6rem 0.75rem;
+            }
+
+            .sidebar-step-dot {
+                width: 28px;
+                height: 28px;
+                font-size: 0.65rem;
+            }
+
+            .wizard-content {
+                padding: 1.15rem 0.85rem;
+            }
+
+            .step-title {
+                font-size: 1.02rem;
+            }
+
+            .step-description {
+                font-size: 0.72rem;
+                margin-bottom: 0.85rem;
+            }
+
+            .form-group input,
+            .form-group textarea,
+            .form-group select {
+                padding: 0.6rem 0.75rem;
+                font-size: 0.82rem;
+            }
+
+            .form-group label {
+                font-size: 0.68rem;
+            }
+
+            .form-group {
+                margin-bottom: 0.65rem;
+            }
+
+            .color-input-wrap {
+                gap: 8px;
+            }
+
+            .color-input-wrap input[type="color"] {
+                width: 34px;
+                height: 34px;
+                border-radius: 8px;
+            }
+
+            .color-input-wrap span {
+                font-size: 0.78rem;
+            }
+
+            /* Platform grid — 2 cols on tiny phones */
             .platform-grid {
                 grid-template-columns: repeat(2, 1fr);
+                gap: 6px;
+            }
+
+            .platform-card {
+                padding: 0.6rem 0.3rem;
+                gap: 3px;
+            }
+
+            .platform-card-icon {
+                width: 18px;
+                height: 18px;
+            }
+
+            .platform-card-name {
+                font-size: 0.6rem;
+            }
+
+            .platform-card-sub {
+                display: none;
+            }
+
+            /* Full-width stacked step actions */
+            .step-actions {
+                flex-direction: column-reverse;
+                gap: 0.5rem;
+                padding-top: 0.75rem;
+            }
+
+            .btn-back,
+            .btn-next,
+            .btn-finish {
+                width: 100%;
+                text-align: center;
+                padding: 0.7rem 1rem;
+                font-size: 0.82rem;
+            }
+
+            /* Complete section */
+            .complete-icon {
+                width: 48px;
+                height: 48px;
+            }
+
+            .complete-icon svg {
+                width: 24px;
+                height: 24px;
+            }
+
+            .complete-section h2 {
+                font-size: 1.05rem;
+            }
+
+            .complete-section .complete-subtitle {
+                font-size: 0.72rem;
+            }
+
+            .embed-code {
+                font-size: 0.58rem;
+                padding: 0.55rem 0.65rem;
+                line-height: 1.4;
+            }
+
+            .embed-window-bar {
+                padding: 0.35rem 0.55rem;
+            }
+
+            .embed-window {
+                max-width: 100%;
+            }
+
+            .copy-btn {
+                padding: 0.45rem 1rem;
+                font-size: 0.75rem;
+                border-radius: 8px;
+            }
+
+            .toast {
+                left: 0.75rem;
+                right: 0.75rem;
+                bottom: 0.75rem;
+                font-size: 0.75rem;
             }
         }
     </style>
@@ -1086,6 +1439,11 @@
                         <div class="sidebar-connector" data-line="4"></div>
                         <div class="sidebar-step" data-step="5">
                             <div class="sidebar-step-dot">5</div>
+                            <span class="sidebar-step-label">Orders</span>
+                        </div>
+                        <div class="sidebar-connector" data-line="5"></div>
+                        <div class="sidebar-step" data-step="6">
+                            <div class="sidebar-step-dot">6</div>
                             <span class="sidebar-step-label">Launch</span>
                         </div>
                     </div>
@@ -1288,6 +1646,17 @@
                                 </select>
                                 <div class="focus-line"></div>
                             </div>
+                            <!-- ★ V4: Widget Type Selector -->
+                            <div class="form-group">
+                                <label>Widget Type</label>
+                                <select id="widgetType">
+                                    <option value="full" selected>Full — All-in-One (Chat + Orders + Verify)</option>
+                                    <option value="info">Info — FAQ & General Only (No Order Features)</option>
+                                    <option value="order">Order — Tracking & Status Only</option>
+                                    <option value="verify">Verify — Self-Service Order Verification</option>
+                                </select>
+                                <div class="focus-line"></div>
+                            </div>
                         </div>
                     </div>
 
@@ -1328,8 +1697,60 @@
                         </div>
                     </div>
 
-                    <!-- Step 5: Complete — Redesigned -->
+                    <!-- Step 5: ★ Import Order Data (V4 NEW) -->
                     <div class="step-panel" id="step5">
+                        <div>
+                            <h2 class="step-title">Import Order Data</h2>
+                            <p class="step-description">Let your widget answer "Where is my order?" questions. Upload
+                                orders or generate test data.</p>
+                        </div>
+                        <div class="step-fields">
+                            <div class="order-import-grid">
+                                <!-- Option A: CSV Upload -->
+                                <div
+                                    style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:1.2rem;">
+                                    <h3 style="font-size:0.95rem;font-weight:600;color:#fff;margin-bottom:0.5rem;">📄
+                                        Upload Order CSV</h3>
+                                    <p style="font-size:0.78rem;color:rgba(255,255,255,0.4);margin-bottom:0.8rem;">
+                                        Export orders from Shopify, WooCommerce, or any platform as CSV.</p>
+                                    <div class="form-group">
+                                        <input type="file" id="orderCsvInput" accept=".csv" style="font-size:0.8rem;">
+                                    </div>
+                                    <button type="button" class="btn-next" onclick="uploadOrderCSV()"
+                                        style="padding:0.5rem 1.2rem;font-size:0.8rem;border:none;cursor:pointer;border-radius:8px;">
+                                        <span>Upload Orders</span>
+                                    </button>
+                                    <p style="font-size:0.65rem;color:rgba(255,255,255,0.25);margin-top:0.5rem;">
+                                        Auto-maps columns using fuzzy matching.</p>
+                                </div>
+                                <!-- Option B: Generate Demo Orders -->
+                                <div
+                                    style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:1.2rem;">
+                                    <h3 style="font-size:0.95rem;font-weight:600;color:#fff;margin-bottom:0.5rem;">🧪
+                                        Generate Demo Orders</h3>
+                                    <p style="font-size:0.78rem;color:rgba(255,255,255,0.4);margin-bottom:0.8rem;">
+                                        Create realistic test orders for your FYP demo.</p>
+                                    <div class="form-group">
+                                        <label>Number of orders</label>
+                                        <input type="number" id="demoOrderCount" value="50" min="10" max="200">
+                                    </div>
+                                    <button type="button" class="btn-next" onclick="generateDemoOrders()"
+                                        style="padding:0.5rem 1.2rem;font-size:0.8rem;border:none;cursor:pointer;border-radius:8px;">
+                                        <span>Generate Orders</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="orderImportStatus"
+                                style="display:none;margin-top:0.8rem;padding:0.6rem 1rem;border-radius:8px;font-size:0.82rem;">
+                            </div>
+                            <p style="color:rgba(255,255,255,0.2);font-size:0.7rem;margin-top:0.5rem;">
+                                You can skip this step and import orders later from your dashboard.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Step 6: Complete — Redesigned (was Step 5) -->
+                    <div class="step-panel" id="step6">
                         <div class="complete-section">
                             <div class="complete-icon">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
@@ -1473,7 +1894,7 @@
         const token = Auth.getAccessToken();
 
         let currentStep = 1;
-        const totalSteps = 5;
+        const totalSteps = 6;  // ★ V4: was 5, now 6 (added Import Orders)
         const uploadedFiles = [];
 
         document.getElementById('widgetColor').addEventListener('input', e => {
@@ -1528,7 +1949,8 @@
                             bot_name: document.getElementById('widgetTitle').value,
                             welcome_message: document.getElementById('widgetGreeting').value,
                             theme_color: document.getElementById('widgetColor').value,
-                            position: document.getElementById('widgetPosition').value
+                            position: document.getElementById('widgetPosition').value,
+                            widget_type: document.getElementById('widgetType').value  // ★ V4
                         })
                     });
                 } else if (currentStep === 4) {
@@ -1550,14 +1972,17 @@
                             console.error('KB text indexing failed:', textData.error);
                         }
                     }
-
                     await fetch(`${API_BASE}/api/onboarding/upload-kb-complete`, { method: 'POST', headers });
+                } else if (currentStep === 5) {
+                    // ★ V4: Mark order import step as visited
+                    await fetch(`${API_BASE}/api/onboarding/import-orders-complete`, { method: 'POST', headers });
 
+                    // Call complete onboarding to get embed code
                     const completeRes = await fetch(`${API_BASE}/api/onboarding/complete`, { method: 'POST', headers });
                     const completeData = await completeRes.json();
                     if (completeData.widget_api_key) {
                         document.getElementById('embedCode').textContent =
-                            `<script src="https://sentimenta.snick.at/widget/embed.js" data-key="${completeData.widget_api_key}"><\/script>`;
+                            `<script src="https://sentimenta.snick.at/widget/embed.js" data-key="${completeData.widget_api_key}" data-widget-type="${completeData.embed_code?.match(/data-widget-type="([^"]*)"/)?.[1] || 'full'}"><\/script>`;
                     }
                 }
 
@@ -1579,6 +2004,72 @@
 
         function goToDashboard() {
             window.location.href = 'client-dashboard.html';
+        }
+
+        // ═══════════════════════════════════════════════════════
+        // ★ V4: ORDER IMPORT HELPERS (Step 5)
+        // ═══════════════════════════════════════════════════════
+        async function generateDemoOrders() {
+            const count = document.getElementById('demoOrderCount').value;
+            const statusEl = document.getElementById('orderImportStatus');
+            statusEl.style.display = 'block';
+            statusEl.style.background = 'rgba(102,126,234,0.08)';
+            statusEl.style.border = '1px solid rgba(102,126,234,0.18)';
+            statusEl.style.color = '#a5b4fc';
+            statusEl.textContent = 'Generating orders...';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/orders/simulate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ count: parseInt(count) })
+                });
+                const data = await response.json();
+                statusEl.style.background = 'rgba(46,213,115,0.08)';
+                statusEl.style.border = '1px solid rgba(46,213,115,0.18)';
+                statusEl.style.color = '#2ed573';
+                statusEl.textContent = `✅ Generated ${data.count || count} demo orders successfully!`;
+            } catch (error) {
+                statusEl.style.background = 'rgba(245,87,108,0.08)';
+                statusEl.style.border = '1px solid rgba(245,87,108,0.18)';
+                statusEl.style.color = '#f5576c';
+                statusEl.textContent = `❌ Error: ${error.message}`;
+            }
+        }
+
+        async function uploadOrderCSV() {
+            const fileInput = document.getElementById('orderCsvInput');
+            if (!fileInput.files.length) {
+                showToast('Please select a CSV file first.', 'error');
+                return;
+            }
+
+            const statusEl = document.getElementById('orderImportStatus');
+            statusEl.style.display = 'block';
+            statusEl.style.background = 'rgba(102,126,234,0.08)';
+            statusEl.style.border = '1px solid rgba(102,126,234,0.18)';
+            statusEl.style.color = '#a5b4fc';
+            statusEl.textContent = 'Uploading orders...';
+
+            try {
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+                const response = await fetch(`${API_BASE}/api/orders/upload-csv`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData
+                });
+                const data = await response.json();
+                statusEl.style.background = 'rgba(46,213,115,0.08)';
+                statusEl.style.border = '1px solid rgba(46,213,115,0.18)';
+                statusEl.style.color = '#2ed573';
+                statusEl.textContent = `✅ Imported ${data.imported || data.count || 0} orders successfully!`;
+            } catch (error) {
+                statusEl.style.background = 'rgba(245,87,108,0.08)';
+                statusEl.style.border = '1px solid rgba(245,87,108,0.18)';
+                statusEl.style.color = '#f5576c';
+                statusEl.textContent = `❌ Error: ${error.message}`;
+            }
         }
 
         function copyEmbed() {

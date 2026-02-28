@@ -1,12 +1,12 @@
 /**
  * Behavioral Agentic AI — Embeddable Chat Widget
- * FRD v3.0 Zone 6: Customer Chat Layer
+ * FRD v4.0 Zone 6: Customer Chat Layer
  * 
  * FR-6.1: Platform-agnostic embeddable widget via <script> tag
  * FR-6.2: Full chat interface with pre-chat form, typing indicator, session persistence
  * 
  * Usage:
- *   <script src="https://your-api.com/widget/embed.js" data-widget-key="wk_..." async></script>
+ *   <script src="https://your-api.com/widget/embed.js" data-widget-key="wk_..." data-widget-type="full" async></script>
  */
 (function () {
     'use strict';
@@ -24,6 +24,7 @@
     const API_KEY = SCRIPT?.getAttribute('data-widget-key')
         || SCRIPT?.getAttribute('data-key');
     const API_BASE = SCRIPT?.src ? new URL(SCRIPT.src).origin : window.location.origin;
+    const SCRIPT_WIDGET_TYPE = SCRIPT?.getAttribute('data-widget-type') || 'full';  // ★ V4
 
     if (!API_KEY) {
         console.error('[BehavioralAI] ❌ Widget cannot start: missing data-widget-key or data-key attribute on the script tag.');
@@ -49,6 +50,7 @@
     let isOpen = false;
     let isLoading = false;
     let preChatDone = !!session;
+    let widgetType = SCRIPT_WIDGET_TYPE;  // ★ V4: full | info | order | verify
 
     // ═══════════════════════════════════════════════════════════════
     // API CALLS
@@ -232,6 +234,40 @@
         .bai-panel { width: 100vw; height: 100vh; max-height: 100vh; bottom: 0; right: 0; left: 0; border-radius: 0; }
         .bai-bubble { width: 52px; height: 52px; bottom: 16px; right: 16px; }
       }
+
+      /* ── ★ V4: Quick Actions (order type) ── */
+      .bai-quick-actions {
+        padding: 8px 16px; display: flex; gap: 8px; flex-wrap: wrap; background: #fff;
+        border-bottom: 1px solid #e2e8f0;
+      }
+      .bai-quick-btn {
+        padding: 6px 14px; border: 1px solid ${color}; border-radius: 20px;
+        background: transparent; color: ${color}; font-size: 13px; font-weight: 500;
+        cursor: pointer; transition: all 0.2s; font-family: inherit;
+      }
+      .bai-quick-btn:hover { background: ${color}; color: #fff; }
+
+      /* ── ★ V4: Verify Window ── */
+      .bai-verify-form {
+        flex: 1; padding: 24px 20px; display: flex; flex-direction: column; gap: 16px;
+        background: #f8fafc;
+      }
+      .bai-verify-title { font-size: 16px; font-weight: 600; color: #1e293b; text-align: center; }
+      .bai-verify-desc { font-size: 13px; color: #64748b; text-align: center; }
+      .bai-verify-btn {
+        background: ${color}; color: #fff; border: none; border-radius: 10px;
+        padding: 12px; font-size: 15px; font-weight: 600; cursor: pointer;
+        transition: opacity 0.2s; margin-top: 8px; font-family: inherit;
+      }
+      .bai-verify-btn:hover { opacity: 0.9; }
+      .bai-verify-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+      .bai-verify-result {
+        padding: 16px; border-radius: 12px; font-size: 14px; line-height: 1.6;
+        display: none;
+      }
+      .bai-verify-result.success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+      .bai-verify-result.error { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+      .bai-verify-result.info { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
     `;
     }
 
@@ -318,19 +354,55 @@
             panel.classList.remove('open');
         });
 
-        // Show pre-chat or chat
-        if (!preChatDone && config?.pre_chat_form_enabled) {
-            showPreChat(refs);
-        } else if (!session) {
-            // Auto-start anonymous session
-            preChatDone = true;
-            startSession('Visitor', '').then(() => {
-                setupChatInput(refs);
-            }).catch(() => {
-                setupChatInput(refs);
-            });
+        // ★ V4: Widget type determines UI behavior
+        const wType = widgetType || config?.widget_type || 'full';
+
+        if (wType === 'verify') {
+            // Verify mode: show verification form, no chat
+            renderVerifyPanel(refs);
         } else {
-            setupChatInput(refs);
+            // For order type, add quick action buttons
+            if (wType === 'order') {
+                const msgsEl = panel.querySelector('#bai-msgs');
+                if (msgsEl) {
+                    const quickDiv = document.createElement('div');
+                    quickDiv.className = 'bai-quick-actions';
+                    quickDiv.innerHTML = '<button class="bai-quick-btn" id="bai-track-order">📦 Track My Order</button>';
+                    msgsEl.parentNode.insertBefore(quickDiv, msgsEl);
+                    quickDiv.querySelector('#bai-track-order').addEventListener('click', () => {
+                        const input = panel.querySelector('#bai-input');
+                        if (input) { input.value = 'Where is my order?'; input.dispatchEvent(new Event('input')); input.focus(); }
+                    });
+                }
+            }
+
+            // Adapt placeholder for widget type
+            const inputEl = panel.querySelector('#bai-input');
+            if (inputEl) {
+                if (wType === 'info') inputEl.placeholder = config?.placeholder_text || 'Ask us anything about our products or services...';
+                else if (wType === 'order') inputEl.placeholder = config?.placeholder_text || 'Enter your order number or describe your issue...';
+            }
+
+            // Adapt welcome subtitle
+            const welcomeDiv = panel.querySelector('.bai-welcome div:last-child');
+            if (welcomeDiv) {
+                if (wType === 'info') welcomeDiv.textContent = 'Ask me anything about our products or services.';
+                else if (wType === 'order') welcomeDiv.textContent = 'Track your order, ask about delivery, or report issues.';
+            }
+
+            // Show pre-chat or chat
+            if (!preChatDone && config?.pre_chat_form_enabled && (wType === 'full' || wType === 'info')) {
+                showPreChat(refs);
+            } else if (!session) {
+                preChatDone = true;
+                startSession('Visitor', '').then(() => {
+                    setupChatInput(refs);
+                }).catch(() => {
+                    setupChatInput(refs);
+                });
+            } else {
+                setupChatInput(refs);
+            }
         }
     }
 
@@ -453,7 +525,15 @@
         if (msg.sender_type === 'agent') {
             html += `<div class="bai-msg-sender">${msg.sender_name || 'Agent'}</div>`;
         }
-        html += msg.content;
+
+        // ★ V4.1: Parse [IMAGE:url] tags and render as <img> elements
+        let content = msg.content || '';
+        content = content.replace(/\[RELATED_IMAGES\]\n?/g, '');
+        content = content.replace(/\[IMAGE:(\/uploads\/[^\]]+)\]/g,
+            '<div class="bai-msg-image"><img src="$1" alt="Related image" style="max-width:100%;border-radius:8px;margin:8px 0;cursor:pointer;" onclick="window.open(this.src,\'_blank\')"/></div>'
+        );
+        html += content;
+
         if (msg.created_at) {
             const time = new Date(msg.created_at);
             html += `<div class="bai-msg-time">${time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>`;
@@ -517,6 +597,59 @@
             console.error('[BehavioralAI] ❌ Widget initialization failed:', e.message || e);
             console.error('[BehavioralAI] Check: Is the backend running at ' + API_BASE + '? Is CORS enabled?');
         }
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // ★ V4: VERIFY PANEL — Self-service order verification
+    // ═══════════════════════════════════════════════════════════════
+    function renderVerifyPanel(refs) {
+        const { panel, config } = refs;
+        const msgsEl = panel.querySelector('#bai-msgs');
+        const inputArea = panel.querySelector('.bai-input-area');
+        if (inputArea) inputArea.style.display = 'none';
+        if (!msgsEl) return;
+
+        msgsEl.className = 'bai-verify-form';
+        msgsEl.innerHTML = `
+      <div class="bai-verify-title">Verify Your Order</div>
+      <div class="bai-verify-desc">Enter your order details below to check status.</div>
+      <div class="bai-field"><label>Order ID</label><input type="text" id="bai-verify-oid" placeholder="#ORD-12345" /></div>
+      <div class="bai-field"><label>Email Address</label><input type="email" id="bai-verify-email" placeholder="your@email.com" /></div>
+      <button class="bai-verify-btn" id="bai-verify-submit">Verify Order</button>
+      <div class="bai-verify-result" id="bai-verify-result"></div>
+    `;
+
+        panel.querySelector('#bai-verify-submit').addEventListener('click', async () => {
+            const orderId = panel.querySelector('#bai-verify-oid').value.trim();
+            const email = panel.querySelector('#bai-verify-email').value.trim();
+            const resultEl = panel.querySelector('#bai-verify-result');
+            const btn = panel.querySelector('#bai-verify-submit');
+
+            if (!orderId) { panel.querySelector('#bai-verify-oid').style.borderColor = '#ef4444'; return; }
+
+            btn.disabled = true;
+            btn.textContent = 'Verifying...';
+            resultEl.style.display = 'none';
+
+            try {
+                // Use the chat endpoint with a verify message
+                if (!session) {
+                    await startSession('Verify User', email);
+                    preChatDone = true;
+                }
+                const query = `Verify order ${orderId}` + (email ? ` for ${email}` : '');
+                const res = await sendMessage(query);
+                resultEl.className = 'bai-verify-result success';
+                resultEl.textContent = res.response || 'Order verification complete.';
+                resultEl.style.display = 'block';
+            } catch (e) {
+                resultEl.className = 'bai-verify-result error';
+                resultEl.textContent = 'Unable to verify. Please check your details and try again.';
+                resultEl.style.display = 'block';
+            }
+            btn.disabled = false;
+            btn.textContent = 'Verify Order';
+        });
     }
 
     // Start when DOM is ready

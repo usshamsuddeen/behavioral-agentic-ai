@@ -1,6 +1,6 @@
 """
 Widget Configuration API — Zone 3: Widget Management
-FRD v3.0 (FR-3.5)
+FRD v4.0 (FR-3.5)
 
 CRUD endpoints for widget appearance, behavior, and embed code.
 All endpoints require JWT authentication and are tenant-scoped.
@@ -40,6 +40,7 @@ class UpdateWidgetConfigRequest(BaseModel):
     show_branding: Optional[bool] = None
     pre_chat_form_enabled: Optional[bool] = None
     pre_chat_fields: Optional[str] = None  # JSON string
+    widget_type: Optional[str] = None  # ★ V4: full | info | order | verify
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -92,8 +93,9 @@ async def get_widget_config(
         "show_branding": config.show_branding,
         "pre_chat_form_enabled": config.pre_chat_form_enabled,
         "pre_chat_fields": config.get_pre_chat_fields() if hasattr(config, 'get_pre_chat_fields') else [],
+        "widget_type": getattr(config, 'widget_type', 'full') or 'full',  # ★ V4
         "api_key": tenant.widget_api_key,
-        "embed_code": _generate_embed_code(tenant.widget_api_key),
+        "embed_code": _generate_embed_code(tenant.widget_api_key, getattr(config, 'widget_type', 'full') or 'full'),
         "updated_at": config.updated_at.isoformat() if config.updated_at else None
     }
 
@@ -142,6 +144,10 @@ async def update_widget_config(
         config.pre_chat_form_enabled = data.pre_chat_form_enabled
     if data.pre_chat_fields is not None:
         config.pre_chat_fields = data.pre_chat_fields
+    # ★ V4: Widget type
+    if data.widget_type is not None:
+        if data.widget_type in ("full", "info", "order", "verify"):
+            config.widget_type = data.widget_type
     
     config.updated_at = datetime.utcnow()
     db.commit()
@@ -172,7 +178,9 @@ async def get_embed_code(
     if not tenant:
         raise HTTPException(status_code=404, detail="No tenant found")
     
-    embed_code = _generate_embed_code(tenant.widget_api_key)
+    config = db.query(WidgetConfig).filter(WidgetConfig.tenant_id == tenant.id).first()
+    widget_type = getattr(config, 'widget_type', 'full') or 'full' if config else 'full'
+    embed_code = _generate_embed_code(tenant.widget_api_key, widget_type)
     
     return {
         "api_key": tenant.widget_api_key,
@@ -271,13 +279,14 @@ async def get_widget_analytics(
 # HELPER: Generate embed code snippet
 # ═══════════════════════════════════════════════════════════════════
 
-def _generate_embed_code(api_key: str) -> str:
-    """Generate the HTML embed code for the widget — FR-6.1.1"""
+def _generate_embed_code(api_key: str, widget_type: str = "full") -> str:
+    """Generate the HTML embed code for the widget — FR-6.1.1 + V4 widget type"""
+    type_attr = f'\n  data-widget-type="{widget_type}"' if widget_type != 'full' else ''
     return (
         f'<!-- Behavioral AI Chat Widget -->\n'
         f'<script\n'
         f'  src="{BACKEND_URL}/widget/embed.js"\n'
-        f'  data-widget-key="{api_key}"\n'
+        f'  data-widget-key="{api_key}"{type_attr}\n'
         f'  async>\n'
         f'</script>'
     )

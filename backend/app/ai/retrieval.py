@@ -164,12 +164,19 @@ class RetrievalService:
         
         # Build context string with token limit
         context_parts = []
+        image_urls = []  # ★ V4.1: Collect image URLs from metadata
         total_chars = 0
         char_limit = max_tokens * 4  # Approximate chars per token
         
         for i, result in enumerate(results, 1):
             text = result.text.strip()
             source = result.source
+            
+            # ★ V4.1: Check for image URL in chunk metadata
+            if result.metadata and result.metadata.get("file_url"):
+                img_url = result.metadata["file_url"]
+                if img_url not in image_urls:
+                    image_urls.append(img_url)
             
             # Format this chunk
             chunk = f"[Source: {source}]\n{text}\n"
@@ -186,6 +193,12 @@ class RetrievalService:
             total_chars += len(chunk)
         
         context = "\n---\n".join(context_parts)
+        
+        # ★ V4.1: Append image references for the LLM + widget
+        if image_urls:
+            context += "\n\n[RELATED_IMAGES]\n"
+            for url in image_urls:
+                context += f"[IMAGE:{url}]\n"
         
         return context, results
     

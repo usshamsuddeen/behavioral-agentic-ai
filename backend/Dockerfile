@@ -1,14 +1,14 @@
 # ═══════════════════════════════════════════════════════════════════
 # Behavioral Agentic AI — Backend Dockerfile
-# FRD v3.0 Production-Ready Container
-# Version: 3.1
+# FRD v4.0 Production-Ready Container
+# Version: 4.1
 # ═══════════════════════════════════════════════════════════════════
 
 FROM python:3.13-slim AS base
 
 LABEL maintainer="Behavioral Agentic AI Team"
-LABEL version="3.1"
-LABEL description="Sentiment-Aware Customer Support AI with RAG + Real-time WebSockets"
+LABEL version="4.1"
+LABEL description="Sentiment-Aware Customer Support AI with BERT + RAG + WebSockets + Order Gateway"
 
 # ── Environment ──────────────────────────────────────────────────
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -43,7 +43,7 @@ COPY backend/ /app/
 COPY frontend/ /app/frontend/
 
 # ── Data Directories ────────────────────────────────────────────
-RUN mkdir -p /app/data /app/data/vector_store /app/data/chroma_db /app/logs
+RUN mkdir -p /app/data /app/data/vector_store /app/data/kb_uploads /app/logs
 
 # ── Permissions ──────────────────────────────────────────────────
 RUN chmod -R 755 /app
@@ -60,9 +60,9 @@ ENV ENVIRONMENT="production"
 ENV DATABASE_URL="sqlite:///./data/app.db"
 ENV JWT_SECRET_KEY="change-this-in-production-minimum-32-characters"
 ENV LLM_API_KEY=""
-ENV LLM_BASE_URL="https://fal.ai/api/v1"
-ENV LLM_MODEL="deepseek-r1"
-ENV LLM_FALLBACK_MODEL="deepseek-v3"
+ENV LLM_BASE_URL=""
+ENV LLM_MODEL=""
+ENV LLM_FALLBACK_MODEL=""
 ENV VECTOR_STORE_DIR="/app/data/vector_store"
 ENV EMBEDDING_MODEL="paraphrase-multilingual-MiniLM-L12-v2"
 ENV LOG_LEVEL="INFO"

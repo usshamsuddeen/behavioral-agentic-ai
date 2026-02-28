@@ -170,7 +170,12 @@ class DocumentProcessor:
             "json": self._extract_from_json,
             "csv": self._extract_from_csv,
             "md": self._extract_from_markdown,
-            "markdown": self._extract_from_markdown
+            "markdown": self._extract_from_markdown,
+            # ★ V4: Image OCR support
+            "png": self._extract_from_image,
+            "jpg": self._extract_from_image,
+            "jpeg": self._extract_from_image,
+            "webp": self._extract_from_image,
         }
         
         extractor = extractors.get(file_type)
@@ -301,6 +306,35 @@ class DocumentProcessor:
             logger.error(f"❌ Markdown extraction failed: {e}")
             raise
     
+    def _extract_from_image(self, content: bytes) -> str:
+        """Extract text from image using OCR (V4 NEW)."""
+        try:
+            # Try pytesseract first
+            from PIL import Image
+            import pytesseract
+            image = Image.open(BytesIO(content))
+            text = pytesseract.image_to_string(image)
+            if text.strip():
+                return text
+        except ImportError:
+            logger.warning("pytesseract not available, trying easyocr")
+        except Exception as e:
+            logger.warning(f"pytesseract OCR failed: {e}")
+
+        try:
+            # Fallback: easyocr
+            import easyocr
+            reader = easyocr.Reader(['en'])
+            result = reader.readtext(content)
+            text = " ".join([item[1] for item in result])
+            return text
+        except ImportError:
+            logger.error("No OCR library available (install pytesseract or easyocr)")
+            return "[OCR extraction failed — no OCR library installed]"
+        except Exception as e:
+            logger.error(f"easyocr OCR failed: {e}")
+            return "[OCR extraction failed]"
+
     def _split_into_chunks(
         self, 
         text: str, 

@@ -14,7 +14,7 @@ All configuration via .env — zero code changes to switch providers:
   LLM_FALLBACK_MODEL = Fallback model (optional)
 
 Author: Behavioral Agentic AI Team
-Version: 3.1.0
+Version: 4.0.0
 """
 
 import os
@@ -289,26 +289,35 @@ class LLMService:
 
         if has_context:
             # ── RAG MODE: Context documents available → answer from them ──
-            prompt = f"""You are a friendly customer support agent for {company_name}.
-Answer from the CONTEXT DOCUMENTS below. Never invent product names, prices, or policies.
-If the answer isn't in the context, say so and offer to connect with a specialist.
-Keep answers concise (1-3 sentences).
+            prompt = f"""You are a professional yet friendly customer support agent for {company_name}.
+
+CORE RULES:
+1. Answer ONLY from the CONTEXT DOCUMENTS provided below. Never invent product names, prices, policies, or features.
+2. If the answer is not in the context, honestly say you don't have that specific information and offer to connect the customer with a specialist.
+3. Keep responses concise, helpful, and well-structured (1-3 sentences for simple queries, bullet points for complex ones).
+4. Use a warm, professional tone — like a knowledgeable colleague, not a robot.
+5. If context documents include [IMAGE:...] tags, you MUST include those exact tags in your response so the customer can see the relevant image. Keep the tag on its own line.
 
 """
         else:
             # ── GENERAL MODE: No context documents → honest assistant ──
-            prompt = f"""You are a friendly customer support agent for {company_name}.
-No product/policy documents have been uploaded yet — you have no specific info about their catalog.
-For general questions, respond helpfully. For specific product/price/policy questions, honestly say you don't have that info and offer to connect with the team.
-Keep answers concise (1-3 sentences).
+            prompt = f"""You are a professional yet friendly customer support agent for {company_name}.
+
+CORE RULES:
+1. No product or policy documents have been uploaded yet — you have NO specific info about their catalog, pricing, or policies.
+2. For general conversational questions, respond helpfully and warmly.
+3. For specific product, price, or policy questions, honestly say you don't have that info yet and offer to connect the customer with the team.
+4. Keep responses concise (1-3 sentences). Never make up information.
 
 """
 
-        # Only add empathy instructions when there's keyword-verified urgency.
-        # Raw BERT sentiment scores info queries ("what's the price?") as negative,
-        # so using sentiment == "negative" here caused false frustration responses.
+        # De-escalation for urgent/negative customers
         if is_urgent:
-            prompt += """NOTE: Customer seems upset — acknowledge their concern, prioritize resolution, offer to escalate if needed.
+            prompt += """IMPORTANT — CUSTOMER SEEMS UPSET:
+- Acknowledge their frustration sincerely ("I completely understand your concerns")
+- Prioritize resolution over explanation
+- Offer to escalate to a human agent if the issue is complex
+- Never be defensive or dismissive
 
 """
 
@@ -326,9 +335,22 @@ Keep answers concise (1-3 sentences).
 Remember: Prefer the context documents above. If unsure, offer to connect to a human agent."""
 
         # Language instruction — respond in the customer's language
-        LANG_NAMES = {"en": "English", "de": "German", "fr": "French", "es": "Spanish", "it": "Italian", "nl": "Dutch"}
+        # V4 FIX — Extended from 6 to 15 languages
+        LANG_NAMES = {
+            "en": "English", "de": "German", "fr": "French",
+            "es": "Spanish", "it": "Italian", "nl": "Dutch",
+            # V4 NEW — Urdu, Hindi, Arabic, and 6 more languages
+            "ur": "Urdu", "hi": "Hindi", "ar": "Arabic",
+            "zh-cn": "Chinese", "pt": "Portuguese", "ru": "Russian",
+            "ja": "Japanese", "ko": "Korean", "tr": "Turkish"
+        }
         if language != "en" and language in LANG_NAMES:
             prompt += f"""\n\nIMPORTANT: The customer is writing in {LANG_NAMES[language]}. You MUST respond in {LANG_NAMES[language]}."""
+
+        # ★ V4: Order context instruction — when order data is passed via context
+        if hasattr(self, '_order_context') and self._order_context:
+            prompt += f"""\n\nOrder Information:\n{self._order_context}"""
+            prompt += "\nUse this order data to answer the customer's order-related questions accurately."
 
         return prompt
     
@@ -374,9 +396,9 @@ Remember: Prefer the context documents above. If unsure, offer to connect to a h
     ]
     _FALLBACK_NEGATIVE = [
         "I hear you, and I'm sorry you're dealing with this. Let me see how I can help right away.",
-        "I completely understand your frustration. Let me look into this for you immediately.",
+        "I completely understand your concerns. Let me look into this for you immediately.",
         "I'm sorry you're having this experience. Your concern is important — let me help.",
-        "I understand this is frustrating. Let me do my best to resolve this for you.",
+        "I understand this situation. Let me do my best to resolve this for you.",
     ]
 
     def _fallback_response(

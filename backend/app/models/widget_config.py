@@ -1,6 +1,6 @@
 """
 Widget Configuration Model — Embeddable Chat Widget Settings
-FRD v3.0 Zone 6 (FR-6.1) + Zone 3 (FR-3.5)
+FRD v4.0 Zone 6 (FR-6.1) + Zone 3 (FR-3.5)
 Stores appearance, behavior, and pre-chat form settings per tenant.
 """
 
@@ -46,6 +46,9 @@ class WidgetConfig(Base):
     # Status
     is_active = Column(Boolean, default=True)
 
+    # ★ V4: Widget Type (full | info | order | verify)
+    widget_type = Column(String(20), default="full")
+
     # Timestamps
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -76,6 +79,7 @@ class WidgetConfig(Base):
             "branding_logo_url": self.branding_logo_url,
             "show_branding": self.show_branding,
             "is_active": self.is_active,
+            "widget_type": self.widget_type or "full",  # ★ V4
         }
 
     def to_public_dict(self) -> dict:
@@ -90,6 +94,7 @@ class WidgetConfig(Base):
             "placeholder_text": self.placeholder_text,
             "branding_logo_url": self.branding_logo_url,
             "show_branding": self.show_branding,
+            "widget_type": self.widget_type or "full",  # ★ V4
         }
 
     def __repr__(self):

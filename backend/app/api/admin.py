@@ -1,6 +1,6 @@
 """
 Super Admin API — Zone 4: God-Mode Panel
-FRD v3.0 (FR-4.1 through FR-4.3)
+FRD v4.0 (FR-4.1 through FR-4.5)
 
 Only accessible by users with role = "super_admin".
 """
@@ -17,6 +17,14 @@ from app.models.tenant import Tenant
 from app.models.conversation import Conversation
 from app.models.message import Message
 from app.middleware.jwt import get_current_user
+
+# ★ V4: Order + Product model imports for cross-tenant browsing
+try:
+    from app.models.order import CustomerOrder
+    from app.models.product_listing import ProductListing
+except ImportError:
+    CustomerOrder = None
+    ProductListing = None
 
 router = APIRouter(prefix="/api/admin", tags=["Super Admin"])
 
@@ -128,6 +136,9 @@ async def get_client_detail(
             "escalated_conversations": escalated_count,
             "total_messages": msg_count,
             "escalation_rate": round(escalated_count / max(conv_count, 1) * 100, 1),
+            # ★ V4: Order + Product counts
+            "order_count": db.query(func.count(CustomerOrder.id)).filter(CustomerOrder.tenant_id == tenant.id).scalar() if CustomerOrder else 0,
+            "product_count": db.query(func.count(ProductListing.id)).filter(ProductListing.tenant_id == tenant.id).scalar() if ProductListing else 0,
         }
     }
 
@@ -260,6 +271,170 @@ async def get_audit_logs(
 
     return {
         "logs": logs,
+        "total": total,
+        "page": page,
+        "per_page": per_page
+    }
+
+
+# ═════════════════════════════════════════════════════════════════
+# ★ V4: System Health (FR-4.4)
+# ═════════════════════════════════════════════════════════════════
+
+@router.get("/system-health")
+async def system_health(
+    admin: User = Depends(require_super_admin),
+    db: Session = Depends(get_db)
+):
+    """★ V4: Get system health metrics (super_admin only)."""
+    import os
+
+    # Database status
+    try:
+        db.execute(func.now())
+        db_status = "connected"
+    except Exception:
+        db_status = "error"
+
+    # Vector store sizes per tenant
+    vs_sizes = []
+    try:
+        tenants = db.query(Tenant).all()
+        for t in tenants[:20]:  # Limit to 20 for performance
+            doc_count = 0
+            try:
+                from app.models.knowledge_document import KnowledgeDocument
+                doc_count = db.query(func.count(KnowledgeDocument.id)).filter(
+                    KnowledgeDocument.tenant_id == t.id
+                ).scalar() or 0
+            except Exception:
+                pass
+            vs_sizes.append({"tenant": t.name, "tenant_id": t.id, "documents": doc_count})
+    except Exception:
+        pass
+
+    # BERT model status
+    bert_loaded = False
+    try:
+        from app.nlp.transformer_sentiment import get_transformer_analyzer
+        analyzer = get_transformer_analyzer()
+        bert_loaded = analyzer is not None and getattr(analyzer, '_model', None) is not None
+    except Exception:
+        pass
+
+    # LLM status
+    llm_available = False
+    try:
+        from app.ai.llm import get_llm_service
+        llm = get_llm_service()
+        llm_available = llm.is_available()
+    except Exception:
+        pass
+
+    return {
+        "database": {"status": db_status, "pool_size": "active"},
+        "vector_store": {"tenants": vs_sizes},
+        "bert_model": {"loaded": bert_loaded},
+        "llm": {"available": llm_available},
+        "websocket": {"status": "active"},
+    }
+
+
+# ═════════════════════════════════════════════════════════════════
+# ★ V4: Global Conversations (FR-4.5)
+# ═════════════════════════════════════════════════════════════════
+
+@router.get("/global-conversations")
+async def global_conversations(
+    tenant_id: Optional[int] = Query(None, description="Filter by tenant"),
+    sentiment: Optional[str] = Query(None, description="Filter: positive, neutral, negative"),
+    conv_status: Optional[str] = Query(None, description="Filter: active, escalated, resolved"),
+    page: int = Query(1, ge=1),
+    per_page: int = Query(50, ge=1, le=100),
+    admin: User = Depends(require_super_admin),
+    db: Session = Depends(get_db)
+):
+    """★ V4: Get conversations across all tenants with filters."""
+    query = db.query(Conversation)
+
+    if tenant_id:
+        query = query.filter(Conversation.tenant_id == tenant_id)
+    if sentiment:
+        query = query.filter(Conversation.current_sentiment == sentiment)
+    if conv_status:
+        query = query.filter(Conversation.status == conv_status)
+
+    total = query.count()
+    convos = query.order_by(Conversation.updated_at.desc()).offset(
+        (page - 1) * per_page
+    ).limit(per_page).all()
+
+    results = []
+    for c in convos:
+        data = c.to_dict() if hasattr(c, 'to_dict') else {"id": c.id}
+        # Enrich with tenant name
+        tenant = db.query(Tenant).filter(Tenant.id == c.tenant_id).first()
+        data["tenant_name"] = tenant.name if tenant else "Unknown"
+        results.append(data)
+
+    return {
+        "conversations": results,
+        "total": total,
+        "page": page,
+        "per_page": per_page
+    }
+
+
+# ═════════════════════════════════════════════════════════════════
+# ★ V4: Browse Tenant Orders / Products (FR-4.6)
+# ═════════════════════════════════════════════════════════════════
+
+@router.get("/tenant/{tenant_id}/orders")
+async def admin_tenant_orders(
+    tenant_id: int,
+    page: int = Query(1, ge=1),
+    per_page: int = Query(50, ge=1, le=100),
+    admin: User = Depends(require_super_admin),
+    db: Session = Depends(get_db)
+):
+    """★ V4: Get all orders for a specific tenant."""
+    if not CustomerOrder:
+        return {"orders": [], "total": 0}
+
+    query = db.query(CustomerOrder).filter(CustomerOrder.tenant_id == tenant_id)
+    total = query.count()
+    orders = query.order_by(CustomerOrder.created_at.desc()).offset(
+        (page - 1) * per_page
+    ).limit(per_page).all()
+
+    return {
+        "orders": [o.to_dict() for o in orders],
+        "total": total,
+        "page": page,
+        "per_page": per_page
+    }
+
+
+@router.get("/tenant/{tenant_id}/products")
+async def admin_tenant_products(
+    tenant_id: int,
+    page: int = Query(1, ge=1),
+    per_page: int = Query(50, ge=1, le=100),
+    admin: User = Depends(require_super_admin),
+    db: Session = Depends(get_db)
+):
+    """★ V4: Get all products for a specific tenant."""
+    if not ProductListing:
+        return {"products": [], "total": 0}
+
+    query = db.query(ProductListing).filter(ProductListing.tenant_id == tenant_id)
+    total = query.count()
+    products = query.offset(
+        (page - 1) * per_page
+    ).limit(per_page).all()
+
+    return {
+        "products": [p.to_dict() for p in products],
         "total": total,
         "page": page,
         "per_page": per_page

@@ -1,6 +1,6 @@
 """
 Widget API — Zone 6: Customer-Facing Chat Endpoints
-FRD v3.0 (FR-6.1, FR-6.2)
+FRD v4.0 (FR-6.1, FR-6.2)
 
 These endpoints are called by the embeddable JS widget on client stores.
 Auth: Widget API key (not JWT) — FR-7.1.6
@@ -100,6 +100,7 @@ async def get_widget_config(
             "show_branding": True,
             "branding_logo_url": None,
             "is_active": True,
+            "widget_type": "full",  # ★ V4
             "tenant_name": tenant.name,
         }
 
@@ -115,6 +116,7 @@ async def get_widget_config(
         "show_branding": getattr(widget_config, 'show_branding', True),
         "branding_logo_url": widget_config.branding_logo_url,
         "is_active": widget_config.is_active,
+        "widget_type": getattr(widget_config, 'widget_type', 'full') or "full",  # ★ V4
         "tenant_name": tenant.name,
     }
 
@@ -341,6 +343,60 @@ async def send_chat_message(
         logger.warning(f"Failed to load conversation history: {e}")
 
     # ══════════════════════════════════════════════════════════════
+    # ★ V4 STEP 4.5: Intent Classification (Zone 5)
+    # Routes messages to the most efficient handler.
+    # ORDER_QUERY → SQL lookup (bypasses RAG + LLM)
+    # HUMAN_REQUEST → Direct escalation (bypasses LLM)
+    # Others → continue to RAG + LLM pipeline
+    # ══════════════════════════════════════════════════════════════
+    intent_skipped_agent = False
+    try:
+        from app.services.intent_router import (
+            classify_intent, INTENT_ORDER_QUERY, INTENT_HUMAN_REQUEST,
+            INTENT_ORDER_VERIFY, INTENT_PRODUCT_INFO
+        )
+        widget_config_for_intent = db.query(WidgetConfig).filter(
+            WidgetConfig.tenant_id == tenant.id
+        ).first()
+        widget_type = getattr(widget_config_for_intent, 'widget_type', 'full') or 'full'
+        intent_result = classify_intent(
+            text=data.message,
+            widget_type=widget_type,
+            sentiment=sentiment_result.get("sentiment")
+        )
+        intent = intent_result["intent"]
+        logger.info(f"🎯 Intent: {intent} (confidence: {intent_result['confidence']:.2f}) — {intent_result['reason']}")
+
+        if intent == INTENT_ORDER_QUERY:
+            # ★ Direct SQL lookup — bypass RAG + LLM for speed
+            try:
+                from app.services.order_query import lookup_order
+                order_id = intent_result["extracted_data"].get("order_id")
+                customer_email = getattr(data, 'customer_email', None) or conversation.customer_email
+                order_response = lookup_order(
+                    order_id=order_id,
+                    email=customer_email,
+                    tenant_id=tenant.id,
+                    db=db
+                )
+                ai_response_text = order_response["response"]
+                intent_skipped_agent = True
+                logger.info(f"📦 Order lookup completed (skipped RAG+LLM)")
+            except Exception as oq_err:
+                logger.warning(f"Order lookup failed, falling back to agent: {oq_err}")
+
+        elif intent == INTENT_HUMAN_REQUEST:
+            # ★ Direct escalation — bypass LLM
+            ai_response_text = "I understand you'd like to speak with a human agent. Let me connect you right away."
+            should_escalate = True
+            escalation_info = {"reason": "Customer requested human agent", "triggers": ["human_request"]}
+            intent_skipped_agent = True
+            logger.info(f"🧑 Human request — forcing escalation (skipped RAG+LLM)")
+
+    except Exception as intent_err:
+        logger.warning(f"Intent router failed (non-blocking): {intent_err}")
+
+    # ══════════════════════════════════════════════════════════════
     # Step 5: Generate AI Response via Agent (FR-5.2 + FR-5.3)
     # The AI agent internally handles:
     #   - RAG retrieval (knowledge base context)
@@ -350,15 +406,15 @@ async def send_chat_message(
     # Previously, escalation was checked twice (here AND in agent.py)
     # which caused false triggers on normal messages.
     # ══════════════════════════════════════════════════════════════
-    ai_response_text = "I'm here to help! Let me look into that for you."
-    confidence = 0.5
-    should_escalate = False
-    escalation_info = {}
+    ai_response_text = ai_response_text if intent_skipped_agent else "I'm here to help! Let me look into that for you."
+    confidence = 0.5 if not intent_skipped_agent else 0.85
+    should_escalate = should_escalate if intent_skipped_agent else False
+    escalation_info = escalation_info if intent_skipped_agent else {}
 
     if is_human_takeover:
         # Human agent has taken over — don't auto-respond with AI
         ai_response_text = None
-    else:
+    elif not intent_skipped_agent:
         # Unified flow — agent handles RAG + LLM + escalation internally
         try:
             from app.ai.agent import get_ai_agent, AgentContext, AgentAction
