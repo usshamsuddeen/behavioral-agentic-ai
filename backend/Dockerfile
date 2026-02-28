@@ -56,13 +56,12 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:8000/ || exit 1
 
 # ── Default Environment Variables ────────────────────────────────
+# NOTE: LLM_API_KEY, LLM_BASE_URL, LLM_MODEL, LLM_FALLBACK_MODEL
+# are NOT set here — they MUST come from Coolify runtime env vars.
+# Setting ENV VAR="" in Dockerfile overrides Coolify's injected values!
 ENV ENVIRONMENT="production"
 ENV DATABASE_URL="sqlite:///./data/app.db"
 ENV JWT_SECRET_KEY="change-this-in-production-minimum-32-characters"
-ENV LLM_API_KEY=""
-ENV LLM_BASE_URL=""
-ENV LLM_MODEL=""
-ENV LLM_FALLBACK_MODEL=""
 ENV VECTOR_STORE_DIR="/app/data/vector_store"
 ENV EMBEDDING_MODEL="paraphrase-multilingual-MiniLM-L12-v2"
 ENV LOG_LEVEL="INFO"
