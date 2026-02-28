@@ -510,7 +510,7 @@ async def send_chat_message(
                     f"priority={priority} reasons={result.escalation.get('reason', 'N/A')}"
                 )
         except Exception as e:
-            logger.warning(f"AI agent failed, using fallback: {e}")
+            logger.error(f"❌ AI agent failed: {type(e).__name__}: {e}", exc_info=True)
 
     # ══════════════════════════════════════════════════════════════
     # Step 7: Behavioral Prediction (FR-5.4 — background)

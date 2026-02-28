@@ -95,7 +95,12 @@ class LLMService:
         else:
             self._provider = "custom"
         
-        logger.info(f"LLM provider: {self._provider} | model: {self.model} | url: {self.base_url}")
+        # ── Startup diagnostics ──
+        key_preview = f"{self.api_key[:8]}...{self.api_key[-4:]}" if self.api_key and len(self.api_key) > 12 else "NOT SET"
+        logger.info(
+            f"🔑 LLM init: provider={self._provider} | model={self.model} | "
+            f"url={self.base_url} | key={key_preview} | available={self.is_available()}"
+        )
     
     def _get_headers(self) -> Dict[str, str]:
         """Get API request headers — works with all OpenAI-compatible providers."""
@@ -147,6 +152,7 @@ class LLMService:
             LLMResponse with generated text and metadata
         """
         if not self.is_available():
+            logger.warning(f"⚠️ LLM not available (api_key missing or too short). Using fallback.")
             return self._fallback_response(user_message, context_documents, sentiment)
         
         try:

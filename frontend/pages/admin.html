@@ -358,6 +358,12 @@
             font-size: 0.9rem;
         }
 
+        /* Fix: Dropdown options invisible on dark background */
+        select option {
+            background: #1a1a2e;
+            color: #fff;
+        }
+
         @media (max-width: 768px) {
             .admin-sidebar {
                 display: none;
@@ -960,9 +966,9 @@
             const action = isActive ? 'suspend' : 'activate';
             if (!confirm(`Are you sure you want to ${action} this client?`)) return;
             try {
-                await fetch(`${API_BASE}/api/admin/clients/${id}/${action}`, { method: 'POST', headers });
+                await fetch(`${API_BASE}/api/admin/clients/${id}/status`, { method: 'PATCH', headers });
                 loadClients();
-            } catch (e) { console.error(e); }
+            } catch (e) { console.error(e); alert('Failed to ' + action + ' client.'); }
         }
 
         function logout() {
