@@ -18,7 +18,6 @@ import logging
 import os
 
 from app.database import engine, Base, SessionLocal
-from sqlalchemy import text
 from app.api import conversations, messages, analytics, sentiment
 from app.api import knowledge as knowledge_api
 from app.api import ai_agent as ai_agent_api
@@ -74,38 +73,11 @@ def ensure_super_admin():
         db.close()
 
 
-# ── V4 Auto-Migration ────────────────────────────────────────────
-# SQLite create_all() creates new tables but does NOT add new columns
-# to existing tables. This function adds missing V4 columns safely.
-def _migrate_v4_columns():
-    """Add V4 columns to existing V3 tables on the production DB."""
-    db = SessionLocal()
-    try:
-        conn = db.connection()
-        migrations = [
-            ("widget_configs", "widget_type", "VARCHAR(20) DEFAULT 'full'"),
-            ("knowledge_documents", "file_url", "VARCHAR(500)"),
-        ]
-        for table, column, col_def in migrations:
-            try:
-                conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {column} {col_def}"))
-                logger.info(f"✅ Migration: added {table}.{column}")
-            except Exception:
-                pass  # Column already exists — safe to ignore
-        db.commit()
-    except Exception as e:
-        logger.error(f"Migration check error: {e}")
-        db.rollback()
-    finally:
-        db.close()
-
-
 # Create database tables on startup
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan - create tables on startup"""
-    Base.metadata.create_all(bind=engine, checkfirst=True)
-    _migrate_v4_columns()
+    Base.metadata.create_all(bind=engine,checkfirst=True)
     ensure_super_admin()
     logger.info("🚀 Behavioral Agentic AI started")
     yield
@@ -368,11 +340,6 @@ if FRONTEND_DIR:
     app.mount("/css", StaticFiles(directory=os.path.join(FRONTEND_DIR, "css")), name="css")
     app.mount("/js", StaticFiles(directory=os.path.join(FRONTEND_DIR, "js")), name="js")
     app.mount("/widget", StaticFiles(directory=os.path.join(FRONTEND_DIR, "widget")), name="widget-static")
-
-    # ★ V4.1: Serve uploaded KB images so the widget can display them in chat
-    _uploads_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data", "kb_uploads")
-    os.makedirs(_uploads_dir, exist_ok=True)
-    app.mount("/uploads", StaticFiles(directory=_uploads_dir), name="kb-uploads")
 
     # Serve HTML pages
     @app.get("/login")
