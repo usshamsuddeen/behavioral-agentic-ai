@@ -18,6 +18,7 @@ import logging
 import os
 
 from app.database import engine, Base, SessionLocal
+from sqlalchemy import text
 from app.api import conversations, messages, analytics, sentiment
 from app.api import knowledge as knowledge_api
 from app.api import ai_agent as ai_agent_api
@@ -73,11 +74,38 @@ def ensure_super_admin():
         db.close()
 
 
+# ── V4 Auto-Migration ────────────────────────────────────────────
+# SQLite create_all() creates new tables but does NOT add new columns
+# to existing tables. This function adds missing V4 columns safely.
+def _migrate_v4_columns():
+    """Add V4 columns to existing V3 tables on the production DB."""
+    db = SessionLocal()
+    try:
+        conn = db.connection()
+        migrations = [
+            ("widget_configs", "widget_type", "VARCHAR(20) DEFAULT 'full'"),
+            ("knowledge_documents", "file_url", "VARCHAR(500)"),
+        ]
+        for table, column, col_def in migrations:
+            try:
+                conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {column} {col_def}"))
+                logger.info(f"✅ Migration: added {table}.{column}")
+            except Exception:
+                pass  # Column already exists — safe to ignore
+        db.commit()
+    except Exception as e:
+        logger.error(f"Migration check error: {e}")
+        db.rollback()
+    finally:
+        db.close()
+
+
 # Create database tables on startup
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan - create tables on startup"""
-    Base.metadata.create_all(bind=engine,checkfirst=True)
+    Base.metadata.create_all(bind=engine, checkfirst=True)
+    _migrate_v4_columns()
     ensure_super_admin()
     logger.info("🚀 Behavioral Agentic AI started")
     yield
