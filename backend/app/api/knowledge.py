@@ -100,12 +100,20 @@ def resolve_client_id(current_user: User, db: Session) -> str:
     """
     Get the ChromaDB collection key for this user's tenant.
     Uses str(tenant.id) for tenant-isolated collections — FR-7.3.
-    Super admins get 'system' as their client_id.
+    
+    Admin/super_admin users who also own a tenant get their tenant's ID.
+    Pure super admins (no tenant) get 'system'.
     """
+    # First check if user has a direct tenant_id (covers admin users who own tenants)
+    if current_user.tenant_id:
+        return str(current_user.tenant_id)
+    
+    # Fallback: try to resolve via get_tenant_for_user
     tenant = get_tenant_for_user(current_user, db)
-    if tenant is None:
-        return "system"
-    return str(tenant.id)
+    if tenant is not None:
+        return str(tenant.id)
+    
+    return "system"
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -177,9 +185,9 @@ async def upload_document(
         # ── Track in SQL (FRD §12: knowledge_documents table) ──
         if result["success"]:
             try:
-                tenant = get_tenant_for_user(current_user, db)
+                resolved_tid = current_user.tenant_id or (tenant.id if (tenant := get_tenant_for_user(current_user, db)) else None)
                 doc_record = KnowledgeDocument(
-                    tenant_id=tenant.id if tenant else None,
+                    tenant_id=resolved_tid,
                     filename=filename,
                     doc_type=doc_type,
                     category=category,
@@ -284,9 +292,9 @@ async def upload_text(
         # ── Track in SQL (FRD §12: knowledge_documents table) ──
         if result["success"]:
             try:
-                tenant = get_tenant_for_user(current_user, db)
+                resolved_tid = current_user.tenant_id or (tenant.id if (tenant := get_tenant_for_user(current_user, db)) else None)
                 doc_record = KnowledgeDocument(
-                    tenant_id=tenant.id if tenant else None,
+                    tenant_id=resolved_tid,
                     filename=filename,
                     doc_type=request.doc_type,
                     category=request.category,
