@@ -906,7 +906,10 @@ function renderOrderTable(orders) {
             <td><span class="order-status order-status--${(o.status || 'pending').toLowerCase()}">${esc(o.status || 'pending')}</span></td>
             <td>${o.total_amount ? `${o.currency || '$'}${Number(o.total_amount).toFixed(2)}` : '—'}</td>
             <td>${o.order_date ? new Date(o.order_date).toLocaleDateString() : '—'}</td>
-            <td><button class="btn btn-sm btn-ghost" onclick="deleteOrder(${o.id})" title="Delete"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button></td>
+            <td style="display:flex;gap:4px">
+                <button class="btn btn-sm btn-secondary" onclick="viewOrder('${esc(o.order_id)}')" title="View Details"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+                <button class="btn btn-sm btn-ghost" onclick="deleteOrder(${o.id})" title="Delete"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>
+            </td>
         </tr>
     `).join('');
 }
@@ -1123,10 +1126,93 @@ function debounce(fn, delay) {
     return (...args) => { clearTimeout(timer); timer = setTimeout(() => fn(...args), delay); };
 }
 
+/* ═══════════════════════════════════════════════════════════
+   ORDER DETAIL MODAL
+   ═══════════════════════════════════════════════════════════ */
+async function viewOrder(orderId) {
+    const overlay = document.getElementById('orderDetailOverlay');
+    const content = document.getElementById('orderDetailContent');
+    if (!overlay || !content) return;
+
+    // Show modal with loading state
+    overlay.classList.add('active');
+    content.innerHTML = '<div class="loading-state"><div class="spinner"></div><p>Loading order details…</p></div>';
+
+    try {
+        const result = await API.getOrder(orderId);
+        const o = result.order || result;
+
+        // Format items list
+        let itemsHtml = '<span class="order-detail-empty">No items</span>';
+        const items = Array.isArray(o.items) ? o.items : [];
+        if (items.length) {
+            itemsHtml = '<div class="order-detail-items">' + items.map(item =>
+                `<div class="order-detail-item-row">
+                    <span class="order-detail-item-name">${esc(item.name || item.product || 'Item')}</span>
+                    <span class="order-detail-item-qty">×${item.qty || item.quantity || 1}</span>
+                    ${item.price ? `<span class="order-detail-item-price">${o.currency || 'USD'} ${Number(item.price).toFixed(2)}</span>` : ''}
+                </div>`
+            ).join('') + '</div>';
+        }
+
+        // Build detail rows
+        const rows = [
+            { label: 'Order ID', value: o.order_id, icon: '🏷️' },
+            { label: 'Status', value: `<span class="order-status order-status--${(o.status || 'pending').toLowerCase()}">${esc(o.status || 'pending')}</span>`, raw: true, icon: '📊' },
+            { label: 'Customer Name', value: o.customer_name, icon: '👤' },
+            { label: 'Customer Email', value: o.customer_email, icon: '📧' },
+            { label: 'Total Amount', value: o.total_amount ? `${o.currency || 'USD'} ${Number(o.total_amount).toFixed(2)}` : null, icon: '💰' },
+            { label: 'Currency', value: o.currency, icon: '💱' },
+            { label: 'Order Date', value: o.order_date ? new Date(o.order_date).toLocaleString() : null, icon: '📅' },
+            { label: 'Estimated Delivery', value: o.estimated_delivery ? new Date(o.estimated_delivery).toLocaleString() : null, icon: '🚚' },
+            { label: 'Tracking Number', value: o.tracking_number, icon: '📦' },
+            { label: 'Carrier', value: o.carrier, icon: '✈️' },
+            { label: 'Shipping Address', value: o.shipping_address, icon: '🏠' },
+            { label: 'Items', value: itemsHtml, raw: true, icon: '🛒' },
+            { label: 'Notes', value: o.notes, icon: '📝' },
+            { label: 'Source', value: o.source, icon: '🔗' },
+            { label: 'Created At', value: o.created_at ? new Date(o.created_at).toLocaleString() : null, icon: '🕐' },
+            { label: 'Updated At', value: o.updated_at ? new Date(o.updated_at).toLocaleString() : null, icon: '🔄' },
+        ];
+
+        content.innerHTML = `
+            <div class="order-detail-header">
+                <div>
+                    <h3 class="order-detail-title">Order #${esc(o.order_id)}</h3>
+                    <p class="order-detail-subtitle">${o.customer_name ? esc(o.customer_name) : 'Customer'} ${o.order_date ? '· ' + new Date(o.order_date).toLocaleDateString() : ''}</p>
+                </div>
+                <button class="order-detail-close" onclick="closeOrderModal()" title="Close">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div class="order-detail-body">
+                ${rows.map(r => {
+            const val = r.value;
+            if (val === null || val === undefined || val === '') return '';
+            const displayVal = r.raw ? val : esc(String(val));
+            return `<div class="order-detail-row">
+                        <div class="order-detail-label"><span class="order-detail-icon">${r.icon}</span>${r.label}</div>
+                        <div class="order-detail-value">${displayVal}</div>
+                    </div>`;
+        }).join('')}
+            </div>
+        `;
+    } catch (e) {
+        content.innerHTML = `<div class="empty-state" style="padding:32px"><p>Failed to load order details</p><p style="font-size:.75rem;color:var(--text-muted)">${esc(e.message || '')}</p></div>`;
+    }
+}
+
+function closeOrderModal() {
+    const overlay = document.getElementById('orderDetailOverlay');
+    if (overlay) overlay.classList.remove('active');
+}
+
 // Make functions globally accessible (used by onclick in HTML)
 window.switchTab = switchTab;
 window.selectConversation = selectConversation;
 window.removeTeamMember = removeTeamMember;
 window.deleteOrder = deleteOrder;
+window.viewOrder = viewOrder;
+window.closeOrderModal = closeOrderModal;
 window.editProduct = editProduct;
 window.deleteProduct = deleteProduct;

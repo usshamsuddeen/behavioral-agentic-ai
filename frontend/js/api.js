@@ -356,6 +356,10 @@ const API = {
         return this.request(`/orders/${id}`, { method: 'DELETE' });
     },
 
+    async getOrder(orderId) {
+        return this.request(`/orders/${encodeURIComponent(orderId)}`);
+    },
+
     // ==========================================
     // PRODUCTS (V4 NEW — Zone 3)
     // ==========================================

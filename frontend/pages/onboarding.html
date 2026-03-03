@@ -2010,7 +2010,7 @@
                 statusEl.style.background = 'rgba(46,213,115,0.08)';
                 statusEl.style.border = '1px solid rgba(46,213,115,0.18)';
                 statusEl.style.color = '#2ed573';
-                statusEl.textContent = `✅ Imported ${data.imported || data.count || 0} orders successfully!`;
+                statusEl.textContent = `✅ Imported ${data.created || 0} orders successfully!`;
             } catch (error) {
                 statusEl.style.background = 'rgba(245,87,108,0.08)';
                 statusEl.style.border = '1px solid rgba(245,87,108,0.18)';

@@ -496,7 +496,8 @@
                                     style="display:flex;flex-direction:row;align-items:center;gap:12px;padding-top:20px">
                                     <label class="config-label" style="margin:0">In Stock</label><label
                                         class="toggle-switch"><input type="checkbox" id="prodInStock" checked><span
-                                            class="toggle-slider"></span></label></div>
+                                            class="toggle-slider"></span></label>
+                                </div>
                             </div>
                             <div class="kb-form-group"><label class="kb-form-label">Image URL</label><input type="text"
                                     class="kb-form-input" id="prodImageUrl"
@@ -812,6 +813,11 @@
 
     <!-- Toast -->
     <div class="toast" id="toast"></div>
+
+    <!-- Order Detail Modal -->
+    <div class="order-detail-overlay" id="orderDetailOverlay" onclick="if(event.target===this)closeOrderModal()">
+        <div class="order-detail-modal" id="orderDetailContent"></div>
+    </div>
 
     <!-- Scripts -->
     <script src="../js/auth.js"></script>
