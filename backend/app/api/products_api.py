@@ -39,6 +39,7 @@ class CreateProductRequest(BaseModel):
     in_stock: bool = True
     stock_quantity: int = 0
     images: List[str] = []
+    image_url: Optional[str] = None  # Single image URL (frontend sends this)
     attributes: dict = {}
 
 
@@ -75,6 +76,11 @@ async def create_product(
     db: Session = Depends(get_db)
 ):
     """Create a single product listing."""
+    # Merge image_url into images list
+    all_images = list(request.images)
+    if request.image_url and request.image_url not in all_images:
+        all_images.insert(0, request.image_url)
+
     product = ProductListing(
         tenant_id=current_user.tenant_id,
         name=request.name,
@@ -85,7 +91,7 @@ async def create_product(
         sku=request.sku,
         in_stock=request.in_stock,
         stock_quantity=request.stock_quantity,
-        images=json.dumps(request.images),
+        images=json.dumps(all_images),
         attributes=json.dumps(request.attributes),
         source="manual"
     )
@@ -99,32 +105,98 @@ async def create_product(
     return {"success": True, "product": product.to_dict()}
 
 
+# ═══════════════════════════════════════════════════════════════
+# FUZZY COLUMN MATCHING — Maps any CSV header to our schema
+# ═══════════════════════════════════════════════════════════════
+
+PRODUCT_COLUMN_ALIASES = {
+    "name": ["name", "product name", "title", "product title", "product_name",
+             "item name", "item", "product"],
+    "description": ["description", "desc", "product description", "details",
+                     "body html", "body", "summary", "product details"],
+    "price": ["price", "unit price", "cost", "amount", "sale price",
+              "regular price", "variant price", "retail price", "msrp"],
+    "currency": ["currency", "currency code"],
+    "category": ["category", "product category", "type", "product type",
+                  "collection", "department", "group"],
+    "sku": ["sku", "product sku", "variant sku", "item number",
+            "article number", "part number", "barcode", "upc", "ean"],
+    "in_stock": ["in stock", "in_stock", "available", "availability",
+                  "stock status", "is available"],
+    "stock_quantity": ["stock quantity", "stock_quantity", "quantity",
+                       "qty", "inventory", "stock", "units", "inventory qty"],
+    "image_url": ["image", "image url", "image_url", "images", "image src",
+                   "photo", "picture", "thumbnail", "product image", "variant image"],
+}
+
+
+def _fuzzy_match_product_column(header: str):
+    """Match a CSV header to our product schema column using fuzzy matching."""
+    header_lower = header.strip().lower().replace("_", " ").replace("-", " ")
+
+    for field, aliases in PRODUCT_COLUMN_ALIASES.items():
+        if header_lower == field:
+            return field
+        for alias in aliases:
+            if header_lower == alias:
+                return field
+
+    # Partial match fallback
+    for field, aliases in PRODUCT_COLUMN_ALIASES.items():
+        for alias in aliases:
+            if alias in header_lower or header_lower in alias:
+                return field
+
+    return None
+
+
 @router.post("/upload-csv")
 async def upload_product_csv(
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Bulk import products from CSV."""
+    """Bulk import products from CSV with fuzzy column matching."""
     content = await file.read()
     text = content.decode("utf-8-sig")
     reader = csv.DictReader(io.StringIO(text))
+
+    # Map CSV headers to our schema
+    column_map = {}
+    if reader.fieldnames:
+        for header in reader.fieldnames:
+            mapped = _fuzzy_match_product_column(header)
+            if mapped:
+                column_map[header] = mapped
 
     created = 0
     errors = []
 
     for i, row in enumerate(reader):
         try:
+            mapped_row = {}
+            for csv_col, our_col in column_map.items():
+                mapped_row[our_col] = row.get(csv_col, "").strip()
+
+            name = mapped_row.get("name", "")
+            if not name:
+                errors.append(f"Row {i+1}: Missing product name")
+                continue
+
+            in_stock_val = mapped_row.get("in_stock", "true").lower()
+            image_url = mapped_row.get("image_url", "")
+
             product = ProductListing(
                 tenant_id=current_user.tenant_id,
-                name=row.get("name", row.get("Name", row.get("product_name", ""))),
-                description=row.get("description", row.get("Description", "")),
-                price=float(row.get("price", row.get("Price", 0)) or 0),
-                currency=row.get("currency", "USD"),
-                category=row.get("category", row.get("Category", "")),
-                sku=row.get("sku", row.get("SKU", "")),
-                in_stock=row.get("in_stock", "true").lower() in ("true", "yes", "1"),
-                stock_quantity=int(row.get("stock_quantity", row.get("quantity", 0)) or 0),
+                name=name,
+                description=mapped_row.get("description", ""),
+                price=float(mapped_row.get("price", 0) or 0),
+                currency=mapped_row.get("currency", "USD") or "USD",
+                category=mapped_row.get("category", ""),
+                sku=mapped_row.get("sku", ""),
+                in_stock=in_stock_val in ("true", "yes", "1", "in stock", "available"),
+                stock_quantity=int(mapped_row.get("stock_quantity", 0) or 0),
+                images=json.dumps([image_url] if image_url else []),
                 source="csv"
             )
             db.add(product)
@@ -146,8 +218,10 @@ async def upload_product_csv(
         "success": True,
         "created": created,
         "errors": errors[:10],
-        "total_rows": created + len(errors)
+        "total_rows": created + len(errors),
+        "column_mapping": column_map,
     }
+
 
 
 @router.get("")
@@ -212,6 +286,11 @@ async def update_product(
     if not product:
         raise HTTPException(404, "Product not found")
 
+    # Merge image_url into images list
+    all_images = list(request.images)
+    if request.image_url and request.image_url not in all_images:
+        all_images.insert(0, request.image_url)
+
     product.name = request.name
     product.description = request.description
     product.price = request.price
@@ -220,7 +299,7 @@ async def update_product(
     product.sku = request.sku
     product.in_stock = request.in_stock
     product.stock_quantity = request.stock_quantity
-    product.images = json.dumps(request.images)
+    product.images = json.dumps(all_images)
     product.attributes = json.dumps(request.attributes)
     db.commit()
     db.refresh(product)

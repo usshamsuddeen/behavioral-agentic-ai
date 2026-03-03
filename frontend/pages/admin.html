@@ -64,11 +64,6 @@
                     </svg><span>Global Conversations</span></a>
 
                 <div class="nav-section-label">Tenant Data</div>
-                <a class="nav-item" data-tab="knowledge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        stroke-width="2">
-                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-                        <polyline points="14 2 14 8 20 8" />
-                    </svg><span>All Knowledge Bases</span></a>
                 <a class="nav-item" data-tab="orders"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
                         stroke-width="2">
                         <rect x="1" y="3" width="15" height="13" />
@@ -317,19 +312,6 @@
                     <div class="pagination" id="gcPagination"></div>
                 </div>
 
-                <!-- ═══════════ TAB: ALL KNOWLEDGE BASES ═══════════ -->
-                <div class="tab-panel" id="panel-knowledge">
-                    <div style="margin-bottom:16px"><label class="config-label"
-                            style="margin-bottom:6px;display:block">Select Tenant</label><select class="tenant-select"
-                            id="kbTenantSelect">
-                            <option value="">— Select a tenant —</option>
-                        </select></div>
-                    <div id="adminKbContent">
-                        <div class="empty-state">
-                            <p>Select a tenant to view their knowledge base</p>
-                        </div>
-                    </div>
-                </div>
 
                 <!-- ═══════════ TAB: ALL ORDERS ═══════════ -->
                 <div class="tab-panel" id="panel-orders">
@@ -468,7 +450,6 @@
             system: { title: 'System Dashboard', subtitle: 'Full system overview across all tenants' },
             clients: { title: 'Client Management', subtitle: 'Manage all client accounts' },
             conversations: { title: 'Global Conversations', subtitle: 'All conversations across all tenants' },
-            knowledge: { title: 'All Knowledge Bases', subtitle: 'Browse knowledge bases of any tenant' },
             orders: { title: 'All Order Data', subtitle: 'View order data for any tenant' },
             products: { title: 'All Products', subtitle: 'View product listings for any tenant' },
             logs: { title: 'Audit Logs', subtitle: 'System events across all tenants' },
@@ -544,7 +525,6 @@
                 case 'system': loadSystemDashboard(); break;
                 case 'clients': loadClients(); break;
                 case 'conversations': loadGlobalConversations(); break;
-                case 'knowledge': setupTenantDropdown('kbTenantSelect', loadTenantKB); break;
                 case 'orders': setupTenantDropdown('orderTenantSelect', loadTenantOrders); break;
                 case 'products': setupTenantDropdown('productTenantSelect', loadTenantProducts); break;
                 case 'logs': loadAuditLogs(); break;

@@ -1435,16 +1435,11 @@
                         <div class="sidebar-connector" data-line="3"></div>
                         <div class="sidebar-step" data-step="4">
                             <div class="sidebar-step-dot">4</div>
-                            <span class="sidebar-step-label">Knowledge</span>
+                            <span class="sidebar-step-label">Data</span>
                         </div>
                         <div class="sidebar-connector" data-line="4"></div>
                         <div class="sidebar-step" data-step="5">
                             <div class="sidebar-step-dot">5</div>
-                            <span class="sidebar-step-label">Orders</span>
-                        </div>
-                        <div class="sidebar-connector" data-line="5"></div>
-                        <div class="sidebar-step" data-step="6">
-                            <div class="sidebar-step-dot">6</div>
                             <span class="sidebar-step-label">Launch</span>
                         </div>
                     </div>
@@ -1661,53 +1656,18 @@
                         </div>
                     </div>
 
-                    <!-- Step 4: Knowledge Base -->
+
+
+                    <!-- Step 4: ★ Knowledge Base — Import Data (V4 NEW) -->
                     <div class="step-panel" id="step4">
                         <div>
-                            <h2 class="step-title">Product Knowledge</h2>
-                            <p class="step-description">Paste product details, FAQs, or policies so the AI can answer
-                                intelligently.</p>
-                        </div>
-                        <div class="step-fields">
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label>Title</label>
-                                    <input type="text" id="kbTitle" placeholder="e.g. Product Catalog">
-                                    <div class="focus-line"></div>
-                                </div>
-                                <div class="form-group">
-                                    <label>Type</label>
-                                    <select id="kbDocType">
-                                        <option value="general">General</option>
-                                        <option value="product">Product Info</option>
-                                        <option value="policy">Policies</option>
-                                        <option value="faq">FAQ</option>
-                                    </select>
-                                    <div class="focus-line"></div>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label>Content</label>
-                                <textarea id="kbText" rows="7"
-                                    placeholder="Paste your product details, FAQs, or policies here…"></textarea>
-                                <div class="focus-line"></div>
-                            </div>
-                            <p style="color:rgba(255,255,255,0.2);font-size:0.7rem;">
-                                You can skip this step and add knowledge later from your dashboard.
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Step 5: ★ Import Order Data (V4 NEW) -->
-                    <div class="step-panel" id="step5">
-                        <div>
-                            <h2 class="step-title">Import Order Data</h2>
-                            <p class="step-description">Let your widget answer "Where is my order?" questions. Upload
-                                orders or generate test data.</p>
+                            <h2 class="step-title">Knowledge Base</h2>
+                            <p class="step-description">Feed your AI with order and product data so it can answer
+                                customer questions accurately.</p>
                         </div>
                         <div class="step-fields">
                             <div class="order-import-grid">
-                                <!-- Option A: CSV Upload -->
+                                <!-- Option A: Order CSV Upload -->
                                 <div
                                     style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:1.2rem;">
                                     <h3 style="font-size:0.95rem;font-weight:600;color:#fff;margin-bottom:0.5rem;">📄
@@ -1724,19 +1684,39 @@
                                     <p style="font-size:0.65rem;color:rgba(255,255,255,0.25);margin-top:0.5rem;">
                                         Auto-maps columns using fuzzy matching.</p>
                                 </div>
-                                <!-- CSV Upload Only (demo card removed) -->
+                                <!-- Option B: Product CSV Upload -->
+                                <div
+                                    style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:1.2rem;">
+                                    <h3 style="font-size:0.95rem;font-weight:600;color:#fff;margin-bottom:0.5rem;">📦
+                                        Upload Product CSV</h3>
+                                    <p style="font-size:0.78rem;color:rgba(255,255,255,0.4);margin-bottom:0.8rem;">
+                                        Import your product catalog so the AI can answer product questions.</p>
+                                    <div class="form-group">
+                                        <input type="file" id="productCsvInput" accept=".csv" style="font-size:0.8rem;">
+                                    </div>
+                                    <button type="button" class="btn-next" onclick="uploadProductCSV()"
+                                        style="padding:0.5rem 1.2rem;font-size:0.8rem;border:none;cursor:pointer;border-radius:8px;">
+                                        <span>Upload Products</span>
+                                    </button>
+                                    <p style="font-size:0.65rem;color:rgba(255,255,255,0.25);margin-top:0.5rem;">
+                                        Auto-indexes products into AI knowledge base.</p>
+                                </div>
                             </div>
                             <div id="orderImportStatus"
                                 style="display:none;margin-top:0.8rem;padding:0.6rem 1rem;border-radius:8px;font-size:0.82rem;">
                             </div>
+                            <div id="productImportStatus"
+                                style="display:none;margin-top:0.8rem;padding:0.6rem 1rem;border-radius:8px;font-size:0.82rem;">
+                            </div>
                             <p style="color:rgba(255,255,255,0.2);font-size:0.7rem;margin-top:0.5rem;">
-                                You can skip this step and import orders later from your dashboard.
+                                You can skip this step and import data later from your dashboard.
                             </p>
                         </div>
                     </div>
 
+
                     <!-- Step 6: Complete — Redesigned (was Step 5) -->
-                    <div class="step-panel" id="step6">
+                    <div class="step-panel" id="step5">
                         <div class="complete-section">
                             <div class="complete-icon">
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
@@ -1881,7 +1861,7 @@
         const token = Auth.getAccessToken();
 
         let currentStep = 1;
-        const totalSteps = 6;  // ★ V4: was 5, now 6 (added Import Orders)
+        const totalSteps = 5;
         const uploadedFiles = [];
 
         document.getElementById('widgetColor').addEventListener('input', e => {
@@ -1941,27 +1921,7 @@
                         })
                     });
                 } else if (currentStep === 4) {
-                    const kbText = document.getElementById('kbText').value.trim();
-                    if (kbText) {
-                        const kbTitle = document.getElementById('kbTitle').value.trim() || 'Onboarding Knowledge';
-                        const kbDocType = document.getElementById('kbDocType').value || 'general';
-                        const textRes = await fetch(`${API_BASE}/api/knowledge/text`, {
-                            method: 'POST', headers,
-                            body: JSON.stringify({
-                                text: kbText,
-                                source: kbTitle,
-                                doc_type: kbDocType,
-                                category: 'general'
-                            })
-                        });
-                        const textData = await textRes.json();
-                        if (!textData.success) {
-                            console.error('KB text indexing failed:', textData.error);
-                        }
-                    }
-                    await fetch(`${API_BASE}/api/onboarding/upload-kb-complete`, { method: 'POST', headers });
-                } else if (currentStep === 5) {
-                    // ★ V4: Mark order import step as visited
+                    // ★ V4: Mark data import step as visited
                     await fetch(`${API_BASE}/api/onboarding/import-orders-complete`, { method: 'POST', headers });
 
                     // Call complete onboarding to get embed code
@@ -2051,6 +2011,41 @@
                 statusEl.style.border = '1px solid rgba(46,213,115,0.18)';
                 statusEl.style.color = '#2ed573';
                 statusEl.textContent = `✅ Imported ${data.imported || data.count || 0} orders successfully!`;
+            } catch (error) {
+                statusEl.style.background = 'rgba(245,87,108,0.08)';
+                statusEl.style.border = '1px solid rgba(245,87,108,0.18)';
+                statusEl.style.color = '#f5576c';
+                statusEl.textContent = `❌ Error: ${error.message}`;
+            }
+        }
+
+        async function uploadProductCSV() {
+            const fileInput = document.getElementById('productCsvInput');
+            if (!fileInput.files.length) {
+                showToast('Please select a CSV file first.', 'error');
+                return;
+            }
+
+            const statusEl = document.getElementById('productImportStatus');
+            statusEl.style.display = 'block';
+            statusEl.style.background = 'rgba(102,126,234,0.08)';
+            statusEl.style.border = '1px solid rgba(102,126,234,0.18)';
+            statusEl.style.color = '#a5b4fc';
+            statusEl.textContent = 'Uploading products...';
+
+            try {
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+                const response = await fetch(`${API_BASE}/api/products/upload-csv`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData
+                });
+                const data = await response.json();
+                statusEl.style.background = 'rgba(46,213,115,0.08)';
+                statusEl.style.border = '1px solid rgba(46,213,115,0.18)';
+                statusEl.style.color = '#2ed573';
+                statusEl.textContent = `✅ Imported ${data.created || 0} products successfully!`;
             } catch (error) {
                 statusEl.style.background = 'rgba(245,87,108,0.08)';
                 statusEl.style.border = '1px solid rgba(245,87,108,0.18)';

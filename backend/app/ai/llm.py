@@ -356,7 +356,15 @@ Remember: Prefer the context documents above. If unsure, offer to connect to a h
         # ★ V4: Order context instruction — when order data is passed via context
         if hasattr(self, '_order_context') and self._order_context:
             prompt += f"""\n\nOrder Information:\n{self._order_context}"""
-            prompt += "\nUse this order data to answer the customer's order-related questions accurately."
+            prompt += """\n
+ORDER DATA SECURITY RULES (MANDATORY — you MUST follow these EVERY TIME):
+1. NEVER share order details (status, tracking, amount, address) unless the customer has provided at LEAST TWO of: their full name, email address, or order ID.
+2. If the customer asks about an order but hasn't provided identification, respond with: "I'd be happy to help with your order! For security, could you please provide your name and email address (or order ID) so I can look it up?"
+3. NEVER list or dump all orders. Only share information about the SPECIFIC order the customer is asking about.
+4. Do NOT reveal other customers' order data, even if it appears in the context.
+5. If the context contains multiple orders, ONLY use the one matching the customer's provided identifiers.
+6. Mask sensitive data: show only last 4 characters of tracking numbers, and abbreviate addresses.
+"""
 
         return prompt
     

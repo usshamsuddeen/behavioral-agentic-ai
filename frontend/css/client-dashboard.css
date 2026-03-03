@@ -148,41 +148,6 @@
   white-space: nowrap
 }
 
-/* Toggle button */
-.sidebar-toggle {
-  position: absolute;
-  right: -14px;
-  top: 72px;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-default);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: var(--text-muted);
-  z-index: 10;
-  transition: all var(--transition-fast);
-}
-
-.sidebar-toggle:hover {
-  color: var(--text-primary);
-  border-color: var(--primary-500);
-  background: var(--bg-hover)
-}
-
-.sidebar-toggle svg {
-  width: 14px;
-  height: 14px;
-  transition: transform .3s
-}
-
-.sidebar.expanded .sidebar-toggle svg {
-  transform: rotate(180deg)
-}
-
 /* Nav */
 .sidebar-nav {
   flex: 1;

@@ -14,7 +14,6 @@ let allConversations = [];    // cached conversation list
 const TAB_META = {
     overview: { title: 'Overview', subtitle: 'Welcome back — here\'s what\'s happening today' },
     conversations: { title: 'Conversations', subtitle: 'Monitor and respond to customer conversations' },
-    knowledge: { title: 'Knowledge Base', subtitle: 'Manage documents that power your AI responses' },
     orders: { title: 'Order Data', subtitle: 'Manage order data for AI order-tracking queries' },
     products: { title: 'Products', subtitle: 'Manage product listings for your AI catalog' },
     widget: { title: 'Widget Config', subtitle: 'Configure and deploy your chat widget' },
@@ -30,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     loadUserInfo();
     setupTabNavigation();
-    setupSidebarToggle();
+
     setupMobileMenu();
     setupSettingsSubNav();
     setupLogout();
@@ -112,7 +111,6 @@ function loadTabData(tab) {
         case 'overview': loadOverview(); break;
         case 'conversations': loadConversations(); break;
         case 'analytics': loadAnalytics(); break;
-        case 'knowledge': loadKnowledge(); break;
         case 'orders': loadOrders(); break;
         case 'products': loadProducts(); break;
         case 'widget': loadWidget(); break;
@@ -479,186 +477,12 @@ function renderBarChart(containerId, data) {
     }).join('');
 }
 
-/* ═══════════════════════════════════════════════════════════
-   TAB 4: KNOWLEDGE BASE
-   ═══════════════════════════════════════════════════════════ */
-async function loadKnowledge() {
-    // Stats
-    try {
-        const stats = await API.getKnowledgeStats();
-        document.getElementById('kbDocCount').textContent = stats.total_documents ?? 0;
-        document.getElementById('kbChunkCount').textContent = stats.total_chunks ?? 0;
-        document.getElementById('kbTotalSize').textContent = formatFileSize(stats.total_size || 0);
-    } catch { }
 
-    // Document list
-    await loadDocumentList();
 
-    // Add Knowledge button
-    const addBtn = document.getElementById('addKnowledgeBtn');
-    if (addBtn) {
-        addBtn.onclick = handleAddKnowledge;
-    }
 
-    // Delete all
-    document.getElementById('deleteAllKbBtn').onclick = async () => {
-        if (!confirm('Delete ALL documents from your knowledge base? This cannot be undone.')) return;
-        try {
-            await API.deleteAllKnowledge();
-            showToast('All documents deleted', 'success');
-            loadedTabs['knowledge'] = false;
-            loadKnowledge();
-        } catch { showToast('Delete failed', 'error'); }
-    };
-}
 
-async function handleAddKnowledge() {
-    const titleEl = document.getElementById('kbTitle');
-    const contentEl = document.getElementById('kbTextContent');
-    const categoryEl = document.getElementById('kbCategory');
-    const submitBtn = document.getElementById('addKnowledgeBtn');
 
-    const text = contentEl ? contentEl.value.trim() : '';
-    const title = titleEl ? titleEl.value.trim() : 'Manual Entry';
-    const category = categoryEl ? categoryEl.value : 'general';
 
-    if (!text) {
-        showToast('Please enter some text to add', 'error');
-        return;
-    }
-
-    // Disable button to prevent duplicate submissions
-    if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<div class="spinner" style="width:14px;height:14px;border-width:2px;margin-right:6px;"></div> Adding...';
-    }
-
-    try {
-        const result = await API.addKnowledgeText(text, title || 'manual_entry', 'general', category);
-
-        if (result.success) {
-            showToast(`Knowledge added — ${result.chunks_created || 0} chunks created`, 'success');
-            if (contentEl) contentEl.value = '';
-            if (titleEl) titleEl.value = '';
-            // Clear edit mode if active
-            if (submitBtn) {
-                submitBtn.setAttribute('data-edit-id', '');
-                submitBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px;">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg> Add to Knowledge Base`;
-            }
-            loadedTabs['knowledge'] = false;
-            loadKnowledge();
-        } else {
-            showToast(result.error || 'Could not index text', 'error');
-        }
-    } catch (err) {
-        console.error('Add knowledge error:', err);
-        showToast('Network error occurred', 'error');
-    } finally {
-        if (submitBtn) {
-            submitBtn.disabled = false;
-            // If not already reset above (error path)
-            if (submitBtn.innerHTML.includes('Adding')) {
-                submitBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px;">
-                    <line x1="12" y1="5" x2="12" y2="19"></line>
-                    <line x1="5" y1="12" x2="19" y2="12"></line>
-                </svg> Add to Knowledge Base`;
-            }
-        }
-    }
-}
-
-async function loadDocumentList() {
-    const container = document.getElementById('docList');
-    try {
-        const data = await API.getKnowledgeDocuments();
-        const docs = data.documents || data || [];
-        if (docs.length === 0) {
-            container.innerHTML = '<div class="empty-state"><p>No documents uploaded yet</p></div>';
-            return;
-        }
-        container.innerHTML = docs.map(d => {
-            const docId = d.id || d.document_id;
-            const docName = (d.filename || d.name || 'Document').replace(/'/g, "\\'");
-            const docCat = (d.category || 'general').replace(/'/g, "\\'");
-            return `<div class="doc-item">
-            <div class="doc-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-            </div>
-            <div class="doc-info">
-                <div class="doc-name">${esc(d.filename || d.name || 'Document')}</div>
-                <div class="doc-meta">${d.chunk_count || 0} chunks · ${formatFileSize(d.size || 0)} · ${d.created_at ? new Date(d.created_at).toLocaleDateString() : ''}</div>
-            </div>
-            <div class="doc-actions-row">
-                <button class="doc-edit" onclick="editDocument('${docId}', '${docName}', '${docCat}')" title="Edit">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                </button>
-                <button class="doc-delete" onclick="deleteDocument('${docId}')" title="Delete">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                </button>
-            </div>
-        </div>`;
-        }).join('');
-    } catch { container.innerHTML = '<div class="empty-state"><p>Failed to load documents</p></div>'; }
-}
-
-async function deleteDocument(docId) {
-    if (!confirm('Delete this document?')) return;
-    try {
-        await API.deleteKnowledgeDocument(docId);
-        showToast('Document deleted', 'success');
-        loadedTabs['knowledge'] = false;
-        loadKnowledge();
-    } catch { showToast('Delete failed', 'error'); }
-}
-
-function editDocument(docId, title, category) {
-    // Scroll to the add section and populate fields for editing
-    const titleEl = document.getElementById('kbTitle');
-    const contentEl = document.getElementById('kbTextContent');
-    const categoryEl = document.getElementById('kbCategory');
-    const submitBtn = document.getElementById('addKnowledgeBtn');
-
-    if (titleEl) titleEl.value = title || '';
-    if (categoryEl) categoryEl.value = category || 'general';
-    if (contentEl) {
-        contentEl.value = '';
-        contentEl.placeholder = 'Enter the updated content for "' + (title || 'Document') + '".\n\nThe old version will be replaced when you click "Update Knowledge".';
-        contentEl.focus();
-    }
-
-    // Change button to "Update" mode
-    if (submitBtn) {
-        submitBtn.setAttribute('data-edit-id', docId);
-        submitBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:6px;">
-            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-        </svg> Update Knowledge`;
-
-        // Override click to delete old + add new
-        submitBtn.onclick = async () => {
-            const editId = submitBtn.getAttribute('data-edit-id');
-            if (editId) {
-                // Delete old document first
-                try {
-                    await API.deleteKnowledgeDocument(editId);
-                } catch (err) {
-                    console.warn('Could not delete old document during edit:', err);
-                }
-            }
-            // Then add new
-            await handleAddKnowledge();
-            // Reset button back to add mode
-            submitBtn.onclick = handleAddKnowledge;
-        };
-    }
-
-    // Scroll into view
-    const section = document.querySelector('.kb-add-section');
-    if (section) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
 
 /* ═══════════════════════════════════════════════════════════
    TAB 5: WIDGET
@@ -959,15 +783,6 @@ function formatFileSize(bytes) {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   SIDEBAR TOGGLE
-   ═══════════════════════════════════════════════════════════ */
-function setupSidebarToggle() {
-    const sidebar = document.getElementById('sidebar');
-    const toggle = document.getElementById('sidebarToggle');
-    if (toggle) {
-        toggle.addEventListener('click', () => sidebar.classList.toggle('expanded'));
-    }
-}
 
 /* ═══════════════════════════════════════════════════════════
    UPLOAD ZONES (drag-drop)
@@ -1025,7 +840,6 @@ async function loadOrders(page = 1) {
         loadedTabs._ordersListeners = true;
         document.getElementById('orderSearch')?.addEventListener('input', debounce(() => loadOrders(1), 400));
         document.getElementById('orderStatusFilter')?.addEventListener('change', () => loadOrders(1));
-        document.getElementById('simulateOrdersBtn')?.addEventListener('click', simulateOrders);
     }
 }
 
@@ -1065,17 +879,6 @@ async function uploadOrderCSV() {
     }
 }
 
-async function simulateOrders() {
-    try {
-        showToast('Generating demo orders…', 'info');
-        await API.simulateOrders(50);
-        showToast('50 demo orders generated!', 'success');
-        loadedTabs.orders = false;
-        loadOrders(1);
-    } catch (e) {
-        showToast('Simulation failed: ' + (e.message || e), 'error');
-    }
-}
 
 async function deleteOrder(id) {
     if (!confirm('Delete this order?')) return;
@@ -1155,6 +958,7 @@ function showProductForm(editData = null) {
         document.getElementById('prodStock').value = editData.stock_quantity || 0;
         document.getElementById('prodInStock').checked = editData.in_stock !== false;
         document.getElementById('prodDescription').value = editData.description || '';
+        document.getElementById('prodImageUrl').value = editData.image_url || (editData.images && editData.images[0]) || '';
         document.getElementById('prodEditId').value = editData.id || '';
         editingProductId = editData.id;
     } else {
@@ -1166,6 +970,7 @@ function showProductForm(editData = null) {
         document.getElementById('prodStock').value = '';
         document.getElementById('prodInStock').checked = true;
         document.getElementById('prodDescription').value = '';
+        document.getElementById('prodImageUrl').value = '';
         document.getElementById('prodEditId').value = '';
         editingProductId = null;
     }
@@ -1185,6 +990,7 @@ async function saveProduct() {
         stock_quantity: parseInt(document.getElementById('prodStock').value) || 0,
         in_stock: document.getElementById('prodInStock').checked,
         description: document.getElementById('prodDescription').value.trim() || null,
+        image_url: document.getElementById('prodImageUrl').value.trim() || null,
     };
     if (!data.name) { showToast('Product name is required', 'warning'); return; }
     try {
@@ -1205,8 +1011,8 @@ async function saveProduct() {
 
 async function editProduct(id) {
     try {
-        const product = await API.getProduct(id);
-        showProductForm(product);
+        const result = await API.getProduct(id);
+        showProductForm(result.product || result);
     } catch (e) {
         showToast('Failed to load product', 'error');
     }
@@ -1271,7 +1077,6 @@ function debounce(fn, delay) {
 // Make functions globally accessible (used by onclick in HTML)
 window.switchTab = switchTab;
 window.selectConversation = selectConversation;
-window.deleteDocument = deleteDocument;
 window.removeTeamMember = removeTeamMember;
 window.deleteOrder = deleteOrder;
 window.editProduct = editProduct;

@@ -89,6 +89,39 @@ def fuzzy_match_column(header: str) -> Optional[str]:
 
 
 # ═══════════════════════════════════════════════════════════════
+# AUTO-INDEX ORDER TO RAG VECTOR STORE
+# ═══════════════════════════════════════════════════════════════
+
+def _auto_index_order(order: CustomerOrder, tenant_id: int):
+    """Auto-index order to vector store for RAG retrieval (non-blocking)."""
+    try:
+        from app.knowledge.manager import get_knowledge_manager
+        manager = get_knowledge_manager()
+        order_text = (
+            f"Order ID: {order.order_id}\n"
+            f"Customer Name: {order.customer_name or 'N/A'}\n"
+            f"Customer Email: {order.customer_email or 'N/A'}\n"
+            f"Status: {order.status or 'pending'}\n"
+            f"Total Amount: {order.currency or 'USD'} {order.total_amount or 0}\n"
+            f"Tracking Number: {order.tracking_number or 'N/A'}\n"
+            f"Carrier: {order.carrier or 'N/A'}\n"
+            f"Shipping Address: {order.shipping_address or 'N/A'}\n"
+            f"Order Date: {order.order_date or 'N/A'}\n"
+            f"Notes: {order.notes or 'N/A'}"
+        )
+        manager.upload_document(
+            client_id=str(tenant_id),
+            content=order_text.encode("utf-8"),
+            filename=f"order_{order.order_id}.txt",
+            doc_type="order",
+            category="order"
+        )
+        logger.info(f"Auto-indexed order {order.order_id} to vector store")
+    except Exception as e:
+        logger.warning(f"Order auto-index failed (non-blocking): {e}")
+
+
+# ═══════════════════════════════════════════════════════════════
 # ENDPOINTS
 # ═══════════════════════════════════════════════════════════════
 
@@ -161,6 +194,14 @@ async def upload_order_csv(
             errors.append(f"Row {i+1}: {str(e)}")
 
     db.commit()
+
+    # ★ V4: Auto-index all imported orders to vector store for RAG
+    orders_to_index = db.query(CustomerOrder).filter(
+        CustomerOrder.tenant_id == current_user.tenant_id,
+        CustomerOrder.source == "csv"
+    ).order_by(CustomerOrder.created_at.desc()).limit(created).all()
+    for order in orders_to_index:
+        _auto_index_order(order, current_user.tenant_id)
 
     return {
         "success": True,
@@ -288,6 +329,10 @@ async def simulate_orders(
     for order in orders:
         db.add(order)
     db.commit()
+
+    # ★ V4: Auto-index simulated orders to vector store for RAG
+    for order in orders:
+        _auto_index_order(order, current_user.tenant_id)
 
     return {
         "success": True,
