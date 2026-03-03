@@ -1,7 +1,7 @@
 /**
  * ═══════════════════════════════════════════════════════════
  * Behavioral Agentic AI — Client Dashboard (Single-Page)
- * All 6 tabs powered by api.js
+ * All 8 tabs powered by api.js (FRD v4.0)
  * ═══════════════════════════════════════════════════════════
  */
 
@@ -14,9 +14,11 @@ let allConversations = [];    // cached conversation list
 const TAB_META = {
     overview: { title: 'Overview', subtitle: 'Welcome back — here\'s what\'s happening today' },
     conversations: { title: 'Conversations', subtitle: 'Monitor and respond to customer conversations' },
-    analytics: { title: 'Analytics', subtitle: 'Insights into sentiment, escalations, and performance' },
     knowledge: { title: 'Knowledge Base', subtitle: 'Manage documents that power your AI responses' },
-    widget: { title: 'Widget', subtitle: 'Configure and deploy your chat widget' },
+    orders: { title: 'Order Data', subtitle: 'Manage order data for AI order-tracking queries' },
+    products: { title: 'Products', subtitle: 'Manage product listings for your AI catalog' },
+    widget: { title: 'Widget Config', subtitle: 'Configure and deploy your chat widget' },
+    analytics: { title: 'Analytics', subtitle: 'Insights into sentiment, escalations, and performance' },
     settings: { title: 'Settings', subtitle: 'Manage your profile, company, and preferences' },
 };
 
@@ -28,9 +30,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     loadUserInfo();
     setupTabNavigation();
+    setupSidebarToggle();
     setupMobileMenu();
     setupSettingsSubNav();
     setupLogout();
+    setupUploadZones();
 
     // Load initial tab from hash or default to overview
     const hash = window.location.hash.replace('#', '') || 'overview';
@@ -109,6 +113,8 @@ function loadTabData(tab) {
         case 'conversations': loadConversations(); break;
         case 'analytics': loadAnalytics(); break;
         case 'knowledge': loadKnowledge(); break;
+        case 'orders': loadOrders(); break;
+        case 'products': loadProducts(); break;
         case 'widget': loadWidget(); break;
         case 'settings': loadSettings(); break;
     }
@@ -697,11 +703,13 @@ async function loadWidget() {
 
     // Save
     document.getElementById('saveWidgetBtn').onclick = async () => {
+        const widgetTypeEl = document.getElementById('widgetType');
         const data = {
             bot_name: document.getElementById('widgetBotName').value,
             welcome_message: document.getElementById('widgetWelcome').value,
             primary_color: document.getElementById('widgetColor').value,
             position: document.getElementById('widgetPosition').value,
+            widget_type: widgetTypeEl ? widgetTypeEl.value : 'full',
             is_active: document.getElementById('widgetEnabled').checked,
         };
         try {
@@ -950,8 +958,321 @@ function formatFileSize(bytes) {
     return (bytes / 1048576).toFixed(1) + ' MB';
 }
 
-// Make switchTab globally accessible (used by onclick in HTML)
+/* ═══════════════════════════════════════════════════════════
+   SIDEBAR TOGGLE
+   ═══════════════════════════════════════════════════════════ */
+function setupSidebarToggle() {
+    const sidebar = document.getElementById('sidebar');
+    const toggle = document.getElementById('sidebarToggle');
+    if (toggle) {
+        toggle.addEventListener('click', () => sidebar.classList.toggle('expanded'));
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   UPLOAD ZONES (drag-drop)
+   ═══════════════════════════════════════════════════════════ */
+function setupUploadZones() {
+    // Order CSV upload zone
+    const orderZone = document.getElementById('orderUploadZone');
+    const orderInput = document.getElementById('orderCsvInput');
+    if (orderZone && orderInput) {
+        orderZone.addEventListener('click', () => orderInput.click());
+        orderZone.addEventListener('dragover', (e) => { e.preventDefault(); orderZone.classList.add('dragover'); });
+        orderZone.addEventListener('dragleave', () => orderZone.classList.remove('dragover'));
+        orderZone.addEventListener('drop', (e) => {
+            e.preventDefault(); orderZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length) { orderInput.files = e.dataTransfer.files; uploadOrderCSV(); }
+        });
+        orderInput.addEventListener('change', () => { if (orderInput.files.length) uploadOrderCSV(); });
+    }
+    // Product CSV upload
+    const prodInput = document.getElementById('productCsvInput');
+    const prodBtn = document.getElementById('importProductCsvBtn');
+    if (prodBtn && prodInput) {
+        prodBtn.addEventListener('click', () => prodInput.click());
+        prodInput.addEventListener('change', () => { if (prodInput.files.length) uploadProductCSV(); });
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TAB: ORDERS (V4 NEW)
+   ═══════════════════════════════════════════════════════════ */
+let orderPage = 1;
+async function loadOrders(page = 1) {
+    orderPage = page;
+    try {
+        // Load stats
+        const stats = await API.getOrderStats();
+        document.getElementById('orderTotal').textContent = stats.total || 0;
+        document.getElementById('orderPending').textContent = stats.by_status?.pending || 0;
+        document.getElementById('orderShipped').textContent = stats.by_status?.shipped || 0;
+        document.getElementById('orderDelivered').textContent = stats.by_status?.delivered || 0;
+
+        // Load table
+        const search = document.getElementById('orderSearch')?.value || '';
+        const status = document.getElementById('orderStatusFilter')?.value || '';
+        const data = await API.getOrders(page, 20, search, status);
+        renderOrderTable(data.orders || []);
+        renderPagination('orderPagination', data.page || 1, data.total_pages || data.pages || 1, (p) => loadOrders(p));
+    } catch (e) {
+        console.error('Orders error:', e);
+        showToast('Failed to load orders', 'error');
+    }
+
+    // Setup search/filter listeners (once)
+    if (!loadedTabs._ordersListeners) {
+        loadedTabs._ordersListeners = true;
+        document.getElementById('orderSearch')?.addEventListener('input', debounce(() => loadOrders(1), 400));
+        document.getElementById('orderStatusFilter')?.addEventListener('change', () => loadOrders(1));
+        document.getElementById('simulateOrdersBtn')?.addEventListener('click', simulateOrders);
+    }
+}
+
+function renderOrderTable(orders) {
+    const tbody = document.getElementById('orderTableBody');
+    if (!orders.length) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px">No orders found</td></tr>';
+        return;
+    }
+    tbody.innerHTML = orders.map(o => `
+        <tr>
+            <td><strong>${esc(o.order_id)}</strong></td>
+            <td>${esc(o.customer_name || '—')}</td>
+            <td>${esc(o.customer_email || '—')}</td>
+            <td><span class="order-status order-status--${(o.status || 'pending').toLowerCase()}">${esc(o.status || 'pending')}</span></td>
+            <td>${o.total_amount ? `${o.currency || '$'}${Number(o.total_amount).toFixed(2)}` : '—'}</td>
+            <td>${o.order_date ? new Date(o.order_date).toLocaleDateString() : '—'}</td>
+            <td><button class="btn btn-sm btn-ghost" onclick="deleteOrder(${o.id})" title="Delete"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button></td>
+        </tr>
+    `).join('');
+}
+
+async function uploadOrderCSV() {
+    const input = document.getElementById('orderCsvInput');
+    if (!input.files.length) return;
+    const formData = new FormData();
+    formData.append('file', input.files[0]);
+    try {
+        showToast('Uploading CSV…', 'info');
+        const result = await API.uploadOrderCSV(formData);
+        showToast(`${result.created || 0} orders imported, ${result.skipped || 0} skipped!`, 'success');
+        input.value = '';
+        loadedTabs.orders = false;
+        loadOrders(1);
+    } catch (e) {
+        showToast('CSV upload failed: ' + (e.message || e), 'error');
+    }
+}
+
+async function simulateOrders() {
+    try {
+        showToast('Generating demo orders…', 'info');
+        await API.simulateOrders(50);
+        showToast('50 demo orders generated!', 'success');
+        loadedTabs.orders = false;
+        loadOrders(1);
+    } catch (e) {
+        showToast('Simulation failed: ' + (e.message || e), 'error');
+    }
+}
+
+async function deleteOrder(id) {
+    if (!confirm('Delete this order?')) return;
+    try {
+        await API.deleteOrder(id);
+        showToast('Order deleted', 'success');
+        loadOrders(orderPage);
+    } catch (e) {
+        showToast('Delete failed', 'error');
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TAB: PRODUCTS (V4 NEW)
+   ═══════════════════════════════════════════════════════════ */
+let productPage = 1;
+let editingProductId = null;
+
+async function loadProducts(page = 1) {
+    productPage = page;
+    try {
+        const search = document.getElementById('productSearch')?.value || '';
+        const category = document.getElementById('productCategoryFilter')?.value || '';
+        const data = await API.getProducts(page, 20, search, category);
+        renderProductGrid(data.products || []);
+        renderPagination('productPagination', data.page || 1, data.total_pages || data.pages || 1, (p) => loadProducts(p));
+    } catch (e) {
+        console.error('Products error:', e);
+        document.getElementById('productGrid').innerHTML = '<div class="empty-state"><p>Failed to load products</p></div>';
+    }
+
+    if (!loadedTabs._productsListeners) {
+        loadedTabs._productsListeners = true;
+        document.getElementById('productSearch')?.addEventListener('input', debounce(() => loadProducts(1), 400));
+        document.getElementById('productCategoryFilter')?.addEventListener('change', () => loadProducts(1));
+        document.getElementById('addProductBtn')?.addEventListener('click', showProductForm);
+        document.getElementById('cancelProductBtn')?.addEventListener('click', hideProductForm);
+        document.getElementById('saveProductBtn')?.addEventListener('click', saveProduct);
+    }
+}
+
+function renderProductGrid(products) {
+    const grid = document.getElementById('productGrid');
+    if (!products.length) {
+        grid.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px;height:48px;margin-bottom:12px;opacity:.3"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg><p>No products yet — add your first product or import via CSV</p></div>';
+        return;
+    }
+    grid.innerHTML = products.map(p => `
+        <div class="product-card">
+            <div class="product-card-img">
+                ${p.images && p.images.length ? `<img src="${esc(p.images[0])}" alt="${esc(p.name)}" style="width:100%;height:100%;object-fit:cover">` : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>'}
+            </div>
+            <div class="product-card-body">
+                <div class="product-card-name">${esc(p.name)}</div>
+                <div class="product-card-price">${p.price ? `${p.currency || 'USD'} ${Number(p.price).toFixed(2)}` : 'No price'}</div>
+                <div class="product-card-meta">
+                    ${p.sku ? `<span class="product-card-sku">SKU: ${esc(p.sku)}</span>` : ''}
+                    <span class="product-card-stock product-card-stock--${p.in_stock ? 'in' : 'out'}">${p.in_stock ? 'In Stock' : 'Out of Stock'}</span>
+                </div>
+                <div class="product-card-actions">
+                    <button class="btn btn-sm btn-secondary" onclick="editProduct(${p.id})">Edit</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteProduct(${p.id})">Delete</button>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function showProductForm(editData = null) {
+    document.getElementById('productFormWrap').style.display = 'block';
+    if (editData && typeof editData === 'object') {
+        document.getElementById('productFormTitle').textContent = 'Edit Product';
+        document.getElementById('prodName').value = editData.name || '';
+        document.getElementById('prodSku').value = editData.sku || '';
+        document.getElementById('prodPrice').value = editData.price || '';
+        document.getElementById('prodCategory').value = editData.category || '';
+        document.getElementById('prodStock').value = editData.stock_quantity || 0;
+        document.getElementById('prodInStock').checked = editData.in_stock !== false;
+        document.getElementById('prodDescription').value = editData.description || '';
+        document.getElementById('prodEditId').value = editData.id || '';
+        editingProductId = editData.id;
+    } else {
+        document.getElementById('productFormTitle').textContent = 'Add Product';
+        document.getElementById('prodName').value = '';
+        document.getElementById('prodSku').value = '';
+        document.getElementById('prodPrice').value = '';
+        document.getElementById('prodCategory').value = '';
+        document.getElementById('prodStock').value = '';
+        document.getElementById('prodInStock').checked = true;
+        document.getElementById('prodDescription').value = '';
+        document.getElementById('prodEditId').value = '';
+        editingProductId = null;
+    }
+}
+
+function hideProductForm() {
+    document.getElementById('productFormWrap').style.display = 'none';
+    editingProductId = null;
+}
+
+async function saveProduct() {
+    const data = {
+        name: document.getElementById('prodName').value.trim(),
+        sku: document.getElementById('prodSku').value.trim() || null,
+        price: parseFloat(document.getElementById('prodPrice').value) || null,
+        category: document.getElementById('prodCategory').value.trim() || null,
+        stock_quantity: parseInt(document.getElementById('prodStock').value) || 0,
+        in_stock: document.getElementById('prodInStock').checked,
+        description: document.getElementById('prodDescription').value.trim() || null,
+    };
+    if (!data.name) { showToast('Product name is required', 'warning'); return; }
+    try {
+        if (editingProductId) {
+            await API.updateProduct(editingProductId, data);
+            showToast('Product updated!', 'success');
+        } else {
+            await API.createProduct(data);
+            showToast('Product created!', 'success');
+        }
+        hideProductForm();
+        loadedTabs.products = false;
+        loadProducts(1);
+    } catch (e) {
+        showToast('Save failed: ' + (e.message || e), 'error');
+    }
+}
+
+async function editProduct(id) {
+    try {
+        const product = await API.getProduct(id);
+        showProductForm(product);
+    } catch (e) {
+        showToast('Failed to load product', 'error');
+    }
+}
+
+async function deleteProduct(id) {
+    if (!confirm('Delete this product?')) return;
+    try {
+        await API.deleteProduct(id);
+        showToast('Product deleted', 'success');
+        loadProducts(productPage);
+    } catch (e) {
+        showToast('Delete failed', 'error');
+    }
+}
+
+async function uploadProductCSV() {
+    const input = document.getElementById('productCsvInput');
+    if (!input.files.length) return;
+    const formData = new FormData();
+    formData.append('file', input.files[0]);
+    try {
+        showToast('Uploading product CSV…', 'info');
+        const result = await API.uploadProductCSV(formData);
+        showToast(`${result.created || 0} products imported!`, 'success');
+        input.value = '';
+        loadedTabs.products = false;
+        loadProducts(1);
+    } catch (e) {
+        showToast('Import failed: ' + (e.message || e), 'error');
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PAGINATION RENDERER (generic)
+   ═══════════════════════════════════════════════════════════ */
+function renderPagination(containerId, currentPage, totalPages, onPageChange) {
+    const el = document.getElementById(containerId);
+    if (!el || totalPages <= 1) { if (el) el.innerHTML = ''; return; }
+    let html = `<button class="pagination-btn" ${currentPage <= 1 ? 'disabled' : ''} onclick="void(0)">‹ Prev</button>`;
+    for (let i = 1; i <= totalPages; i++) {
+        html += `<button class="pagination-btn ${i === currentPage ? 'active' : ''}" onclick="void(0)">${i}</button>`;
+    }
+    html += `<button class="pagination-btn" ${currentPage >= totalPages ? 'disabled' : ''} onclick="void(0)">Next ›</button>`;
+    el.innerHTML = html;
+    el.querySelectorAll('.pagination-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const txt = btn.textContent.trim();
+            if (txt === '‹ Prev' && currentPage > 1) onPageChange(currentPage - 1);
+            else if (txt === 'Next ›' && currentPage < totalPages) onPageChange(currentPage + 1);
+            else if (!isNaN(txt)) onPageChange(parseInt(txt));
+        });
+    });
+}
+
+/* ─── Debounce helper ─────────────────────────────────────── */
+function debounce(fn, delay) {
+    let timer;
+    return (...args) => { clearTimeout(timer); timer = setTimeout(() => fn(...args), delay); };
+}
+
+// Make functions globally accessible (used by onclick in HTML)
 window.switchTab = switchTab;
 window.selectConversation = selectConversation;
 window.deleteDocument = deleteDocument;
 window.removeTeamMember = removeTeamMember;
+window.deleteOrder = deleteOrder;
+window.editProduct = editProduct;
+window.deleteProduct = deleteProduct;

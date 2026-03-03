@@ -336,10 +336,14 @@ _possible_frontend_paths = [
 FRONTEND_DIR = next((p for p in _possible_frontend_paths if os.path.isdir(p)), None)
 
 if FRONTEND_DIR:
-    # Serve static assets (CSS, JS, images)
+    # Serve static assets (CSS, JS, images, assets)
     app.mount("/css", StaticFiles(directory=os.path.join(FRONTEND_DIR, "css")), name="css")
     app.mount("/js", StaticFiles(directory=os.path.join(FRONTEND_DIR, "js")), name="js")
     app.mount("/widget", StaticFiles(directory=os.path.join(FRONTEND_DIR, "widget")), name="widget-static")
+    # ★ Serve /assets/ for favicons, logos, and images
+    _assets_dir = os.path.join(FRONTEND_DIR, "assets")
+    if os.path.isdir(_assets_dir):
+        app.mount("/assets", StaticFiles(directory=_assets_dir), name="assets")
 
     # Serve HTML pages
     @app.get("/login")

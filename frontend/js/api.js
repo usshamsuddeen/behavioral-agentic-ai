@@ -327,51 +327,70 @@ const API = {
     },
 
     // ==========================================
-    // SETTINGS & TEAM (FR-3.6)
+    // ORDERS (V4 NEW — Zone 8)
     // ==========================================
 
-    async getSettings() {
-        return this.request('/settings');
+    async getOrders(page = 1, limit = 20, search = '', status = '') {
+        let url = `/orders?page=${page}&limit=${limit}`;
+        if (search) url += `&search=${encodeURIComponent(search)}`;
+        if (status) url += `&status=${encodeURIComponent(status)}`;
+        return this.request(url);
     },
 
-    async updateProfile(data) {
-        return this.request('/settings/profile', {
-            method: 'PUT',
-            body: JSON.stringify(data)
+    async getOrderStats() {
+        return this.request('/orders/stats');
+    },
+
+    async uploadOrderCSV(formData) {
+        return this.upload('/orders/upload-csv', formData);
+    },
+
+    async simulateOrders(count = 50) {
+        return this.request('/orders/simulate', {
+            method: 'POST',
+            body: JSON.stringify({ count })
         });
     },
 
-    async updateTenantSettings(data) {
-        return this.request('/settings/tenant', {
-            method: 'PUT',
-            body: JSON.stringify(data)
-        });
+    async deleteOrder(id) {
+        return this.request(`/orders/${id}`, { method: 'DELETE' });
     },
 
-    async updatePreferences(data) {
-        return this.request('/settings/preferences', {
-            method: 'PUT',
-            body: JSON.stringify(data)
-        });
+    // ==========================================
+    // PRODUCTS (V4 NEW — Zone 3)
+    // ==========================================
+
+    async getProducts(page = 1, limit = 20, search = '', category = '') {
+        let url = `/products?page=${page}&limit=${limit}`;
+        if (search) url += `&search=${encodeURIComponent(search)}`;
+        if (category) url += `&category=${encodeURIComponent(category)}`;
+        return this.request(url);
     },
 
-    async inviteTeamMember(data) {
-        return this.request('/settings/invite-team', {
+    async getProduct(id) {
+        return this.request(`/products/${id}`);
+    },
+
+    async createProduct(data) {
+        return this.request('/products', {
             method: 'POST',
             body: JSON.stringify(data)
         });
     },
 
-    async removeTeamMember(userId) {
-        return this.request(`/settings/team/${userId}`, {
-            method: 'DELETE'
+    async updateProduct(id, data) {
+        return this.request(`/products/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(data)
         });
     },
 
-    async regenerateApiKey() {
-        return this.request('/settings/regenerate-key', {
-            method: 'POST'
-        });
+    async deleteProduct(id) {
+        return this.request(`/products/${id}`, { method: 'DELETE' });
+    },
+
+    async uploadProductCSV(formData) {
+        return this.upload('/products/upload-csv', formData);
     },
 
     // ==========================================
@@ -410,6 +429,10 @@ const API = {
             method: 'POST',
             body: JSON.stringify({ text, source, doc_type: docType, category })
         });
+    },
+
+    async uploadKnowledgeFile(formData) {
+        return this.upload('/knowledge/upload', formData);
     }
 };
 
