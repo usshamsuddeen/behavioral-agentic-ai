@@ -160,20 +160,25 @@ URGENT_KEYWORDS = {
 def get_sentiment_label(sentiment: str, score: float) -> str:
     """Get human readable sentiment label.
     Score is on 0.0-1.0 scale: low=negative, 0.5=neutral, high=positive.
+    16-tier granularity for inch-perfect emotional differentiation.
     """
     if sentiment == "positive":
-        if score > 0.92: return "Delighted"
+        if score > 0.95: return "Ecstatic"
+        if score > 0.88: return "Delighted"
         if score > 0.82: return "Very Happy"
-        if score > 0.72: return "Happy"
-        if score > 0.62: return "Pleased"
+        if score > 0.75: return "Happy"
+        if score > 0.68: return "Pleased"
+        if score > 0.62: return "Content"
         return "Satisfied"
     elif sentiment == "negative":
-        if score < 0.08: return "Furious"
+        if score < 0.05: return "Enraged"
+        if score < 0.10: return "Furious"
         if score < 0.15: return "Very Frustrated"
         if score < 0.22: return "Frustrated"
-        if score < 0.30: return "Upset"
-        if score < 0.38: return "Disappointed"
-        return "Slightly Unhappy"
+        if score < 0.28: return "Upset"
+        if score < 0.34: return "Disappointed"
+        if score < 0.40: return "Slightly Unhappy"
+        return "Concerned"
     if score > 0.55: return "Leaning Positive"
     if score < 0.45: return "Leaning Negative"
     return "Neutral"

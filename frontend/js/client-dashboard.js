@@ -334,10 +334,25 @@ function renderMessages(messages) {
             : type === 'ai' ? 'AI'
                 : '🧑';
 
+        // ── Sentiment Pill Badge (hero section style) ──────────────
         let sentimentBadge = '';
         if (m.sentiment_label || m.sentiment_score != null) {
-            const sl = m.sentiment_label || (m.sentiment_score > 0.6 ? 'positive' : m.sentiment_score < 0.4 ? 'negative' : 'neutral');
-            sentimentBadge = `<span class="msg-sentiment msg-sentiment--${sl}">${sl} ${m.sentiment_score != null ? (m.sentiment_score * 100).toFixed(0) + '%' : ''}</span>`;
+            const score = m.sentiment_score != null ? m.sentiment_score : 0.5;
+            const pct = Math.round(score * 100);
+
+            if (type === 'ai') {
+                // AI responses → white/subtle pill
+                const emotionLabel = _getEmotionLabel('positive', score);
+                sentimentBadge = `<span class="msg-sentiment-pill msg-sentiment-pill--ai">` +
+                    `<span class="msg-sentiment-dot"></span>${emotionLabel} · ${pct}%</span>`;
+            } else {
+                // Customer messages → colorful pill by emotion
+                const sentiment = m.sentiment_label || (score > 0.58 ? 'positive' : score < 0.42 ? 'negative' : 'neutral');
+                const emotionLabel = _getEmotionLabel(sentiment, score);
+                const cssClass = _labelToClass(emotionLabel);
+                sentimentBadge = `<span class="msg-sentiment-pill msg-sentiment-pill--${cssClass}">` +
+                    `<span class="msg-sentiment-dot"></span>${emotionLabel} · ${pct}%</span>`;
+            }
         }
 
         const time = m.created_at ? new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
@@ -353,6 +368,40 @@ function renderMessages(messages) {
     }).join('');
 
     container.scrollTop = container.scrollHeight;
+}
+
+/**
+ * Map sentiment + score → 16-tier emotion label
+ * Mirrors backend get_sentiment_label() in sentiment.py
+ */
+function _getEmotionLabel(sentiment, score) {
+    if (sentiment === 'positive' || score >= 0.58) {
+        if (score > 0.95) return 'Ecstatic';
+        if (score > 0.88) return 'Delighted';
+        if (score > 0.82) return 'Very Happy';
+        if (score > 0.75) return 'Happy';
+        if (score > 0.68) return 'Pleased';
+        if (score > 0.62) return 'Content';
+        return 'Satisfied';
+    }
+    if (sentiment === 'negative' || score <= 0.42) {
+        if (score < 0.05) return 'Enraged';
+        if (score < 0.10) return 'Furious';
+        if (score < 0.15) return 'Very Frustrated';
+        if (score < 0.22) return 'Frustrated';
+        if (score < 0.28) return 'Upset';
+        if (score < 0.34) return 'Disappointed';
+        if (score < 0.40) return 'Slightly Unhappy';
+        return 'Concerned';
+    }
+    if (score > 0.55) return 'Leaning Positive';
+    if (score < 0.45) return 'Leaning Negative';
+    return 'Neutral';
+}
+
+/** Convert label like "Very Frustrated" → CSS class "very-frustrated" */
+function _labelToClass(label) {
+    return label.toLowerCase().replace(/\s+/g, '-');
 }
 
 function setupChatActions(convId, conv) {

@@ -2888,3 +2888,171 @@
 .widget-status--inactive {
   color: var(--text-muted)
 }
+
+/* ═══════════════════════════════════════════════════
+   SENTIMENT PILL BADGES — Chat Messages
+   Matches hero section "Frustrated - 92%" style
+   ═══════════════════════════════════════════════════ */
+
+/* Base pill badge */
+.msg-sentiment-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 5px;
+  padding: 2px 10px 2px 7px;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.6;
+  white-space: nowrap;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  animation: sentimentFadeIn 0.4s ease-out;
+}
+
+@keyframes sentimentFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.msg-sentiment-pill:hover {
+  opacity: 0.85;
+  transform: scale(1.03);
+}
+
+/* Pulsing dot indicator */
+.msg-sentiment-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  animation: sentimentPulse 2.5s ease-in-out infinite;
+}
+
+@keyframes sentimentPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.5; transform: scale(1.3); }
+}
+
+/* ── Customer Message Sentiment Colors ─────────────────── */
+
+/* Enraged / Furious (0-10%) — deep red */
+.msg-sentiment-pill--enraged,
+.msg-sentiment-pill--furious {
+  background: rgba(239, 68, 68, 0.18);
+  color: #fca5a5;
+}
+.msg-sentiment-pill--enraged .msg-sentiment-dot,
+.msg-sentiment-pill--furious .msg-sentiment-dot {
+  background: #ef4444;
+  box-shadow: 0 0 6px rgba(239, 68, 68, 0.6);
+}
+
+/* Very Frustrated / Frustrated (10-22%) — red-orange */
+.msg-sentiment-pill--very-frustrated,
+.msg-sentiment-pill--frustrated {
+  background: rgba(249, 115, 22, 0.16);
+  color: #fdba74;
+}
+.msg-sentiment-pill--very-frustrated .msg-sentiment-dot,
+.msg-sentiment-pill--frustrated .msg-sentiment-dot {
+  background: #f97316;
+  box-shadow: 0 0 6px rgba(249, 115, 22, 0.6);
+}
+
+/* Upset / Disappointed (22-34%) — warm orange */
+.msg-sentiment-pill--upset,
+.msg-sentiment-pill--disappointed {
+  background: rgba(251, 146, 60, 0.14);
+  color: #fed7aa;
+}
+.msg-sentiment-pill--upset .msg-sentiment-dot,
+.msg-sentiment-pill--disappointed .msg-sentiment-dot {
+  background: #fb923c;
+  box-shadow: 0 0 6px rgba(251, 146, 60, 0.5);
+}
+
+/* Slightly Unhappy / Concerned (34-42%) — amber */
+.msg-sentiment-pill--slightly-unhappy,
+.msg-sentiment-pill--concerned {
+  background: rgba(245, 158, 11, 0.14);
+  color: #fde68a;
+}
+.msg-sentiment-pill--slightly-unhappy .msg-sentiment-dot,
+.msg-sentiment-pill--concerned .msg-sentiment-dot {
+  background: #f59e0b;
+  box-shadow: 0 0 6px rgba(245, 158, 11, 0.5);
+}
+
+/* Leaning Negative / Neutral / Leaning Positive (42-58%) — blue-gray */
+.msg-sentiment-pill--leaning-negative,
+.msg-sentiment-pill--neutral,
+.msg-sentiment-pill--leaning-positive {
+  background: rgba(148, 163, 184, 0.14);
+  color: #cbd5e1;
+}
+.msg-sentiment-pill--leaning-negative .msg-sentiment-dot,
+.msg-sentiment-pill--neutral .msg-sentiment-dot,
+.msg-sentiment-pill--leaning-positive .msg-sentiment-dot {
+  background: #94a3b8;
+  box-shadow: 0 0 6px rgba(148, 163, 184, 0.4);
+}
+
+/* Satisfied / Content (58-68%) — soft teal */
+.msg-sentiment-pill--satisfied,
+.msg-sentiment-pill--content {
+  background: rgba(20, 184, 166, 0.14);
+  color: #99f6e4;
+}
+.msg-sentiment-pill--satisfied .msg-sentiment-dot,
+.msg-sentiment-pill--content .msg-sentiment-dot {
+  background: #14b8a6;
+  box-shadow: 0 0 6px rgba(20, 184, 166, 0.5);
+}
+
+/* Pleased / Happy (68-82%) — green */
+.msg-sentiment-pill--pleased,
+.msg-sentiment-pill--happy {
+  background: rgba(34, 197, 94, 0.15);
+  color: #86efac;
+}
+.msg-sentiment-pill--pleased .msg-sentiment-dot,
+.msg-sentiment-pill--happy .msg-sentiment-dot {
+  background: #22c55e;
+  box-shadow: 0 0 6px rgba(34, 197, 94, 0.5);
+}
+
+/* Very Happy / Delighted (82-95%) — vibrant green */
+.msg-sentiment-pill--very-happy,
+.msg-sentiment-pill--delighted {
+  background: rgba(16, 185, 129, 0.16);
+  color: #6ee7b7;
+}
+.msg-sentiment-pill--very-happy .msg-sentiment-dot,
+.msg-sentiment-pill--delighted .msg-sentiment-dot {
+  background: #10b981;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+}
+
+/* Ecstatic (95%+) — bright emerald with glow */
+.msg-sentiment-pill--ecstatic {
+  background: rgba(5, 150, 105, 0.2);
+  color: #a7f3d0;
+}
+.msg-sentiment-pill--ecstatic .msg-sentiment-dot {
+  background: #059669;
+  box-shadow: 0 0 10px rgba(5, 150, 105, 0.7);
+}
+
+/* ── AI Response Sentiment — White / Subtle ─────────────── */
+.msg-sentiment-pill--ai {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.msg-sentiment-pill--ai .msg-sentiment-dot {
+  background: rgba(255, 255, 255, 0.4);
+  box-shadow: none;
+  animation: none;
+}

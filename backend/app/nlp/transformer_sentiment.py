@@ -5,19 +5,24 @@ Production-grade implementation using nlptown/bert-base-multilingual-uncased-sen
 Features:
 - Singleton model loading (load once, reuse across requests)
 - LRU caching for repeated messages (performance optimization)
-- Graceful fallback to VADER/keywords if model fails
+- Emotional intensity modifiers (emoji, caps, punctuation, repetition)
+- Sigmoid spread for granular 0-100% scores
+- Chat-text guard for BERT misclassification on conversational text
 - Thread-safe inference
-- Memory-efficient with lazy loading
 - CPU-optimized (no GPU required)
 
 Author: Behavioral Agentic AI Team
-Version: 1.0.0
+Version: 5.0.0
 """
 
 import os
+import re
+import math
+import random
 import logging
 from typing import Dict, Optional, Tuple
 from functools import lru_cache
+from collections import Counter
 import threading
 
 # Configure logging
@@ -36,6 +41,21 @@ MODEL_NAME = "nlptown/bert-base-multilingual-uncased-sentiment"
 MAX_LENGTH = 512  # BERT max token length
 CACHE_SIZE = 1000  # LRU cache size for repeated messages
 
+# ═══════════════════════════════════════════════════════════════════
+# Emoji sentiment dictionaries
+# ═══════════════════════════════════════════════════════════════════
+POSITIVE_EMOJIS = {
+    "😀", "😃", "😄", "😁", "😆", "😊", "🥰", "😍", "🤩", "😘",
+    "🥺", "💕", "❤️", "💖", "💗", "💓", "👍", "👏", "🎉", "🎊",
+    "✨", "🌟", "⭐", "🔥", "💯", "🙏", "😇", "🤗", "💪", "👌",
+    "✅", "🥇", "🤝", "💐", "🌹", "😋", "🥳", "💝", "💞", "🫶",
+}
+NEGATIVE_EMOJIS = {
+    "😡", "🤬", "😠", "😤", "😢", "😭", "😞", "😔", "😟", "😩",
+    "😫", "🥵", "😰", "😨", "😱", "💔", "👎", "🤮", "😒", "🙄",
+    "😑", "💀", "☠️", "❌", "⛔", "🚫", "😾", "👊", "🤦", "😿",
+}
+
 
 def _load_model() -> bool:
     """
@@ -44,12 +64,10 @@ def _load_model() -> bool:
     """
     global _model, _tokenizer, _model_loaded, _model_load_attempted
     
-    # Check if already attempted to avoid repeated failures
     if _model_load_attempted:
         return _model_loaded
     
     with _model_lock:
-        # Double-check inside lock
         if _model_load_attempted:
             return _model_loaded
         
@@ -58,23 +76,19 @@ def _load_model() -> bool:
         try:
             logger.info("🔄 Loading BERT sentiment model...")
             
-            # Import here to avoid startup delay if model not needed
             from transformers import AutoTokenizer, AutoModelForSequenceClassification
             import torch
             
-            # Set torch to use CPU (portable, no GPU dependency)
             device = torch.device("cpu")
             
-            # Load tokenizer and model
             _tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
             _model = AutoModelForSequenceClassification.from_pretrained(MODEL_NAME)
             _model.to(device)
-            _model.eval()  # Set to evaluation mode (faster, no gradients)
+            _model.eval()
             
             _model_loaded = True
             logger.info("✅ BERT sentiment model loaded successfully!")
             
-            # Pre-warm the model with a dummy inference
             _prewarm_model()
             
             return True
@@ -116,14 +130,16 @@ def is_model_available() -> bool:
 
 
 @lru_cache(maxsize=CACHE_SIZE)
-def _cached_inference(text: str) -> Tuple[int, float]:
+def _cached_inference(text: str) -> Tuple:
     """
     Cached inference for repeated messages.
-    Returns: (star_rating 1-5, confidence 0-1)
+    Returns: (star_rating 1-5, confidence 0-1, probabilities tuple[5])
+    
+    The full probability distribution enables weighted scoring
+    for granular 0-100% sentiment instead of 5 fixed buckets.
     """
     import torch
     
-    # Tokenize input
     inputs = _tokenizer(
         text,
         return_tensors="pt",
@@ -132,177 +148,257 @@ def _cached_inference(text: str) -> Tuple[int, float]:
         padding=True
     )
     
-    # Run inference (no gradients needed)
     with torch.no_grad():
         outputs = _model(**inputs)
         logits = outputs.logits
         
-    # Get probabilities using softmax
     probabilities = torch.nn.functional.softmax(logits, dim=-1)
     
-    # Get predicted class (0-4 maps to 1-5 stars)
     predicted_class = torch.argmax(probabilities, dim=-1).item()
     confidence = probabilities[0][predicted_class].item()
     
-    star_rating = predicted_class + 1  # Convert 0-4 to 1-5
+    star_rating = predicted_class + 1
+    probs = tuple(probabilities[0].tolist())
     
-    return star_rating, confidence
+    return star_rating, confidence, probs
 
+
+# ═══════════════════════════════════════════════════════════════════
+# EMOTIONAL INTENSITY HELPERS
+# ═══════════════════════════════════════════════════════════════════
+
+def _emoji_modifier(text: str) -> float:
+    """Detect emoji sentiment. Returns modifier in [-0.08, +0.08]."""
+    pos = sum(1 for ch in text if ch in POSITIVE_EMOJIS)
+    neg = sum(1 for ch in text if ch in NEGATIVE_EMOJIS)
+    if pos == 0 and neg == 0:
+        return 0.0
+    signal = (pos - neg) * 0.04
+    return max(-0.08, min(0.08, signal))
+
+
+def _punctuation_modifier(text: str, raw_score: float) -> float:
+    """Exclamation/question mark intensity. Returns modifier."""
+    mod = 0.0
+    excl = text.count("!")
+    quest = text.count("?")
+    
+    if excl >= 2:
+        # !!! amplifies whatever direction the score leans
+        direction = 1.0 if raw_score > 0.5 else -1.0
+        mod += direction * min(0.06, excl * 0.012)
+    
+    if quest >= 3:
+        # ??? suggests frustration/confusion
+        mod -= min(0.04, quest * 0.008)
+    
+    return mod
+
+
+def _caps_modifier(text: str, raw_score: float) -> float:
+    """ALL CAPS amplifies emotion. Returns modifier."""
+    alpha_chars = [c for c in text if c.isalpha()]
+    if len(alpha_chars) < 5:
+        return 0.0
+    
+    caps_ratio = sum(1 for c in alpha_chars if c.isupper()) / len(alpha_chars)
+    if caps_ratio < 0.55:
+        return 0.0
+    
+    # SHOUTING — push score further from neutral
+    direction = 1.0 if raw_score > 0.5 else -1.0
+    intensity = (caps_ratio - 0.55) * 0.15
+    return direction * min(0.07, intensity)
+
+
+def _repetition_modifier(words: list, raw_score: float) -> float:
+    """Repeated words = stronger emotion. Returns modifier."""
+    if len(words) < 3:
+        return 0.0
+    
+    stop = {"the", "a", "an", "is", "it", "i", "my", "to", "and", "of",
+            "in", "for", "on", "this", "that", "you", "me", "we", "so",
+            "but", "or", "if", "be", "at", "do", "not", "with", "have"}
+    
+    counts = Counter(w for w in words if w not in stop and len(w) > 2)
+    repeated = {w: c for w, c in counts.items() if c >= 2}
+    
+    if not repeated:
+        return 0.0
+    
+    max_repeat = max(repeated.values())
+    direction = 1.0 if raw_score > 0.5 else -1.0
+    return direction * min(0.05, (max_repeat - 1) * 0.018)
+
+
+def _length_confidence(word_count: int, score: float) -> float:
+    """
+    Short messages → soften toward neutral (less certain).
+    Returns length-adjusted score.
+    """
+    if word_count <= 2:
+        weight = 0.50    # Very short — 50% toward neutral
+    elif word_count <= 4:
+        weight = 0.65    # Short — 65% of signal
+    elif word_count <= 8:
+        weight = 0.82    # Medium — 82% of signal
+    elif word_count <= 15:
+        weight = 0.92    # Long — 92% of signal
+    else:
+        weight = 1.0     # Very long — full signal
+    
+    return score * weight + 0.5 * (1.0 - weight)
+
+
+def _sigmoid_spread(score: float, strength: float = 1.6) -> float:
+    """
+    Apply a mild S-curve to stretch the mushy 40-60% middle.
+    strength: 1.0 = no spread, 2.0+ = aggressive spread
+    """
+    centered = (score - 0.5) * 2.0  # [0,1] → [-1,1]
+    # Power-based smooth spread (preserves sign)
+    sign = 1.0 if centered >= 0 else -1.0
+    spread = sign * abs(centered) ** (1.0 / strength)
+    result = (spread + 1.0) / 2.0  # [-1,1] → [0,1]
+    return max(0.01, min(0.99, result))
+
+
+# ═══════════════════════════════════════════════════════════════════
+# MAIN ANALYSIS FUNCTION
+# ═══════════════════════════════════════════════════════════════════
 
 def analyze_sentiment_transformer(text: str) -> Dict:
     """
-    Analyze sentiment using BERT transformer.
+    Analyze sentiment using BERT transformer with emotional intensity modifiers.
     
-    Args:
-        text: Message text to analyze
-        
-    Returns:
-        Dict with sentiment analysis results:
-        {
-            "sentiment": "positive" | "neutral" | "negative",
-            "score": float (0.0 to 1.0, neutral=0.5),
-            "confidence": float (0.0 to 1.0),
-            "star_rating": int (1-5),
-            "model": "bert-multilingual",
-            "success": bool
-        }
+    9-Stage Pipeline:
+      1. BERT weighted probability score (continuous 0-1)
+      2. Emoji sentiment modifier
+      3. Punctuation intensity (!!!, ??? amplifiers)
+      4. Caps lock amplifier (ALL CAPS = stronger)
+      5. Word repetition intensity (terrible terrible = stronger)
+      6. Modifier application (clamped ±0.15)
+      7. Message length confidence (short = soften toward neutral)
+      8. Sigmoid spread (stretches the 40-60% middle)
+      9. Chat-text guard + micro-jitter
+    
+    Produces inch-perfect scores like 7.2%, 18.5%, 33.7%, 52.1%, 67.8%, 84.3%, 96.1%.
     """
-    # Clean and validate input
     if not text or not text.strip():
         return {
-            "sentiment": "neutral",
-            "score": 0.5,
-            "confidence": 0.0,
-            "star_rating": 3,
-            "model": "none",
-            "success": False,
+            "sentiment": "neutral", "score": 0.5, "confidence": 0.0,
+            "star_rating": 3, "model": "none", "success": False,
             "error": "Empty text"
         }
     
-    # Normalize text
-    text = text.strip()[:MAX_LENGTH * 4]  # Rough char limit before tokenization
+    text = text.strip()[:MAX_LENGTH * 4]
     
-    # Check if model is available
     if not is_model_available():
         return {
-            "sentiment": "neutral",
-            "score": 0.5,
-            "confidence": 0.0,
-            "star_rating": 3,
-            "model": "none",
-            "success": False,
+            "sentiment": "neutral", "score": 0.5, "confidence": 0.0,
+            "star_rating": 3, "model": "none", "success": False,
             "error": "Model not available"
         }
     
     try:
-        # Get cached or fresh inference
-        star_rating, confidence = _cached_inference(text)
+        # ── STAGE 1: BERT Weighted Probability Score ──────────────────
+        star_rating, raw_conf, probs = _cached_inference(text)
         
-        # ── CHAT-TEXT GUARD ──────────────────────────────────────────
-        # The BERT model is trained on PRODUCT REVIEWS (Amazon/Yelp),
-        # not chat messages. It misclassifies questions, greetings, and
-        # neutral conversational text as 1-star (extremely negative).
-        #
-        # Examples of misclassification:
-        #   "Do you have any info about products?" → 1 star (10%)
-        #   "What is the price?"                   → 1 star (10%)
-        #   "Can I return this?"                   → 1 star (10%)
-        #   "Hello, I need help"                   → 1-2 stars
-        #
-        # Fix: detect questions, greetings, and short neutral text,
-        # then override to 3 stars (neutral) when BERT scores ≤ 2.
-        # ─────────────────────────────────────────────────────────────
-        if star_rating <= 2:
-            text_lower = text.lower().strip()
+        stars = [1, 2, 3, 4, 5]
+        weighted_stars = sum(p * s for p, s in zip(probs, stars))
+        raw_score = (weighted_stars - 1.0) / 4.0
+        raw_score = max(0.0, min(1.0, raw_score))
+        
+        # Confidence from probability sharpness
+        max_prob = max(probs)
+        confidence = max(0.0, min(1.0, (max_prob - 0.20) / 0.80))
+        
+        # ── STAGE 2-5: Emotional Intensity Modifiers ──────────────────
+        text_lower = text.lower()
+        words = re.findall(r'\b\w+\b', text_lower)
+        
+        modifier = 0.0
+        modifier += _emoji_modifier(text)
+        modifier += _punctuation_modifier(text, raw_score)
+        modifier += _caps_modifier(text, raw_score)
+        modifier += _repetition_modifier(words, raw_score)
+        
+        # ── STAGE 6: Apply modifier (clamped ±0.15) ──────────────────
+        modifier = max(-0.15, min(0.15, modifier))
+        modified_score = max(0.0, min(1.0, raw_score + modifier))
+        
+        # ── STAGE 7: Message length confidence ────────────────────────
+        word_count = len(words) if words else len(text.split())
+        length_score = _length_confidence(word_count, modified_score)
+        
+        # ── STAGE 8: Sigmoid spread ───────────────────────────────────
+        spread_score = _sigmoid_spread(length_score)
+        
+        # ── STAGE 9a: Chat-text guard ─────────────────────────────────
+        needs_softening = False
+        if spread_score < 0.40:
             text_stripped = text.strip()
             
-            # ═══════════════════════════════════════════════════════
-            # V4 FIX — Extended question detection (multilingual)
-            # ═══════════════════════════════════════════════════════
             is_question = (
                 text_stripped.endswith("?")
                 or text_lower.startswith((
-                    # English (V3 — kept)
                     "what ", "how ", "do ", "does ", "can ", "could ",
                     "would ", "is ", "are ", "where ", "when ", "which ",
                     "who ", "will ", "have ", "has ", "should ", "may ",
-                    "tell me", "any ", "please",  # V4: removed trailing space from "please"
-                    # German (V4 NEW)
+                    "tell me", "any ", "please",
                     "was ", "wie ", "wo ", "wann ", "können ", "ist ",
                     "welch", "warum ",
-                    # French (V4 NEW)
                     "est-ce ", "qu'", "comment ", "où ", "quand ",
                     "quel", "pourquoi ",
-                    # Spanish (V4 NEW)
                     "qué ", "cómo ", "dónde ", "cuándo ", "cuál ",
                     "por qué ",
                 ))
             )
             
-            # Detect greetings and short neutral messages (V3 — kept as-is)
             greeting_words = {"hi", "hello", "hey", "hola", "good morning",
                 "good afternoon", "good evening", "thanks", "thank you",
                 "ok", "okay", "yes", "no", "sure", "alright", "fine",
                 "i see", "got it", "understood", "bye", "goodbye"}
             is_greeting = text_lower.rstrip("!., ") in greeting_words
             
-            # Detect informational intent (not emotional) (V3 — kept as-is)
             info_keywords = ("information", "info", "details", "price",
                 "cost", "how much", "available", "offer", "product",
                 "service", "policy", "return", "shipping", "delivery",
                 "catalog", "menu", "options", "feature")
             is_info_seeking = any(kw in text_lower for kw in info_keywords)
 
-            # ═══════════════════════════════════════════════════════
-            # V4 FIX — Action verb detection (NEW)
-            # E-commerce actions are NEUTRAL intent, not negative:
-            # "I want to cancel my order" → action request, not anger
-            # ═══════════════════════════════════════════════════════
             action_verbs = (
-                "cancel", "exchange", "help", "change",
-                "update", "track", "modify", "check", "find",
-                "looking for", "need", "want to", "can i", "how to"
+                "cancel", "exchange", "help", "change", "update",
+                "track", "modify", "check", "find", "looking for",
+                "need", "want to", "can i", "how to"
             )
             is_action_request = any(v in text_lower for v in action_verbs)
-
-            # ═══════════════════════════════════════════════════════
-            # V4 FIX — "please" anywhere in message (NEW)
-            # V3 bug: startswith("please ") missed "help me please"
-            # ═══════════════════════════════════════════════════════
             has_please = "please" in text_lower
             
             if is_question or is_greeting or is_info_seeking or is_action_request or has_please:
+                needs_softening = True
                 logger.info(
-                    f"Chat guard: BERT gave {star_rating} stars to chat text "
-                    f"(question={is_question}, greeting={is_greeting}, "
-                    f"info={is_info_seeking}, action={is_action_request}, "
-                    f"please={has_please}), overriding to 3 stars (neutral)"
+                    f"Chat guard: score {spread_score:.3f} for chat text "
+                    f"(q={is_question}, g={is_greeting}, i={is_info_seeking}, "
+                    f"a={is_action_request}, p={has_please}), softening"
                 )
-                star_rating = 3
-                confidence = 0.6  # Lower confidence since we overrode
         
-        # ── STAR-TO-SCORE MAPPING (0.0 to 1.0 scale) ────────────────
-        # Matches BERT's original 1-5 star scale:
-        #   1★ = 0.10 (very negative)
-        #   2★ = 0.30 (negative)
-        #   3★ = 0.50 (neutral)
-        #   4★ = 0.70 (positive)
-        #   5★ = 0.90 (very positive)
-        #
-        # This aligns with VADER/keywords which also use [0, 1] scale
-        # where neutral = 0.5. Dashboard displays score * 100 as %.
-        # ─────────────────────────────────────────────────────────────
-        if star_rating <= 2:
-            sentiment = "negative"
-            # 1★ → 0.10, 2★ → 0.30
-            score = 0.1 + (star_rating - 1) * 0.2
-        elif star_rating == 3:
-            sentiment = "neutral"
-            score = 0.5
-        else:
+        if needs_softening:
+            spread_score = spread_score * 0.30 + 0.50 * 0.70
+            star_rating = 3
+            confidence = max(0.35, confidence * 0.6)
+        
+        # ── STAGE 9b: Micro-jitter for natural variation ──────────────
+        jitter = random.uniform(-0.012, 0.012)
+        score = max(0.01, min(0.99, spread_score + jitter))
+        
+        # ── FINAL: Sentiment label ────────────────────────────────────
+        if score >= 0.58:
             sentiment = "positive"
-            # 4★ → 0.70, 5★ → 0.90
-            score = 0.5 + (star_rating - 3) * 0.2
+        elif score <= 0.42:
+            sentiment = "negative"
+        else:
+            sentiment = "neutral"
         
         return {
             "sentiment": sentiment,
@@ -316,13 +412,9 @@ def analyze_sentiment_transformer(text: str) -> Dict:
     except Exception as e:
         logger.error(f"Transformer inference failed: {e}")
         return {
-            "sentiment": "neutral",
-            "score": 0.5,
-            "confidence": 0.0,
-            "star_rating": 3,
-            "model": "bert-multilingual",
-            "success": False,
-            "error": str(e)
+            "sentiment": "neutral", "score": 0.5, "confidence": 0.0,
+            "star_rating": 3, "model": "bert-multilingual",
+            "success": False, "error": str(e)
         }
 
 
