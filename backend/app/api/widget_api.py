@@ -176,6 +176,7 @@ async def start_chat_session(
         sender_name=bot_name,
         sentiment="positive",
         sentiment_score=0.8,
+        sentiment_label="Happy",
     )
     db.add(welcome)
     conversation.message_count = 1
@@ -552,14 +553,28 @@ async def send_chat_message(
         pass
 
     if ai_response_text:
+        # Analyze AI response sentiment (not hardcoded)
+        ai_sentiment = "positive"
+        ai_sentiment_score = 0.7
+        ai_sentiment_label = "Pleased"
+        try:
+            from app.services.sentiment import analyze_sentiment, get_sentiment_label
+            ai_analysis = analyze_sentiment(ai_response_text, detected_lang if 'detected_lang' in dir() else 'en')
+            ai_sentiment = ai_analysis.get("sentiment", "positive")
+            ai_sentiment_score = ai_analysis.get("score", 0.7)
+            ai_sentiment_label = ai_analysis.get("label", get_sentiment_label(ai_sentiment, ai_sentiment_score))
+        except Exception:
+            pass
+
         ai_msg = Message(
             tenant_id=tenant.id,
             conversation_id=conversation.id,
             content=ai_response_text,
             sender_type=MessageSender.AI.value,
             sender_name=bot_name,
-            sentiment="positive",
-            sentiment_score=0.7,
+            sentiment=ai_sentiment,
+            sentiment_score=ai_sentiment_score,
+            sentiment_label=ai_sentiment_label,
         )
         db.add(ai_msg)
         conversation.message_count = (conversation.message_count or 0) + 1

@@ -218,14 +218,28 @@ async def send_message(
             )
             
             if ai_reply_text:
+                # Analyze AI response sentiment (not hardcoded)
+                ai_sent = "positive"
+                ai_score = 0.7
+                ai_label = "Pleased"
+                try:
+                    from app.services.sentiment import get_sentiment_label as _gsl
+                    ai_analysis = analyze_sentiment(ai_reply_text, detected_lang)
+                    ai_sent = ai_analysis.get("sentiment", "positive")
+                    ai_score = ai_analysis.get("score", 0.7)
+                    ai_label = ai_analysis.get("label", _gsl(ai_sent, ai_score))
+                except Exception:
+                    pass
+
                 ai_msg = Message(
                     conversation_id=conversation_id,
                     tenant_id=tenant.id if tenant else None,
                     content=ai_reply_text,
                     sender_type=MessageSender.AI.value,
                     sender_name="AI Assistant",
-                    sentiment="neutral",
-                    sentiment_score=0.5,
+                    sentiment=ai_sent,
+                    sentiment_score=ai_score,
+                    sentiment_label=ai_label,
                     detected_language=detected_lang
                 )
                 db.add(ai_msg)
