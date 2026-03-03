@@ -349,6 +349,10 @@ async def send_chat_message(
     # HUMAN_REQUEST → Direct escalation (bypasses LLM)
     # Others → continue to RAG + LLM pipeline
     # ══════════════════════════════════════════════════════════════
+    # ── Defaults — MUST be set before conditional branches ──
+    ai_response_text = ""
+    should_escalate = False
+    escalation_info = {}
     intent_skipped_agent = False
     try:
         from app.services.intent_router import (

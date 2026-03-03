@@ -1,14 +1,13 @@
 """
 LLM Integration for Behavioral Agentic AI
 Provider-agnostic — works with any OpenAI-compatible API:
-  - fal.ai          (DeepSeek, Llama, etc.)
   - OpenRouter      (Free models: Llama 3, Mistral, Gemma)
   - OpenAI          (GPT-4o, GPT-4o-mini)
   - Anthropic proxy  (Claude via OpenAI-compatible gateway)
   - Any other OpenAI-compatible endpoint
 
 All configuration via .env — zero code changes to switch providers:
-  LLM_BASE_URL   = API endpoint (e.g. https://fal.ai/api/v1)
+  LLM_BASE_URL   = API endpoint (e.g. https://openrouter.ai/api/v1)
   LLM_API_KEY    = Bearer token
   LLM_MODEL      = Model identifier
   LLM_FALLBACK_MODEL = Fallback model (optional)
@@ -32,11 +31,11 @@ logger = logging.getLogger(__name__)
 # ═══════════════════════════════════════════════════════════════════
 # Provider-agnostic configuration — all from .env
 # ═══════════════════════════════════════════════════════════════════
-DEFAULT_BASE_URL = "https://fal.ai/api/v1"  # fal.ai OpenAI-compatible endpoint
-DEFAULT_MODEL = "deepseek-r1"               # DeepSeek R1 on fal.ai
-FALLBACK_MODEL = os.getenv("LLM_FALLBACK_MODEL", "deepseek-v3")  # Fallback model
-MAX_TOKENS = 500
-TEMPERATURE = 0.7
+DEFAULT_BASE_URL = "https://openrouter.ai/api/v1"
+DEFAULT_MODEL = "meta-llama/llama-3.3-70b-instruct:free"
+FALLBACK_MODEL = os.getenv("LLM_FALLBACK_MODEL", "mistralai/mistral-7b-instruct:free")
+MAX_TOKENS = 250
+TEMPERATURE = 0.5
 
 
 @dataclass
@@ -84,9 +83,7 @@ class LLMService:
         self._min_request_interval = 1.0  # Rate limiting
         
         # Detect provider for logging
-        if "fal.ai" in self.base_url:
-            self._provider = "fal.ai"
-        elif "openrouter" in self.base_url:
+        if "openrouter" in self.base_url:
             self._provider = "openrouter"
         elif "openai.com" in self.base_url:
             self._provider = "openai"
@@ -173,15 +170,14 @@ class LLMService:
             
             # Add conversation history (last 6 messages, each truncated to save tokens)
             if conversation_history:
-                for msg in conversation_history[-6:]:
+                for msg in conversation_history[-4:]:
                     if "role" in msg:
                         role = msg["role"]
                     else:
                         role = "user" if msg.get("sender_type") == "customer" else "assistant"
                     content = msg.get("content", "")
                     if content:
-                        # Truncate long messages to save input tokens
-                        messages.append({"role": role, "content": content[:200]})
+                        messages.append({"role": role, "content": content[:150]})
             
             # Add current user message
             messages.append({"role": "user", "content": user_message})
@@ -211,7 +207,7 @@ class LLMService:
         }
         
         try:
-            with httpx.Client(timeout=60.0) as client:
+            with httpx.Client(timeout=30.0) as client:
                 response = client.post(
                     f"{self.base_url}/chat/completions",
                     headers=self._get_headers(),
@@ -294,77 +290,54 @@ class LLMService:
         has_context = bool(context_documents and any(d.strip() for d in context_documents))
 
         if has_context:
-            # ── RAG MODE: Context documents available → answer from them ──
-            prompt = f"""You are a professional yet friendly customer support agent for {company_name}.
+            prompt = f"""You are {company_name}'s friendly support assistant. Be warm, concise, and genuinely helpful.
 
-CORE RULES:
-1. Answer ONLY from the CONTEXT DOCUMENTS provided below. Never invent product names, prices, policies, or features.
-2. If the answer is not in the context, honestly say you don't have that specific information and offer to connect the customer with a specialist.
-3. Keep responses concise, helpful, and well-structured (1-3 sentences for simple queries, bullet points for complex ones).
-4. Use a warm, professional tone — like a knowledgeable colleague, not a robot.
-5. If context documents include [IMAGE:...] tags, you MUST include those exact tags in your response so the customer can see the relevant image. Keep the tag on its own line.
+RULES:
+- Answer from the CONTEXT below. Never invent info.
+- Keep responses short (1-2 sentences). Use bullet points only for complex answers.
+- Help and resolve first. Only suggest connecting to a specialist if you truly cannot help.
+- If context has [IMAGE:...] tags, include them exactly in your response on their own line.
+- If context has order data: NEVER share order details unless the customer provides their name + email or order ID. Never dump all orders. Only share the specific order asked about.
+- If the message is gibberish, spam, or completely off-topic, reply briefly: "I'm here to help with {company_name}'s products and orders. How can I assist you?"
 
 """
         else:
-            # ── GENERAL MODE: No context documents → honest assistant ──
-            prompt = f"""You are a professional yet friendly customer support agent for {company_name}.
+            prompt = f"""You are {company_name}'s friendly support assistant. Be warm, concise, and genuinely helpful.
 
-CORE RULES:
-1. No product or policy documents have been uploaded yet — you have NO specific info about their catalog, pricing, or policies.
-2. For general conversational questions, respond helpfully and warmly.
-3. For specific product, price, or policy questions, honestly say you don't have that info yet and offer to connect the customer with the team.
-4. Keep responses concise (1-3 sentences). Never make up information.
+RULES:
+- No product/policy documents uploaded yet — you have NO specific catalog or pricing info.
+- For general questions, respond warmly. For specific product/price questions, say you don't have that info yet.
+- Keep responses short (1-2 sentences). Never invent information.
+- If the message is gibberish or off-topic, reply briefly and redirect.
 
 """
 
-        # De-escalation for urgent/negative customers
         if is_urgent:
-            prompt += """IMPORTANT — CUSTOMER SEEMS UPSET:
-- Acknowledge their frustration sincerely ("I completely understand your concerns")
-- Prioritize resolution over explanation
-- Offer to escalate to a human agent if the issue is complex
-- Never be defensive or dismissive
+            prompt += """The customer seems upset — acknowledge their concern sincerely, prioritize resolution, never be defensive.
 
 """
 
         if guidelines:
-            prompt += f"""COMPANY GUIDELINES:
-{guidelines}
+            prompt += f"""GUIDELINES: {guidelines}
 
 """
 
         if has_context:
             context_str = self._format_context(context_documents)
-            prompt += f"""CONTEXT DOCUMENTS (Use these to answer):
+            prompt += f"""CONTEXT:
 {context_str}
+"""
 
-Remember: Prefer the context documents above. If unsure, offer to connect to a human agent."""
-
-        # Language instruction — respond in the customer's language
-        # V4 FIX — Extended from 6 to 15 languages
+        # Language instruction
         LANG_NAMES = {
             "en": "English", "de": "German", "fr": "French",
             "es": "Spanish", "it": "Italian", "nl": "Dutch",
-            # V4 NEW — Urdu, Hindi, Arabic, and 6 more languages
             "ur": "Urdu", "hi": "Hindi", "ar": "Arabic",
             "zh-cn": "Chinese", "pt": "Portuguese", "ru": "Russian",
             "ja": "Japanese", "ko": "Korean", "tr": "Turkish"
         }
         if language != "en" and language in LANG_NAMES:
-            prompt += f"""\n\nIMPORTANT: The customer is writing in {LANG_NAMES[language]}. You MUST respond in {LANG_NAMES[language]}."""
-
-        # ★ V4: Order context instruction — when order data is passed via context
-        if hasattr(self, '_order_context') and self._order_context:
-            prompt += f"""\n\nOrder Information:\n{self._order_context}"""
-            prompt += """\n
-ORDER DATA SECURITY RULES (MANDATORY — you MUST follow these EVERY TIME):
-1. NEVER share order details (status, tracking, amount, address) unless the customer has provided at LEAST TWO of: their full name, email address, or order ID.
-2. If the customer asks about an order but hasn't provided identification, respond with: "I'd be happy to help with your order! For security, could you please provide your name and email address (or order ID) so I can look it up?"
-3. NEVER list or dump all orders. Only share information about the SPECIFIC order the customer is asking about.
-4. Do NOT reveal other customers' order data, even if it appears in the context.
-5. If the context contains multiple orders, ONLY use the one matching the customer's provided identifiers.
-6. Mask sensitive data: show only last 4 characters of tracking numbers, and abbreviate addresses.
-"""
+            prompt += f"\nRespond in {LANG_NAMES[language]}.\n"
 
         return prompt
     
@@ -375,7 +348,7 @@ ORDER DATA SECURITY RULES (MANDATORY — you MUST follow these EVERY TIME):
         
         formatted = []
         for i, doc in enumerate(documents, 1):
-            text = doc[:1500] if len(doc) > 1500 else doc
+            text = doc[:800] if len(doc) > 800 else doc
             formatted.append(f"[{i}] {text}")
         
         return "\n\n".join(formatted)
@@ -398,21 +371,19 @@ ORDER DATA SECURITY RULES (MANDATORY — you MUST follow these EVERY TIME):
         # Good confidence for successful responses
         return 0.8
     
-    # Pool of varied fallback responses (never repeat the same static text)
+    # Fallback responses — concise, warm, action-oriented
     _FALLBACK_GENERAL = [
-        "Hi there! I'd love to help you out. Could you tell me a bit more about what you're looking for?",
-        "Hello! Thanks for reaching out. What can I help you with today?",
-        "Hey! I'm here to help. Could you share some more details so I can assist you better?",
-        "Welcome! How can I assist you today? Feel free to ask me anything.",
-        "Hi! Great to hear from you. Let me know how I can help — I'm all ears!",
-        "Hello! I'd be happy to assist. What's on your mind?",
-        "Hey there! Thanks for stopping by. What can I do for you?",
+        "Hey! How can I help you today?",
+        "Hi there! What can I assist you with?",
+        "Hello! I'm here to help — what do you need?",
+        "Hey! Feel free to ask me anything about our products or services.",
+        "Hi! What are you looking for today? I'm happy to help.",
     ]
     _FALLBACK_NEGATIVE = [
-        "I hear you, and I'm sorry you're dealing with this. Let me see how I can help right away.",
-        "I completely understand your concerns. Let me look into this for you immediately.",
-        "I'm sorry you're having this experience. Your concern is important — let me help.",
-        "I understand this situation. Let me do my best to resolve this for you.",
+        "I'm sorry to hear that. Let me help you sort this out right away.",
+        "I understand your frustration — let me look into this for you now.",
+        "That's not ideal, I'm sorry. Let me see what I can do to fix this.",
+        "I hear you. Let me work on resolving this immediately.",
     ]
 
     def _fallback_response(
@@ -423,11 +394,11 @@ ORDER DATA SECURITY RULES (MANDATORY — you MUST follow these EVERY TIME):
     ) -> LLMResponse:
         """Generate varied fallback response when LLM is not available."""
         if context_documents:
-            best_context = context_documents[0][:500] if context_documents else ""
+            best_context = context_documents[0][:300] if context_documents else ""
             if sentiment == "negative":
-                response = f"I understand your concern. Based on our information: {best_context}... Would you like me to connect you with a specialist?"
+                response = f"I understand your concern. Here's what I found: {best_context}... Let me know if you need more details."
             else:
-                response = f"Based on our information: {best_context}... Is there anything specific you'd like me to clarify?"
+                response = f"Here's what I found: {best_context}... Would you like more details on anything?"
         else:
             if sentiment == "negative":
                 response = random.choice(self._FALLBACK_NEGATIVE)
@@ -453,28 +424,7 @@ ORDER DATA SECURITY RULES (MANDATORY — you MUST follow these EVERY TIME):
             "temperature": TEMPERATURE,
             "base_url": self.base_url
         }
-    
-    def list_available_models(self) -> Dict[str, List[str]]:
-        """List example models available on popular providers."""
-        return {
-            "fal.ai": [
-                "deepseek-r1",
-                "deepseek-v3",
-            ],
-            "openrouter (free)": [
-                "meta-llama/llama-3.3-70b-instruct:free",
-                "mistralai/mistral-7b-instruct:free",
-                "google/gemma-2-9b-it:free",
-            ],
-            "openai": [
-                "gpt-4o",
-                "gpt-4o-mini",
-            ],
-            "anthropic": [
-                "claude-sonnet-4-20250514",
-                "claude-3-5-haiku-20241022",
-            ],
-        }
+
 
 
 # Singleton instance

@@ -78,7 +78,7 @@ A production-grade SaaS platform that provides AI-powered customer support throu
 | **Database** | SQLite (file-based, zero config) |
 | **Vector Store** | Custom NumPy + JSON (cosine similarity, tenant-isolated) |
 | **AI/NLP** | BERT Transformer (6 languages), VADER, TextBlob, LangDetect |
-| **LLM** | Provider-agnostic (OpenRouter / OpenAI / Anthropic / fal.ai) |
+| **LLM** | Provider-agnostic (OpenRouter / OpenAI / Anthropic) |
 | **Embeddings** | SentenceTransformers (`paraphrase-multilingual-MiniLM-L12-v2`) |
 | **Auth** | JWT (python-jose) + bcrypt |
 | **Frontend** | Vanilla HTML/CSS/JS (no framework) |
