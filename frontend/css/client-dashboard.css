@@ -139,13 +139,24 @@
   font-size: .9375rem;
   font-weight: 700;
   color: var(--text-primary);
-  white-space: nowrap
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity .2s
 }
 
 .sidebar-subtitle {
   font-size: .6875rem;
   color: var(--text-muted);
-  white-space: nowrap
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity .2s
+}
+
+.sidebar.expanded .sidebar-title,
+.sidebar:hover .sidebar-title,
+.sidebar.expanded .sidebar-subtitle,
+.sidebar:hover .sidebar-subtitle {
+  opacity: 1
 }
 
 /* Nav */
@@ -2408,7 +2419,9 @@
   }
 
   .sidebar.open .nav-item span,
-  .sidebar.open .nav-section-label {
+  .sidebar.open .nav-section-label,
+  .sidebar.open .sidebar-title,
+  .sidebar.open .sidebar-subtitle {
     opacity: 1
   }
 
@@ -2912,8 +2925,15 @@
 }
 
 @keyframes sentimentFadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .msg-sentiment-pill:hover {
@@ -2931,8 +2951,17 @@
 }
 
 @keyframes sentimentPulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50%      { opacity: 0.5; transform: scale(1.3); }
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.5;
+    transform: scale(1.3);
+  }
 }
 
 /* ── Customer Message Sentiment Colors ─────────────────── */
@@ -2943,6 +2972,7 @@
   background: rgba(239, 68, 68, 0.18);
   color: #fca5a5;
 }
+
 .msg-sentiment-pill--enraged .msg-sentiment-dot,
 .msg-sentiment-pill--furious .msg-sentiment-dot {
   background: #ef4444;
@@ -2955,6 +2985,7 @@
   background: rgba(249, 115, 22, 0.16);
   color: #fdba74;
 }
+
 .msg-sentiment-pill--very-frustrated .msg-sentiment-dot,
 .msg-sentiment-pill--frustrated .msg-sentiment-dot {
   background: #f97316;
@@ -2967,6 +2998,7 @@
   background: rgba(251, 146, 60, 0.14);
   color: #fed7aa;
 }
+
 .msg-sentiment-pill--upset .msg-sentiment-dot,
 .msg-sentiment-pill--disappointed .msg-sentiment-dot {
   background: #fb923c;
@@ -2979,6 +3011,7 @@
   background: rgba(245, 158, 11, 0.14);
   color: #fde68a;
 }
+
 .msg-sentiment-pill--slightly-unhappy .msg-sentiment-dot,
 .msg-sentiment-pill--concerned .msg-sentiment-dot {
   background: #f59e0b;
@@ -2992,6 +3025,7 @@
   background: rgba(148, 163, 184, 0.14);
   color: #cbd5e1;
 }
+
 .msg-sentiment-pill--leaning-negative .msg-sentiment-dot,
 .msg-sentiment-pill--neutral .msg-sentiment-dot,
 .msg-sentiment-pill--leaning-positive .msg-sentiment-dot {
@@ -3005,6 +3039,7 @@
   background: rgba(20, 184, 166, 0.14);
   color: #99f6e4;
 }
+
 .msg-sentiment-pill--satisfied .msg-sentiment-dot,
 .msg-sentiment-pill--content .msg-sentiment-dot {
   background: #14b8a6;
@@ -3017,6 +3052,7 @@
   background: rgba(34, 197, 94, 0.15);
   color: #86efac;
 }
+
 .msg-sentiment-pill--pleased .msg-sentiment-dot,
 .msg-sentiment-pill--happy .msg-sentiment-dot {
   background: #22c55e;
@@ -3029,6 +3065,7 @@
   background: rgba(16, 185, 129, 0.16);
   color: #6ee7b7;
 }
+
 .msg-sentiment-pill--very-happy .msg-sentiment-dot,
 .msg-sentiment-pill--delighted .msg-sentiment-dot {
   background: #10b981;
@@ -3040,6 +3077,7 @@
   background: rgba(5, 150, 105, 0.2);
   color: #a7f3d0;
 }
+
 .msg-sentiment-pill--ecstatic .msg-sentiment-dot {
   background: #059669;
   box-shadow: 0 0 10px rgba(5, 150, 105, 0.7);
@@ -3051,6 +3089,7 @@
   color: rgba(255, 255, 255, 0.55);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
+
 .msg-sentiment-pill--ai .msg-sentiment-dot {
   background: rgba(255, 255, 255, 0.4);
   box-shadow: none;
@@ -3080,8 +3119,13 @@
 }
 
 @keyframes odOverlayIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .order-detail-modal {
@@ -3093,22 +3137,31 @@
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5),
-              0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+    0 0 0 1px rgba(255, 255, 255, 0.04) inset;
   animation: odSlideIn 0.3s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @keyframes odSlideIn {
-  from { opacity: 0; transform: translateY(16px) scale(0.97); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 /* Scrollbar within modal */
 .order-detail-modal::-webkit-scrollbar {
   width: 5px;
 }
+
 .order-detail-modal::-webkit-scrollbar-track {
   background: transparent;
 }
+
 .order-detail-modal::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.08);
   border-radius: 999px;

@@ -947,9 +947,32 @@
         }
 
         .btn-next:disabled {
-            opacity: 0.5;
+            opacity: 0.35;
             cursor: not-allowed;
-            transform: none;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .btn-next:disabled::before {
+            display: none;
+        }
+
+        .btn-skip {
+            background: rgba(255, 255, 255, 0.04);
+            color: rgba(255, 255, 255, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 0.7rem 1.75rem;
+            border-radius: 12px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-skip:hover {
+            background: rgba(245, 158, 11, 0.08);
+            color: rgba(245, 158, 11, 0.85);
+            border-color: rgba(245, 158, 11, 0.2);
         }
 
         /* ── TOAST ───────────────────────────────────────────── */
@@ -1743,11 +1766,14 @@
                         </div>
                     </div>
 
-                    <!-- Navigation -->
                     <div class="step-actions">
                         <button class="btn-back" id="btnBack" onclick="prevStep()" style="visibility:hidden;"><span>←
                                 Back</span></button>
-                        <button class="btn-next" id="btnNext" onclick="nextStep()"><span>Continue →</span></button>
+                        <div style="display:flex;gap:10px;align-items:center">
+                            <button class="btn-skip" id="btnSkip" onclick="skipStep()" style="display:none;"><span>Skip
+                                    →</span></button>
+                            <button class="btn-next" id="btnNext" onclick="nextStep()"><span>Continue →</span></button>
+                        </div>
                         <button class="btn-finish" id="btnFinish" onclick="goToDashboard()"
                             style="display:none;"><span>Go to Dashboard →</span></button>
                     </div>
@@ -1863,6 +1889,8 @@
         let currentStep = 1;
         const totalSteps = 5;
         const uploadedFiles = [];
+        let orderUploaded = false;
+        let productUploaded = false;
 
         document.getElementById('widgetColor').addEventListener('input', e => {
             document.getElementById('colorLabel').textContent = e.target.value;
@@ -1885,6 +1913,20 @@
             document.getElementById('btnBack').style.visibility = currentStep > 1 ? 'visible' : 'hidden';
             document.getElementById('btnNext').style.display = currentStep < totalSteps ? 'block' : 'none';
             document.getElementById('btnFinish').style.display = currentStep === totalSteps ? 'block' : 'none';
+
+            // Step 4 (Knowledge Base): disable Continue until at least one CSV uploaded, show Skip
+            const btnNext = document.getElementById('btnNext');
+            const btnSkip = document.getElementById('btnSkip');
+            if (currentStep === 4) {
+                const hasUpload = orderUploaded || productUploaded;
+                btnNext.disabled = !hasUpload;
+                btnNext.title = hasUpload ? '' : 'Upload at least one CSV to continue';
+                btnSkip.style.display = 'inline-block';
+            } else {
+                btnNext.disabled = false;
+                btnNext.title = '';
+                btnSkip.style.display = 'none';
+            }
         }
 
         async function nextStep() {
@@ -1954,6 +1996,13 @@
             window.location.href = 'client-dashboard.html';
         }
 
+        function skipStep() {
+            if (currentStep < totalSteps) {
+                currentStep++;
+                updateProgress();
+            }
+        }
+
         // ═══════════════════════════════════════════════════════
         // ★ V4: ORDER IMPORT HELPERS (Step 5)
         // ═══════════════════════════════════════════════════════
@@ -2016,6 +2065,8 @@
                 statusEl.style.border = '1px solid rgba(46,213,115,0.18)';
                 statusEl.style.color = '#2ed573';
                 statusEl.textContent = `✅ Imported ${data.created || 0} orders successfully!`;
+                orderUploaded = true;
+                updateProgress();
             } catch (error) {
                 statusEl.style.background = 'rgba(245,87,108,0.08)';
                 statusEl.style.border = '1px solid rgba(245,87,108,0.18)';
@@ -2055,6 +2106,8 @@
                 statusEl.style.border = '1px solid rgba(46,213,115,0.18)';
                 statusEl.style.color = '#2ed573';
                 statusEl.textContent = `✅ Imported ${data.created || 0} products successfully!`;
+                productUploaded = true;
+                updateProgress();
             } catch (error) {
                 statusEl.style.background = 'rgba(245,87,108,0.08)';
                 statusEl.style.border = '1px solid rgba(245,87,108,0.18)';
