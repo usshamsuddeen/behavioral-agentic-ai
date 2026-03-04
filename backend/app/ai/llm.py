@@ -168,9 +168,9 @@ class LLMService:
             # Build messages
             messages = [{"role": "system", "content": system_prompt}]
             
-            # Add conversation history (last 6 messages, each truncated to save tokens)
+            # Add conversation history (last 50 messages for deep continuity)
             if conversation_history:
-                for msg in conversation_history[-4:]:
+                for msg in conversation_history[-50:]:
                     if "role" in msg:
                         role = msg["role"]
                     else:
@@ -295,6 +295,7 @@ class LLMService:
 RULES:
 - Answer from the CONTEXT below. Never invent info.
 - Keep responses short (1-2 sentences). Use bullet points only for complex answers.
+- Even for detailed questions, keep answers concise — under 150 characters.
 - Help and resolve first. Only suggest connecting to a specialist if you truly cannot help.
 - If context has [IMAGE:...] tags, include them exactly in your response on their own line.
 - If context has order data: NEVER share order details unless the customer provides their name + email or order ID. Never dump all orders. Only share the specific order asked about.
