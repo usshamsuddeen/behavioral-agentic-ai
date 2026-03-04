@@ -529,8 +529,8 @@
         // ★ V4.1: Parse [IMAGE:url] tags and render as <img> elements
         let content = msg.content || '';
         content = content.replace(/\[RELATED_IMAGES\]\n?/g, '');
-        content = content.replace(/\[IMAGE:(\/uploads\/[^\]]+)\]/g,
-            '<div class="bai-msg-image"><img src="$1" alt="Related image" style="max-width:100%;border-radius:8px;margin:8px 0;cursor:pointer;" onclick="window.open(this.src,\'_blank\')"/></div>'
+        content = content.replace(/\[IMAGE:([^\]]+)\]/g,
+            '<div class="bai-msg-image"><img src="$1" alt="Product" style="max-width:100%;max-height:200px;border-radius:10px;margin:8px 0;cursor:pointer;object-fit:cover;" onerror="this.parentElement.style.display=\'none\'" onclick="window.open(this.src,\'_blank\')"/></div>'
         );
         html += content;
 
