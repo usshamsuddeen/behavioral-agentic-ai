@@ -1690,39 +1690,51 @@
                         </div>
                         <div class="step-fields">
                             <div class="order-import-grid">
-                                <!-- Option A: Order CSV Upload -->
+                                <!-- Option A: Product CSV Upload (LEFT) -->
                                 <div
-                                    style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:1.2rem;">
-                                    <h3 style="font-size:0.95rem;font-weight:600;color:#fff;margin-bottom:0.5rem;">📄
-                                        Upload Order CSV</h3>
-                                    <p style="font-size:0.78rem;color:rgba(255,255,255,0.4);margin-bottom:0.8rem;">
-                                        Export orders from Shopify, WooCommerce, or any platform as CSV.</p>
-                                    <div class="form-group">
-                                        <input type="file" id="orderCsvInput" accept=".csv" style="font-size:0.8rem;">
+                                    style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:1.6rem;min-height:220px;display:flex;flex-direction:column;justify-content:space-between;">
+                                    <div>
+                                        <h3 style="font-size:0.95rem;font-weight:600;color:#fff;margin-bottom:0.6rem;">
+                                            📦
+                                            Upload Product CSV</h3>
+                                        <p style="font-size:0.78rem;color:rgba(255,255,255,0.4);margin-bottom:1.2rem;">
+                                            Import your product catalog so the AI can answer product questions.</p>
                                     </div>
-                                    <button type="button" class="btn-next" onclick="uploadOrderCSV()"
-                                        style="padding:0.5rem 1.2rem;font-size:0.8rem;border:none;cursor:pointer;border-radius:8px;">
-                                        <span>Upload Orders</span>
-                                    </button>
-                                    <p style="font-size:0.65rem;color:rgba(255,255,255,0.25);margin-top:0.5rem;">
-                                        Auto-maps columns using fuzzy matching.</p>
+                                    <div>
+                                        <div class="form-group" style="margin-bottom:0.8rem;">
+                                            <input type="file" id="productCsvInput" accept=".csv"
+                                                style="font-size:0.8rem;">
+                                        </div>
+                                        <button type="button" class="btn-next" onclick="uploadProductCSV()"
+                                            style="padding:0.5rem 1.2rem;font-size:0.8rem;border:none;cursor:pointer;border-radius:8px;">
+                                            <span>Upload Products</span>
+                                        </button>
+                                        <p style="font-size:0.65rem;color:rgba(255,255,255,0.25);margin-top:0.6rem;">
+                                            Auto-indexes products into AI knowledge base.</p>
+                                    </div>
                                 </div>
-                                <!-- Option B: Product CSV Upload -->
+                                <!-- Option B: Order CSV Upload (RIGHT) -->
                                 <div
-                                    style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:1.2rem;">
-                                    <h3 style="font-size:0.95rem;font-weight:600;color:#fff;margin-bottom:0.5rem;">📦
-                                        Upload Product CSV</h3>
-                                    <p style="font-size:0.78rem;color:rgba(255,255,255,0.4);margin-bottom:0.8rem;">
-                                        Import your product catalog so the AI can answer product questions.</p>
-                                    <div class="form-group">
-                                        <input type="file" id="productCsvInput" accept=".csv" style="font-size:0.8rem;">
+                                    style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:1.6rem;min-height:220px;display:flex;flex-direction:column;justify-content:space-between;">
+                                    <div>
+                                        <h3 style="font-size:0.95rem;font-weight:600;color:#fff;margin-bottom:0.6rem;">
+                                            📄
+                                            Upload Order CSV</h3>
+                                        <p style="font-size:0.78rem;color:rgba(255,255,255,0.4);margin-bottom:1.2rem;">
+                                            Export orders from Shopify, WooCommerce, or any platform as CSV.</p>
                                     </div>
-                                    <button type="button" class="btn-next" onclick="uploadProductCSV()"
-                                        style="padding:0.5rem 1.2rem;font-size:0.8rem;border:none;cursor:pointer;border-radius:8px;">
-                                        <span>Upload Products</span>
-                                    </button>
-                                    <p style="font-size:0.65rem;color:rgba(255,255,255,0.25);margin-top:0.5rem;">
-                                        Auto-indexes products into AI knowledge base.</p>
+                                    <div>
+                                        <div class="form-group" style="margin-bottom:0.8rem;">
+                                            <input type="file" id="orderCsvInput" accept=".csv"
+                                                style="font-size:0.8rem;">
+                                        </div>
+                                        <button type="button" class="btn-next" onclick="uploadOrderCSV()"
+                                            style="padding:0.5rem 1.2rem;font-size:0.8rem;border:none;cursor:pointer;border-radius:8px;">
+                                            <span>Upload Orders</span>
+                                        </button>
+                                        <p style="font-size:0.65rem;color:rgba(255,255,255,0.25);margin-top:0.6rem;">
+                                            Auto-maps columns using fuzzy matching.</p>
+                                    </div>
                                 </div>
                             </div>
                             <div id="orderImportStatus"
