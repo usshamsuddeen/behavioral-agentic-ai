@@ -18,10 +18,18 @@ import logging
 import json
 import csv
 import re
+import os
+import uuid
 from typing import List, Dict, Optional, Tuple
 from dataclasses import dataclass, field
 from io import BytesIO, StringIO
 from pathlib import Path
+
+# Image uploads directory
+KB_UPLOADS_DIR = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+    "data", "kb_uploads"
+)
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -186,40 +194,114 @@ class DocumentProcessor:
         
         return extractor(content)
     
+    def _save_extracted_image(self, image_bytes: bytes, ext: str = "png") -> Optional[str]:
+        """Save an extracted image to disk and return its servable URL."""
+        try:
+            os.makedirs(KB_UPLOADS_DIR, exist_ok=True)
+            safe_name = f"extracted_{uuid.uuid4().hex[:10]}.{ext}"
+            save_path = os.path.join(KB_UPLOADS_DIR, safe_name)
+            with open(save_path, "wb") as f:
+                f.write(image_bytes)
+            url = f"/uploads/{safe_name}"
+            logger.info(f"📸 Extracted image saved: {url}")
+            return url
+        except Exception as e:
+            logger.warning(f"⚠️ Failed to save extracted image: {e}")
+            return None
+
     def _extract_from_pdf(self, content: bytes) -> str:
-        """Extract text from PDF."""
+        """Extract text and images from PDF."""
+        # ── Try PyMuPDF first (supports image extraction) ──
+        try:
+            import fitz  # PyMuPDF
+
+            pdf = fitz.open(stream=content, filetype="pdf")
+            text_parts = []
+
+            for page_num, page in enumerate(pdf):
+                page_text = page.get_text()
+                if page_text.strip():
+                    text_parts.append(f"[Page {page_num + 1}]\n{page_text}")
+
+                # Extract images from the page
+                for img_index, img in enumerate(page.get_images(full=True)):
+                    try:
+                        xref = img[0]
+                        pix = fitz.Pixmap(pdf, xref)
+                        if pix.n > 4:  # CMYK → RGB
+                            pix = fitz.Pixmap(fitz.csRGB, pix)
+                        img_bytes = pix.tobytes("png")
+                        if len(img_bytes) > 5000:  # Skip tiny icons/bullets
+                            url = self._save_extracted_image(img_bytes, "png")
+                            if url:
+                                text_parts.append(f"[IMAGE:{url}]")
+                        pix = None  # free memory
+                    except Exception as img_err:
+                        logger.debug(f"Skipping PDF image: {img_err}")
+
+            pdf.close()
+            return "\n\n".join(text_parts)
+
+        except ImportError:
+            logger.info("PyMuPDF not available, falling back to PyPDF2 (text-only)")
+
+        # ── Fallback: PyPDF2 (text only, no images) ──
         try:
             import PyPDF2
-            
+
             pdf_file = BytesIO(content)
             pdf_reader = PyPDF2.PdfReader(pdf_file)
-            
+
             text_parts = []
             for page_num, page in enumerate(pdf_reader.pages):
                 page_text = page.extract_text()
                 if page_text:
                     text_parts.append(f"[Page {page_num + 1}]\n{page_text}")
-            
+
             return "\n\n".join(text_parts)
-            
+
         except ImportError:
-            logger.error("❌ PyPDF2 not installed. Run: pip install PyPDF2")
+            logger.error("❌ Neither PyMuPDF nor PyPDF2 installed")
             raise
         except Exception as e:
             logger.error(f"❌ PDF extraction failed: {e}")
             raise
-    
+
     def _extract_from_docx(self, content: bytes) -> str:
-        """Extract text from DOCX."""
+        """Extract text and images from DOCX."""
         try:
             import docx
-            
+
             doc_file = BytesIO(content)
             doc = docx.Document(doc_file)
-            
-            paragraphs = [para.text for para in doc.paragraphs if para.text.strip()]
-            return "\n\n".join(paragraphs)
-            
+
+            parts = []
+
+            # Extract paragraph text
+            for para in doc.paragraphs:
+                if para.text.strip():
+                    parts.append(para.text)
+
+            # Extract embedded images from relationships
+            try:
+                for rel in doc.part.rels.values():
+                    if "image" in rel.reltype:
+                        try:
+                            img_data = rel.target_part.blob
+                            ext = rel.target_ref.split(".")[-1].lower()
+                            if ext not in ("png", "jpg", "jpeg", "gif", "webp"):
+                                ext = "png"
+                            if len(img_data) > 5000:  # Skip tiny icons
+                                url = self._save_extracted_image(img_data, ext)
+                                if url:
+                                    parts.append(f"[IMAGE:{url}]")
+                        except Exception as img_err:
+                            logger.debug(f"Skipping DOCX image: {img_err}")
+            except Exception as rel_err:
+                logger.debug(f"DOCX relationship scan failed: {rel_err}")
+
+            return "\n\n".join(parts)
+
         except ImportError:
             logger.error("❌ python-docx not installed. Run: pip install python-docx")
             raise

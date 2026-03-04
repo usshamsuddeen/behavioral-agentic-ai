@@ -173,9 +173,16 @@ async def upload_document(
         # Pass file_url as additional metadata so chunks carry the image reference
         additional_meta = {"file_url": file_url} if file_url else None
         
+        # ★ V4.2: For standalone image uploads, prepend [IMAGE:url] tag to indexed text
+        # so RAG can include the image reference in AI responses
+        index_content = content
+        if file_url and ext in IMAGE_EXTENSIONS:
+            image_tag = f"[IMAGE:{file_url}]\n".encode("utf-8")
+            index_content = image_tag + content
+
         result = manager.upload_document(
             client_id=client_id,
-            content=content,
+            content=index_content,
             filename=filename,
             doc_type=doc_type,
             category=category,

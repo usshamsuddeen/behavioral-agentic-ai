@@ -19,6 +19,12 @@ const TAB_META = {
     widget: { title: 'Widget Config', subtitle: 'Configure and deploy your chat widget' },
     analytics: { title: 'Analytics', subtitle: 'Insights into sentiment, escalations, and performance' },
     settings: { title: 'Settings', subtitle: 'Manage your profile, company, and preferences' },
+    'kb-policies': { title: 'Policies', subtitle: 'Upload privacy policies, terms of service, and guidelines' },
+    'kb-contact': { title: 'Contact Info', subtitle: 'Manage company contact details and support channels' },
+    'kb-about': { title: 'About Company', subtitle: 'Company description, mission, and key info' },
+    'kb-refund': { title: 'Refund Policy', subtitle: 'Upload and manage refund and return policies' },
+    'kb-faqs': { title: 'FAQs', subtitle: 'Frequently asked questions and answers' },
+    'kb-custom': { title: 'Custom Documents', subtitle: 'Upload any additional knowledge base documents' },
 };
 
 /* ─── Init ───────────────────────────────────────────────── */
@@ -96,8 +102,8 @@ function switchTab(tab) {
     document.getElementById('sidebar').classList.remove('open');
     document.getElementById('sidebarOverlay').style.display = 'none';
 
-    // Lazy-load tab data (orders/products always refresh for fresh data)
-    const alwaysRefresh = ['orders', 'products'];
+    // Lazy-load tab data (orders/products/kb always refresh for fresh data)
+    const alwaysRefresh = ['orders', 'products', 'kb-policies', 'kb-contact', 'kb-about', 'kb-refund', 'kb-faqs', 'kb-custom'];
     if (alwaysRefresh.includes(tab) || !loadedTabs[tab]) {
         loadedTabs[tab] = true;
         loadTabData(tab);
@@ -116,6 +122,12 @@ function loadTabData(tab) {
         case 'products': loadProducts(); break;
         case 'widget': loadWidget(); break;
         case 'settings': loadSettings(); break;
+        case 'kb-policies': loadKnowledgeTab('kb-policies', 'policy', 'Policies'); break;
+        case 'kb-contact': loadKnowledgeTab('kb-contact', 'contact', 'Contact Info'); break;
+        case 'kb-about': loadKnowledgeTab('kb-about', 'about', 'About Company'); break;
+        case 'kb-refund': loadKnowledgeTab('kb-refund', 'refund', 'Refund Policy'); break;
+        case 'kb-faqs': loadKnowledgeTab('kb-faqs', 'faq', 'FAQs'); break;
+        case 'kb-custom': loadKnowledgeTab('kb-custom', 'general', 'Custom Documents'); break;
     }
 }
 
@@ -1220,6 +1232,259 @@ function closeOrderModal() {
     if (overlay) overlay.classList.remove('active');
 }
 
+/* ═══════════════════════════════════════════════════════════
+   KNOWLEDGE BASE — Shared loader for all KB tabs (V4.2)
+   ═══════════════════════════════════════════════════════════ */
+
+async function loadKnowledgeTab(tabId, docType, label) {
+    const panel = document.querySelector(`#panel-${tabId} .kb-panel`);
+    if (!panel) return;
+
+    // ── Render the KB UI ──
+    panel.innerHTML = `
+        <div class="kb-section">
+            <!-- Upload Zone -->
+            <div class="kb-upload-zone" id="kbUpload-${tabId}">
+                <div class="kb-upload-icon">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                        <polyline points="17 8 12 3 7 8"/>
+                        <line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                </div>
+                <p class="kb-upload-title">Drag & drop files here or <label class="kb-upload-link" for="kbFile-${tabId}">browse</label></p>
+                <p class="kb-upload-hint">Supports CSV, PDF, DOCX, TXT, PNG, JPG</p>
+                <input type="file" id="kbFile-${tabId}" accept=".csv,.pdf,.docx,.doc,.txt,.json,.md,.png,.jpg,.jpeg,.webp" style="display:none" multiple>
+            </div>
+            <div class="kb-progress" id="kbProgress-${tabId}" style="display:none">
+                <div class="kb-progress-bar"><div class="kb-progress-fill"></div></div>
+                <span class="kb-progress-text">Uploading...</span>
+            </div>
+
+            <!-- Manual Text Input -->
+            <div class="kb-text-section">
+                <div class="kb-text-header">
+                    <span class="kb-text-label">✏️ Or add text manually</span>
+                </div>
+                <textarea class="kb-textarea" id="kbText-${tabId}" placeholder="Type or paste ${label.toLowerCase()} content here..."></textarea>
+                <div class="kb-text-actions">
+                    <button class="btn btn-sm btn-primary" id="kbSaveText-${tabId}">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                        Save to Knowledge Base
+                    </button>
+                </div>
+            </div>
+
+            <!-- Image Upload -->
+            <div class="kb-text-section">
+                <div class="kb-text-header">
+                    <span class="kb-text-label">🖼️ Add image manually</span>
+                </div>
+                <div class="kb-img-upload-row">
+                    <label class="btn btn-sm btn-outline" for="kbImg-${tabId}" style="cursor:pointer">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                        Choose Image
+                    </label>
+                    <input type="file" id="kbImg-${tabId}" accept="image/*" style="display:none">
+                    <span class="kb-img-name" id="kbImgName-${tabId}">No file chosen</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Documents Table -->
+        <div class="kb-docs-section">
+            <div class="kb-docs-header">
+                <h3 class="kb-docs-title">📂 Uploaded Documents</h3>
+                <span class="kb-docs-count" id="kbCount-${tabId}">loading...</span>
+            </div>
+            <div class="kb-docs-table-wrap" id="kbDocs-${tabId}">
+                <div class="loading-state"><div class="spinner"></div><p>Loading documents…</p></div>
+            </div>
+        </div>
+    `;
+
+    // ── Wire up events ──
+    const fileInput = document.getElementById(`kbFile-${tabId}`);
+    const zone = document.getElementById(`kbUpload-${tabId}`);
+    const textArea = document.getElementById(`kbText-${tabId}`);
+    const saveBtn = document.getElementById(`kbSaveText-${tabId}`);
+    const imgInput = document.getElementById(`kbImg-${tabId}`);
+
+    // Drag & drop
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+    zone.addEventListener('drop', e => {
+        e.preventDefault();
+        zone.classList.remove('drag-over');
+        if (e.dataTransfer.files.length) kbUploadFiles(tabId, docType, label, Array.from(e.dataTransfer.files));
+    });
+
+    // File browse
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files.length) kbUploadFiles(tabId, docType, label, Array.from(fileInput.files));
+        fileInput.value = '';
+    });
+
+    // Manual text save
+    saveBtn.addEventListener('click', () => kbSaveText(tabId, docType, label));
+
+    // Image upload
+    imgInput.addEventListener('change', () => {
+        if (imgInput.files.length) {
+            document.getElementById(`kbImgName-${tabId}`).textContent = imgInput.files[0].name;
+            kbUploadFiles(tabId, docType, label, Array.from(imgInput.files));
+            imgInput.value = '';
+        }
+    });
+
+    // Load documents
+    await kbLoadDocuments(tabId, docType);
+}
+
+async function kbUploadFiles(tabId, docType, label, files) {
+    const token = localStorage.getItem('access_token');
+    const progress = document.getElementById(`kbProgress-${tabId}`);
+    progress.style.display = 'flex';
+
+    for (const file of files) {
+        const fd = new FormData();
+        fd.append('file', file);
+        fd.append('doc_type', docType);
+        fd.append('category', docType);
+
+        try {
+            const res = await fetch(`${API}/api/knowledge/upload`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: fd
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast(`✅ "${file.name}" indexed (${data.chunks_created} chunks)`, 'success');
+            } else {
+                showToast(`❌ Failed: ${data.error || 'Unknown error'}`, 'error');
+            }
+        } catch (err) {
+            showToast(`❌ Upload error: ${err.message}`, 'error');
+        }
+    }
+
+    progress.style.display = 'none';
+    await kbLoadDocuments(tabId, docType);
+}
+
+async function kbSaveText(tabId, docType, label) {
+    const textArea = document.getElementById(`kbText-${tabId}`);
+    const text = textArea.value.trim();
+    if (!text) { showToast('⚠️ Please enter some text first', 'warning'); return; }
+
+    const token = localStorage.getItem('access_token');
+    try {
+        const res = await fetch(`${API}/api/knowledge/text`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                text: text,
+                source: `manual_${docType}`,
+                doc_type: docType,
+                category: docType
+            })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast(`✅ ${label} text saved (${data.chunks_created} chunks)`, 'success');
+            textArea.value = '';
+            await kbLoadDocuments(tabId, docType);
+        } else {
+            showToast(`❌ Failed: ${data.error}`, 'error');
+        }
+    } catch (err) {
+        showToast(`❌ Save error: ${err.message}`, 'error');
+    }
+}
+
+async function kbLoadDocuments(tabId, docType) {
+    const token = localStorage.getItem('access_token');
+    const container = document.getElementById(`kbDocs-${tabId}`);
+    const countEl = document.getElementById(`kbCount-${tabId}`);
+
+    try {
+        const res = await fetch(`${API}/api/knowledge/documents`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        const docs = (data.documents || []).filter(d => d.doc_type === docType);
+
+        countEl.textContent = `${docs.length} document${docs.length !== 1 ? 's' : ''}`;
+
+        if (!docs.length) {
+            container.innerHTML = `<div class="kb-empty">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5">
+                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                </svg>
+                <p>No documents uploaded yet</p>
+            </div>`;
+            return;
+        }
+
+        let rows = docs.map(d => {
+            const size = d.file_size ? (d.file_size / 1024).toFixed(1) + ' KB' : '—';
+            const date = d.created_at ? new Date(d.created_at).toLocaleDateString() : '—';
+            const chunks = d.chunk_count || d.chunks || '—';
+            const name = esc(d.filename || d.id);
+            return `<tr>
+                <td class="kb-doc-name" title="${name}">${name}</td>
+                <td>${size}</td>
+                <td>${chunks}</td>
+                <td>${date}</td>
+                <td class="kb-doc-actions">
+                    <button class="kb-btn kb-btn-view" onclick="kbViewDoc('${d.id}','${esc(d.filename)}')" title="View">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </button>
+                    <button class="kb-btn kb-btn-del" onclick="kbDeleteDoc('${d.id}','${tabId}','${docType}')" title="Delete">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                    </button>
+                </td>
+            </tr>`;
+        }).join('');
+
+        container.innerHTML = `<table class="kb-table">
+            <thead><tr><th>Document</th><th>Size</th><th>Chunks</th><th>Date</th><th>Actions</th></tr></thead>
+            <tbody>${rows}</tbody>
+        </table>`;
+
+    } catch (err) {
+        container.innerHTML = `<div class="kb-empty"><p>⚠️ Failed to load documents</p></div>`;
+    }
+}
+
+async function kbDeleteDoc(docId, tabId, docType) {
+    if (!confirm('Delete this document from the knowledge base?')) return;
+    const token = localStorage.getItem('access_token');
+    try {
+        const res = await fetch(`${API}/api/knowledge/document/${docId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+            showToast('✅ Document deleted', 'success');
+            await kbLoadDocuments(tabId, docType);
+        } else {
+            showToast('❌ Delete failed', 'error');
+        }
+    } catch (err) {
+        showToast(`❌ ${err.message}`, 'error');
+    }
+}
+
+function kbViewDoc(docId, filename) {
+    showToast(`📄 ${filename} — ID: ${docId}`, 'info');
+}
+
 // Make functions globally accessible (used by onclick in HTML)
 window.switchTab = switchTab;
 window.selectConversation = selectConversation;
@@ -1229,3 +1494,5 @@ window.viewOrder = viewOrder;
 window.closeOrderModal = closeOrderModal;
 window.editProduct = editProduct;
 window.deleteProduct = deleteProduct;
+window.kbDeleteDoc = kbDeleteDoc;
+window.kbViewDoc = kbViewDoc;

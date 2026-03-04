@@ -67,6 +67,7 @@ google-auth==2.48.0
 
 # ── Document Processing ─────────────────────────────────────────
 PyPDF2==3.0.1
+PyMuPDF==1.25.5
 python-docx==1.2.0
 lxml==6.0.2
 
