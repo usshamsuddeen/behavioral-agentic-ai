@@ -13,9 +13,9 @@
 
     // ── Configuration ──────────────────────────────────────────────
     const SCRIPT_TAG = document.currentScript || document.querySelector('script[data-key]');
-    const API_KEY    = SCRIPT_TAG?.getAttribute('data-key') || '';
-    const API_BASE   = SCRIPT_TAG?.getAttribute('data-api')  || 'http://localhost:8000';
-    const POSITION   = SCRIPT_TAG?.getAttribute('data-pos')  || 'bottom-right';
+    const API_KEY = SCRIPT_TAG?.getAttribute('data-key') || '';
+    const API_BASE = SCRIPT_TAG?.getAttribute('data-api') || 'http://localhost:8000';
+    const POSITION = SCRIPT_TAG?.getAttribute('data-pos') || 'bottom-right';
 
     if (!API_KEY) {
         console.warn('[Behavioral AI] Missing data-key attribute on widget script tag.');
@@ -23,10 +23,10 @@
     }
 
     // ── State ──────────────────────────────────────────────────────
-    let sessionId    = null;
-    let config       = {};
-    let isOpen       = false;
-    let hasGreeted   = false;
+    let sessionId = null;
+    let config = {};
+    let isOpen = false;
+    let hasGreeted = false;
 
     // ── Inject Styles ──────────────────────────────────────────────
     const style = document.createElement('style');
@@ -103,6 +103,15 @@
         .bai-typing span:nth-child(3) { animation-delay: 0.4s; }
         @keyframes bai-bounce { 0%,80%,100% { transform: scale(0); } 40% { transform: scale(1); } }
 
+        /* Product images in chat */
+        .bai-msg-img {
+            max-width: 100%; max-height: 180px; border-radius: 10px; margin-top: 8px;
+            object-fit: cover; display: block; cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.08);
+            transition: transform 0.2s ease;
+        }
+        .bai-msg-img:hover { transform: scale(1.03); }
+
         /* Input */
         #bai-input-area {
             padding: 0.75rem; border-top: 1px solid rgba(255,255,255,0.06);
@@ -163,15 +172,15 @@
     document.body.appendChild(root);
 
     // ── Element references ─────────────────────────────────────────
-    const bubble    = document.getElementById('bai-bubble');
-    const panel     = document.getElementById('bai-panel');
-    const closeBtn  = document.getElementById('bai-close');
-    const prechat   = document.getElementById('bai-prechat');
-    const messages  = document.getElementById('bai-messages');
+    const bubble = document.getElementById('bai-bubble');
+    const panel = document.getElementById('bai-panel');
+    const closeBtn = document.getElementById('bai-close');
+    const prechat = document.getElementById('bai-prechat');
+    const messages = document.getElementById('bai-messages');
     const inputArea = document.getElementById('bai-input-area');
-    const input     = document.getElementById('bai-input');
-    const sendBtn   = document.getElementById('bai-send-btn');
-    const startBtn  = document.getElementById('bai-start-btn');
+    const input = document.getElementById('bai-input');
+    const sendBtn = document.getElementById('bai-send-btn');
+    const startBtn = document.getElementById('bai-start-btn');
 
     // ── Load Config ────────────────────────────────────────────────
     async function loadConfig() {
@@ -205,7 +214,7 @@
 
     // ── Start Session ──────────────────────────────────────────────
     startBtn.addEventListener('click', async () => {
-        const name  = document.getElementById('bai-name').value.trim();
+        const name = document.getElementById('bai-name').value.trim();
         const email = document.getElementById('bai-email').value.trim();
         if (!name) { document.getElementById('bai-name').style.borderColor = '#f5576c'; return; }
 
@@ -271,7 +280,38 @@
     function addMessage(type, text) {
         const div = document.createElement('div');
         div.className = `bai-msg ${type}`;
-        div.textContent = text;
+
+        if (type === 'bot' && text.includes('[IMAGE:')) {
+            // Parse [IMAGE:url] tags and render as <img>
+            const parts = text.split(/\[IMAGE:(.*?)\]/g);
+            for (let i = 0; i < parts.length; i++) {
+                if (i % 2 === 0) {
+                    // Text part — render safely
+                    const trimmed = parts[i].trim();
+                    if (trimmed) {
+                        const span = document.createElement('span');
+                        span.textContent = trimmed;
+                        div.appendChild(span);
+                    }
+                } else {
+                    // Image URL
+                    const url = parts[i].trim();
+                    if (url) {
+                        const img = document.createElement('img');
+                        img.src = url;
+                        img.alt = 'Product';
+                        img.className = 'bai-msg-img';
+                        img.loading = 'lazy';
+                        img.onerror = function () { this.style.display = 'none'; };
+                        img.onclick = function () { window.open(url, '_blank'); };
+                        div.appendChild(img);
+                    }
+                }
+            }
+        } else {
+            div.textContent = text;
+        }
+
         messages.appendChild(div);
         messages.scrollTop = messages.scrollHeight;
     }

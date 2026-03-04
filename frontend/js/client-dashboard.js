@@ -322,6 +322,18 @@ async function selectConversation(id) {
     }
 }
 
+function formatMessageContent(content) {
+    if (!content) return '';
+    if (!content.includes('[IMAGE:')) return esc(content);
+    // Parse [IMAGE:url] tags → rendered <img>, text parts escaped
+    return content.split(/\[IMAGE:(.*?)\]/g).map((part, i) => {
+        if (i % 2 === 0) return esc(part.trim());
+        const url = part.trim();
+        if (!url) return '';
+        return `<img src="${esc(url)}" alt="Product" class="chat-product-img" loading="lazy" onerror="this.style.display='none'" onclick="window.open('${esc(url)}','_blank')">`;
+    }).filter(Boolean).join('');
+}
+
 function renderMessages(messages) {
     const container = document.getElementById('chatMessages');
     if (!messages.length) {
@@ -361,7 +373,7 @@ function renderMessages(messages) {
         return `<div class="msg msg--${type}">
             <div class="msg-avatar">${label}</div>
             <div>
-                <div class="msg-bubble">${esc(m.content)}</div>
+                <div class="msg-bubble">${formatMessageContent(m.content)}</div>
                 ${sentimentBadge}
                 <div class="msg-time">${time}</div>
             </div>

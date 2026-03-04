@@ -57,6 +57,10 @@ def _auto_index_product(product: ProductListing, tenant_id: int):
             f"In Stock: {'Yes' if product.in_stock else 'No'}\n"
             f"Attributes: {product.attributes or '{}'}"
         )
+        # Append image URL tag so the LLM can pass it through in responses
+        images = product.get_images()
+        if images and images[0]:
+            product_text += f"\n[IMAGE:{images[0]}]"
         manager.upload_document(
             client_id=str(tenant_id),
             content=product_text.encode("utf-8"),
