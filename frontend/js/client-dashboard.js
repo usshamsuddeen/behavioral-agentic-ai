@@ -96,8 +96,9 @@ function switchTab(tab) {
     document.getElementById('sidebar').classList.remove('open');
     document.getElementById('sidebarOverlay').style.display = 'none';
 
-    // Lazy-load tab data
-    if (!loadedTabs[tab]) {
+    // Lazy-load tab data (orders/products always refresh for fresh data)
+    const alwaysRefresh = ['orders', 'products'];
+    if (alwaysRefresh.includes(tab) || !loadedTabs[tab]) {
         loadedTabs[tab] = true;
         loadTabData(tab);
     }

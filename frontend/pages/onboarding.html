@@ -1889,7 +1889,8 @@
 
         async function nextStep() {
             try {
-                const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
+                const freshToken = Auth.getAccessToken();
+                const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${freshToken}` };
 
                 if (currentStep === 1) {
                     await fetch(`${API_BASE}/api/onboarding/business-profile`, {
@@ -1968,7 +1969,7 @@
             try {
                 const response = await fetch(`${API_BASE}/api/orders/simulate`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${Auth.getAccessToken()}` },
                     body: JSON.stringify({ count: parseInt(count) })
                 });
                 const data = await response.json();
@@ -1999,14 +2000,18 @@
             statusEl.textContent = 'Uploading orders...';
 
             try {
+                const freshToken = Auth.getAccessToken();
                 const formData = new FormData();
                 formData.append('file', fileInput.files[0]);
                 const response = await fetch(`${API_BASE}/api/orders/upload-csv`, {
                     method: 'POST',
-                    headers: { 'Authorization': `Bearer ${token}` },
+                    headers: { 'Authorization': `Bearer ${freshToken}` },
                     body: formData
                 });
                 const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.detail || data.message || `Server error (${response.status})`);
+                }
                 statusEl.style.background = 'rgba(46,213,115,0.08)';
                 statusEl.style.border = '1px solid rgba(46,213,115,0.18)';
                 statusEl.style.color = '#2ed573';
@@ -2034,14 +2039,18 @@
             statusEl.textContent = 'Uploading products...';
 
             try {
+                const freshToken = Auth.getAccessToken();
                 const formData = new FormData();
                 formData.append('file', fileInput.files[0]);
                 const response = await fetch(`${API_BASE}/api/products/upload-csv`, {
                     method: 'POST',
-                    headers: { 'Authorization': `Bearer ${token}` },
+                    headers: { 'Authorization': `Bearer ${freshToken}` },
                     body: formData
                 });
                 const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.detail || data.message || `Server error (${response.status})`);
+                }
                 statusEl.style.background = 'rgba(46,213,115,0.08)';
                 statusEl.style.border = '1px solid rgba(46,213,115,0.18)';
                 statusEl.style.color = '#2ed573';
