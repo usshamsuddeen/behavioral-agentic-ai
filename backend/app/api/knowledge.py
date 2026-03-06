@@ -186,7 +186,7 @@ async def upload_document(
             filename=filename,
             doc_type=doc_type,
             category=category,
-            metadata=additional_meta
+            additional_metadata=additional_meta
         )
 
         # ── Track in SQL (FRD §12: knowledge_documents table) ──
