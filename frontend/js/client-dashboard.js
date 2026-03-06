@@ -1174,22 +1174,22 @@ async function viewOrder(orderId) {
 
         // Build detail rows
         const rows = [
-            { label: 'Order ID', value: o.order_id, icon: 'ðŸ·ï¸' },
-            { label: 'Status', value: `<span class="order-status order-status--${(o.status || 'pending').toLowerCase()}">${esc(o.status || 'pending')}</span>`, raw: true, icon: 'ðŸ“Š' },
-            { label: 'Customer Name', value: o.customer_name, icon: 'ðŸ‘¤' },
-            { label: 'Customer Email', value: o.customer_email, icon: 'ðŸ“§' },
-            { label: 'Total Amount', value: o.total_amount ? `${o.currency || 'USD'} ${Number(o.total_amount).toFixed(2)}` : null, icon: 'ðŸ’°' },
-            { label: 'Currency', value: o.currency, icon: 'ðŸ’±' },
-            { label: 'Order Date', value: o.order_date ? new Date(o.order_date).toLocaleString() : null, icon: 'ðŸ“…' },
-            { label: 'Estimated Delivery', value: o.estimated_delivery ? new Date(o.estimated_delivery).toLocaleString() : null, icon: 'ðŸšš' },
-            { label: 'Tracking Number', value: o.tracking_number, icon: 'ðŸ“¦' },
-            { label: 'Carrier', value: o.carrier, icon: 'âœˆï¸' },
-            { label: 'Shipping Address', value: o.shipping_address, icon: 'ðŸ ' },
-            { label: 'Items', value: itemsHtml, raw: true, icon: 'ðŸ›’' },
-            { label: 'Notes', value: o.notes, icon: 'ðŸ“' },
-            { label: 'Source', value: o.source, icon: 'ðŸ”—' },
-            { label: 'Created At', value: o.created_at ? new Date(o.created_at).toLocaleString() : null, icon: 'ðŸ•' },
-            { label: 'Updated At', value: o.updated_at ? new Date(o.updated_at).toLocaleString() : null, icon: 'ðŸ”„' },
+            { label: 'Order ID', value: o.order_id, icon: '#' },
+            { label: 'Status', value: `<span class="order-status order-status--${(o.status || 'pending').toLowerCase()}">${esc(o.status || 'pending')}</span>`, raw: true, icon: '*' },
+            { label: 'Customer Name', value: o.customer_name, icon: '@' },
+            { label: 'Customer Email', value: o.customer_email, icon: '@' },
+            { label: 'Total Amount', value: o.total_amount ? `${o.currency || 'USD'} ${Number(o.total_amount).toFixed(2)}` : null, icon: '$' },
+            { label: 'Currency', value: o.currency, icon: '$' },
+            { label: 'Order Date', value: o.order_date ? new Date(o.order_date).toLocaleString() : null, icon: '>' },
+            { label: 'Estimated Delivery', value: o.estimated_delivery ? new Date(o.estimated_delivery).toLocaleString() : null, icon: '>' },
+            { label: 'Tracking Number', value: o.tracking_number, icon: '#' },
+            { label: 'Carrier', value: o.carrier, icon: '>' },
+            { label: 'Shipping Address', value: o.shipping_address, icon: '>' },
+            { label: 'Items', value: itemsHtml, raw: true, icon: '*' },
+            { label: 'Notes', value: o.notes, icon: '*' },
+            { label: 'Source', value: o.source, icon: '>' },
+            { label: 'Created At', value: o.created_at ? new Date(o.created_at).toLocaleString() : null, icon: '>' },
+            { label: 'Updated At', value: o.updated_at ? new Date(o.updated_at).toLocaleString() : null, icon: '>' },
         ];
 
         content.innerHTML = `
@@ -1314,20 +1314,14 @@ async function loadAboutCompanyTab() {
         if (!parts.length) { showToast('Please fill in at least one field', 'warning'); return; }
 
         var text = parts.join('\n');
-        var token = localStorage.getItem('access_token');
         try {
-            var res = await fetch(API + '/api/knowledge/text', {
-                method: 'POST',
-                headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text: text, source: 'company_info', doc_type: 'about', category: 'about' })
-            });
-            var data = await res.json();
+            var data = await API.addKnowledgeText(text, 'company_info', 'about', 'about');
             if (data.success) {
                 showToast('Company info saved (' + data.chunks_created + ' chunks)', 'success');
                 ['aboutCompanyName', 'aboutIndustry', 'aboutEmail', 'aboutPhone', 'aboutWebsite', 'aboutAddress', 'aboutMission'].forEach(function (id) { document.getElementById(id).value = ''; });
                 await kbLoadDocuments('kb-about', 'about');
             } else {
-                showToast('Failed: ' + data.error, 'error');
+                showToast('Failed: ' + (data.error || 'Unknown error'), 'error');
             }
         } catch (err) { showToast('Error: ' + err.message, 'error'); }
     });
@@ -1493,7 +1487,6 @@ function kbWireUploadZone(tabId, docType, label) {
 }
 
 async function kbUploadFiles(tabId, docType, label, files) {
-    var token = localStorage.getItem('access_token');
     var progress = document.getElementById('kbProgress-' + tabId);
     if (progress) progress.style.display = 'flex';
 
@@ -1504,12 +1497,7 @@ async function kbUploadFiles(tabId, docType, label, files) {
         fd.append('doc_type', docType);
         fd.append('category', docType);
         try {
-            var res = await fetch(API + '/api/knowledge/upload', {
-                method: 'POST',
-                headers: { 'Authorization': 'Bearer ' + token },
-                body: fd
-            });
-            var data = await res.json();
+            var data = await API.uploadKnowledgeFile(fd);
             if (data.success) {
                 showToast('"' + file.name + '" indexed (' + data.chunks_created + ' chunks)', 'success');
             } else {
@@ -1529,35 +1517,25 @@ async function kbSaveText(tabId, docType, label) {
     var textArea = document.getElementById('kbText-' + tabId);
     var text = textArea.value.trim();
     if (!text) { showToast('Please enter some text first', 'warning'); return; }
-    var token = localStorage.getItem('access_token');
     try {
-        var res = await fetch(API + '/api/knowledge/text', {
-            method: 'POST',
-            headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: text, source: 'manual_' + docType, doc_type: docType, category: docType })
-        });
-        var data = await res.json();
+        var data = await API.addKnowledgeText(text, 'manual_' + docType, docType, docType);
         if (data.success) {
             showToast(label + ' saved (' + data.chunks_created + ' chunks)', 'success');
             textArea.value = '';
             if (tabId === 'kb-custom') { await kbLoadAllCustomDocuments(); }
             else { await kbLoadDocuments(tabId, docType); }
         } else {
-            showToast('Failed: ' + data.error, 'error');
+            showToast('Failed: ' + (data.error || 'Unknown error'), 'error');
         }
     } catch (err) { showToast('Save error: ' + err.message, 'error'); }
 }
 
 async function kbLoadDocuments(tabId, docType) {
-    var token = localStorage.getItem('access_token');
     var container = document.getElementById('kbDocs-' + tabId);
     var countEl = document.getElementById('kbCount-' + tabId);
     if (!container) return;
     try {
-        var res = await fetch(API + '/api/knowledge/documents', {
-            headers: { 'Authorization': 'Bearer ' + token }
-        });
-        var data = await res.json();
+        var data = await API.getKnowledgeDocuments();
         var docs = (data.documents || []).filter(function (d) { return d.doc_type === docType; });
         if (countEl) countEl.textContent = docs.length + ' document' + (docs.length !== 1 ? 's' : '');
         kbRenderDocsTable(container, docs, tabId, docType);
@@ -1567,16 +1545,12 @@ async function kbLoadDocuments(tabId, docType) {
 }
 
 async function kbLoadAllCustomDocuments() {
-    var token = localStorage.getItem('access_token');
     var container = document.getElementById('kbDocs-kb-custom');
     var countEl = document.getElementById('kbCount-kb-custom');
     if (!container) return;
     var excludeTypes = ['product', 'order', 'about'];
     try {
-        var res = await fetch(API + '/api/knowledge/documents', {
-            headers: { 'Authorization': 'Bearer ' + token }
-        });
-        var data = await res.json();
+        var data = await API.getKnowledgeDocuments();
         var docs = (data.documents || []).filter(function (d) { return excludeTypes.indexOf(d.doc_type) === -1; });
         if (countEl) countEl.textContent = docs.length + ' document' + (docs.length !== 1 ? 's' : '');
         kbRenderDocsTable(container, docs, 'kb-custom', null);
@@ -1617,18 +1591,12 @@ function kbRenderDocsTable(container, docs, tabId, docType) {
 
 async function kbDeleteDoc(docId, tabId, docType) {
     if (!confirm('Delete this document from the knowledge base?')) return;
-    var token = localStorage.getItem('access_token');
     try {
-        var res = await fetch(API + '/api/knowledge/document/' + docId, {
-            method: 'DELETE',
-            headers: { 'Authorization': 'Bearer ' + token }
-        });
-        if (res.ok) {
-            showToast('Document deleted', 'success');
-            if (tabId === 'kb-custom') { await kbLoadAllCustomDocuments(); }
-            else { await kbLoadDocuments(tabId, docType); }
-        } else { showToast('Delete failed', 'error'); }
-    } catch (err) { showToast('Error: ' + err.message, 'error'); }
+        await API.deleteKnowledgeDocument(docId);
+        showToast('Document deleted', 'success');
+        if (tabId === 'kb-custom') { await kbLoadAllCustomDocuments(); }
+        else { await kbLoadDocuments(tabId, docType); }
+    } catch (err) { showToast('Delete failed: ' + err.message, 'error'); }
 }
 
 function kbViewDoc(docId, filename) {
