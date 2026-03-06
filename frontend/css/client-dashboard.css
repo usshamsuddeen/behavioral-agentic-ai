@@ -356,6 +356,95 @@
 }
 
 /* ═══════════════════════════════════════════════════
+   SIDEBAR OVERLAY (mobile backdrop)
+   ═══════════════════════════════════════════════════ */
+#sidebarOverlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, .5);
+  z-index: 199;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  transition: opacity .3s ease;
+}
+
+/* ═══════════════════════════════════════════════════
+   RESPONSIVE — MOBILE / TABLET (≤768px)
+   ═══════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+    width: 260px;
+    transition: transform .3s cubic-bezier(.4, 0, .2, 1);
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+  }
+
+  /* Override hover-expand on mobile — only open class should work */
+  .sidebar:hover {
+    width: 260px;
+    transform: translateX(-100%);
+  }
+  .sidebar.open:hover {
+    transform: translateX(0);
+  }
+
+  /* Main content takes full width on mobile */
+  .main-content {
+    margin-left: 0 !important;
+  }
+  .sidebar:hover ~ .main-content,
+  .sidebar.expanded ~ .main-content {
+    margin-left: 0;
+  }
+
+  /* Show hamburger toggle on mobile */
+  .mobile-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Show sidebar text labels always when sidebar is open on mobile */
+  .sidebar.open .sidebar-title,
+  .sidebar.open .sidebar-subtitle,
+  .sidebar.open .nav-section-label,
+  .sidebar.open .nav-item span {
+    opacity: 1;
+  }
+
+  /* Close sidebar when a nav item is clicked (handled by JS) */
+  .main-header {
+    padding: 16px 16px;
+  }
+
+  .main-body {
+    padding: 16px;
+  }
+
+  .metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .overview-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .metrics-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .page-title {
+    font-size: 1.1rem;
+  }
+}
+
+/* ═══════════════════════════════════════════════════
    TAB PANELS
    ═══════════════════════════════════════════════════ */
 .tab-panel {

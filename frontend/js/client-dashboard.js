@@ -644,17 +644,17 @@ async function loadSettings() {
         document.getElementById('settingsName').value = profile.name || profile.full_name || '';
         document.getElementById('settingsEmail').value = profile.email || '';
 
-        // Company
-        document.getElementById('settingsCompanyName').value = tenant.company_name || profile.company_name || '';
-        document.getElementById('settingsIndustry').value = tenant.industry || '';
+        // Company — backend returns business_name, business_type, store_url, support_email
+        document.getElementById('settingsCompanyName').value = tenant.business_name || profile.company_name || '';
+        document.getElementById('settingsIndustry').value = tenant.business_type || '';
         document.getElementById('settingsSupportEmail').value = tenant.support_email || '';
-        document.getElementById('settingsWebsite').value = tenant.website || '';
+        document.getElementById('settingsWebsite').value = tenant.store_url || '';
 
         // Team
         renderTeamList(team);
 
-        // API key
-        document.getElementById('apiKeyValue').textContent = resp.api_key || resp.widget_api_key || '************';
+        // API key — backend returns { key: '...', is_active: bool }
+        document.getElementById('apiKeyValue').textContent = (resp.api_key && resp.api_key.key) || '************';
 
         // Preferences (from settings sub-object)
         if (prefs) {
@@ -665,9 +665,9 @@ async function loadSettings() {
         console.error('Settings load error:', err);
     }
 
-    // Save profile
+    // Save profile — backend expects 'full_name' (not 'name')
     document.getElementById('saveProfileBtn').onclick = async () => {
-        const data = { name: document.getElementById('settingsName').value };
+        const data = { full_name: document.getElementById('settingsName').value };
         const pw = document.getElementById('settingsPassword').value;
         if (pw) {
             if (pw !== document.getElementById('settingsPasswordConfirm').value) {
@@ -675,17 +675,35 @@ async function loadSettings() {
             }
             data.password = pw;
         }
-        try { await API.updateProfile(data); showToast('Profile updated!', 'success'); }
+        try {
+            const result = await API.updateProfile(data);
+            // Update localStorage so sidebar/UI reflects the new name immediately
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            if (result.profile) {
+                Object.assign(user, result.profile);
+            } else if (data.full_name) {
+                user.full_name = data.full_name;
+                user.name = data.full_name;
+                // Recompute initials
+                const parts = data.full_name.trim().split(/\s+/);
+                user.initials = parts.length >= 2
+                    ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+                    : data.full_name.slice(0, 2).toUpperCase();
+            }
+            localStorage.setItem('user', JSON.stringify(user));
+            loadUserInfo(); // Refresh sidebar user name/avatar
+            showToast('Profile updated!', 'success');
+        }
         catch { showToast('Update failed', 'error'); }
     };
 
-    // Save company
+    // Save company — backend expects business_name, business_type, store_url, support_email
     document.getElementById('saveCompanyBtn').onclick = async () => {
         const data = {
-            company_name: document.getElementById('settingsCompanyName').value,
-            industry: document.getElementById('settingsIndustry').value,
+            business_name: document.getElementById('settingsCompanyName').value,
+            business_type: document.getElementById('settingsIndustry').value,
             support_email: document.getElementById('settingsSupportEmail').value,
-            website: document.getElementById('settingsWebsite').value,
+            store_url: document.getElementById('settingsWebsite').value,
         };
         try { await API.updateTenantSettings(data); showToast('Company settings updated!', 'success'); }
         catch { showToast('Update failed', 'error'); }
@@ -713,7 +731,7 @@ async function loadSettings() {
         if (!confirm('Regenerate your API key? Your current embed code will stop working.')) return;
         try {
             const result = await API.regenerateApiKey();
-            document.getElementById('apiKeyValue').textContent = result.api_key || result.widget_api_key || '--';
+            document.getElementById('apiKeyValue').textContent = result.new_key || result.api_key || '--';
             showToast('API key regenerated', 'success');
         } catch { showToast('Regeneration failed', 'error'); }
     };
@@ -793,14 +811,34 @@ function setupSettingsSubNav() {
    MOBILE MENU
    *********************************************************** */
 function setupMobileMenu() {
-    document.getElementById('mobileToggle').addEventListener('click', () => {
-        document.getElementById('sidebar').classList.toggle('open');
-        const overlay = document.getElementById('sidebarOverlay');
-        overlay.style.display = overlay.style.display === 'block' ? 'none' : 'block';
+    const toggle = document.getElementById('mobileToggle');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+
+    if (!toggle || !sidebar) return; // Guard: elements must exist
+
+    toggle.addEventListener('click', () => {
+        sidebar.classList.toggle('open');
+        if (overlay) {
+            overlay.style.display = sidebar.classList.contains('open') ? 'block' : 'none';
+        }
     });
-    document.getElementById('sidebarOverlay').addEventListener('click', () => {
-        document.getElementById('sidebar').classList.remove('open');
-        document.getElementById('sidebarOverlay').style.display = 'none';
+
+    if (overlay) {
+        overlay.addEventListener('click', () => {
+            sidebar.classList.remove('open');
+            overlay.style.display = 'none';
+        });
+    }
+
+    // Auto-close sidebar on mobile when a nav item is clicked
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.addEventListener('click', () => {
+            if (window.innerWidth <= 768) {
+                sidebar.classList.remove('open');
+                if (overlay) overlay.style.display = 'none';
+            }
+        });
     });
 }
 
