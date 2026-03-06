@@ -1,18 +1,18 @@
 /**
- * â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
- * Behavioral Agentic AI â€” Client Dashboard (Single-Page)
+ * 
+ * Behavioral Agentic AI " Client Dashboard (Single-Page)
  * All 8 tabs powered by api.js (FRD v4.0)
- * â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+ * 
  */
 
-/* â”€â”€â”€ State â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* """ State """""""""""""""""""""""""""""""""""""""""""""""" */
 let currentTab = 'overview';
 let loadedTabs = {};          // track which tabs have been initialised
 let currentConvId = null;     // selected conversation
 let allConversations = [];    // cached conversation list
 
 const TAB_META = {
-    overview: { title: 'Overview', subtitle: 'Welcome back â€” here\'s what\'s happening today' },
+    overview: { title: 'Overview', subtitle: 'Welcome back - here\'s what\'s happening today' },
     conversations: { title: 'Conversations', subtitle: 'Monitor and respond to customer conversations' },
     orders: { title: 'Order Data', subtitle: 'Manage order data for AI order-tracking queries' },
     products: { title: 'Products', subtitle: 'Manage product listings for your AI catalog' },
@@ -23,7 +23,7 @@ const TAB_META = {
     'kb-custom': { title: 'Custom Data', subtitle: 'Upload policies, rules, FAQs, and any knowledge base documents' },
 };
 
-/* â”€â”€â”€ Init â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* """ Init """"""""""""""""""""""""""""""""""""""""""""""""" */
 document.addEventListener('DOMContentLoaded', () => {
     // Auth guard
     const token = localStorage.getItem('access_token');
@@ -42,9 +42,9 @@ document.addEventListener('DOMContentLoaded', () => {
     switchTab(hash);
 });
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* 
    USER INFO
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+    */
 function loadUserInfo() {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     const name = user.name || user.full_name || 'User';
@@ -55,9 +55,9 @@ function loadUserInfo() {
     document.getElementById('sidebarRole').textContent = user.role === 'client' ? 'Client Admin' : (user.role || 'User');
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* 
    TAB NAVIGATION
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+    */
 function setupTabNavigation() {
     document.querySelectorAll('.nav-item[data-tab]').forEach(item => {
         item.addEventListener('click', (e) => {
@@ -106,9 +106,9 @@ function switchTab(tab) {
     }
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* 
    LAZY LOAD PER TAB
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+    */
 function loadTabData(tab) {
     switch (tab) {
         case 'overview': loadOverview(); break;
@@ -123,9 +123,9 @@ function loadTabData(tab) {
     }
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* 
    TAB 1: OVERVIEW
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+    */
 async function loadOverview() {
     try {
         const data = await API.getDashboardMetrics();
@@ -203,7 +203,7 @@ function renderRecentEscalations(escalations) {
     if (!escalations || escalations.length === 0) {
         container.innerHTML = `<div class="empty-state">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-            <p>No escalations â€” all clear!</p>
+            <p>No escalations - all clear!</p>
         </div>`;
         return;
     }
@@ -221,12 +221,12 @@ function renderRecentEscalations(escalations) {
     }).join('');
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* 
    TAB 2: CONVERSATIONS
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+    */
 async function loadConversations(statusFilter = null) {
     const container = document.getElementById('convListItems');
-    container.innerHTML = '<div class="loading-state"><div class="spinner"></div><p>Loadingâ€¦</p></div>';
+    container.innerHTML = '<div class="loading-state"><div class="spinner"></div><p>Loading</p></div>';
 
     try {
         const data = await API.getConversations(statusFilter);
@@ -314,7 +314,7 @@ async function selectConversation(id) {
         document.getElementById('chatAvatar').textContent = name.slice(0, 2).toUpperCase();
         document.getElementById('chatName').textContent = name;
         document.getElementById('chatMeta').textContent =
-            `${conv.status || 'active'} Â· ${messages.length} messages Â· ${conv.language || 'en'}`;
+            `${conv.status || 'active'} | ${messages.length} messages | ${conv.language || 'en'}`;
 
         // Render messages
         renderMessages(messages);
@@ -329,7 +329,7 @@ async function selectConversation(id) {
 function formatMessageContent(content) {
     if (!content) return '';
     if (!content.includes('[IMAGE:')) return esc(content);
-    // Parse [IMAGE:url] tags â†’ rendered <img>, text parts escaped
+    // Parse [IMAGE:url] tags ' rendered <img>, text parts escaped
     return content.split(/\[IMAGE:(.*?)\]/g).map((part, i) => {
         if (i % 2 === 0) return esc(part.trim());
         const url = part.trim();
@@ -349,26 +349,26 @@ function renderMessages(messages) {
         const type = m.sender_type || 'customer';
         const label = type === 'customer' ? (m.sender_name || 'Customer').slice(0, 2).toUpperCase()
             : type === 'ai' ? 'AI'
-                : 'ðŸ§‘';
+                : 'AG';
 
-        // â”€â”€ Sentiment Pill Badge (hero section style) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // "" Sentiment Pill Badge (hero section style) """"""""""""""
         let sentimentBadge = '';
         if (m.sentiment_label || m.sentiment_score != null) {
             const score = m.sentiment_score != null ? m.sentiment_score : 0.5;
             const pct = Math.round(score * 100);
 
             if (type === 'ai') {
-                // AI responses â†’ white/subtle pill
+                // AI responses ' white/subtle pill
                 const emotionLabel = _getEmotionLabel('positive', score);
                 sentimentBadge = `<span class="msg-sentiment-pill msg-sentiment-pill--ai">` +
-                    `<span class="msg-sentiment-dot"></span>${emotionLabel} Â· ${pct}%</span>`;
+                    `<span class="msg-sentiment-dot"></span>${emotionLabel} | ${pct}%</span>`;
             } else {
-                // Customer messages â†’ colorful pill by emotion
+                // Customer messages ' colorful pill by emotion
                 const sentiment = m.sentiment_label || (score > 0.58 ? 'positive' : score < 0.42 ? 'negative' : 'neutral');
                 const emotionLabel = _getEmotionLabel(sentiment, score);
                 const cssClass = _labelToClass(emotionLabel);
                 sentimentBadge = `<span class="msg-sentiment-pill msg-sentiment-pill--${cssClass}">` +
-                    `<span class="msg-sentiment-dot"></span>${emotionLabel} Â· ${pct}%</span>`;
+                    `<span class="msg-sentiment-dot"></span>${emotionLabel} | ${pct}%</span>`;
             }
         }
 
@@ -388,7 +388,7 @@ function renderMessages(messages) {
 }
 
 /**
- * Map sentiment + score â†’ 16-tier emotion label
+ * Map sentiment + score ' 16-tier emotion label
  * Mirrors backend get_sentiment_label() in sentiment.py
  */
 function _getEmotionLabel(sentiment, score) {
@@ -416,7 +416,7 @@ function _getEmotionLabel(sentiment, score) {
     return 'Neutral';
 }
 
-/** Convert label like "Very Frustrated" â†’ CSS class "very-frustrated" */
+/** Convert label like "Very Frustrated" ' CSS class "very-frustrated" */
 function _labelToClass(label) {
     return label.toLowerCase().replace(/\s+/g, '-');
 }
@@ -459,9 +459,9 @@ function setupChatActions(convId, conv) {
     };
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* 
    TAB 3: ANALYTICS
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+    */
 async function loadAnalytics() {
     try {
         const data = await API.getDashboardMetrics();
@@ -550,9 +550,9 @@ function renderBarChart(containerId, data) {
 
 
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* 
    TAB 5: WIDGET
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+    */
 async function loadWidget() {
     // Load config
     try {
@@ -581,7 +581,7 @@ async function loadWidget() {
         document.getElementById(id).addEventListener('input', updateWidgetPreview);
     });
 
-    // Sync color picker â†” text
+    // Sync color picker " text
     document.getElementById('widgetColor').addEventListener('input', (e) => {
         document.getElementById('widgetColorText').value = e.target.value;
     });
@@ -628,9 +628,9 @@ function updateWidgetPreview() {
     document.getElementById('previewWelcome').textContent = welcome;
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* 
    TAB 6: SETTINGS
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+    */
 async function loadSettings() {
     try {
         const resp = await API.getSettings();
@@ -654,7 +654,7 @@ async function loadSettings() {
         renderTeamList(team);
 
         // API key
-        document.getElementById('apiKeyValue').textContent = resp.api_key || resp.widget_api_key || 'â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢';
+        document.getElementById('apiKeyValue').textContent = resp.api_key || resp.widget_api_key || '';
 
         // Preferences (from settings sub-object)
         if (prefs) {
@@ -713,7 +713,7 @@ async function loadSettings() {
         if (!confirm('Regenerate your API key? Your current embed code will stop working.')) return;
         try {
             const result = await API.regenerateApiKey();
-            document.getElementById('apiKeyValue').textContent = result.api_key || result.widget_api_key || 'â€”';
+            document.getElementById('apiKeyValue').textContent = result.api_key || result.widget_api_key || '"';
             showToast('API key regenerated', 'success');
         } catch { showToast('Regeneration failed', 'error'); }
     };
@@ -767,9 +767,9 @@ async function removeTeamMember(id) {
     } catch { showToast('Remove failed', 'error'); }
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* 
    SETTINGS SUB-NAV
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+    */
 function setupSettingsSubNav() {
     const map = {
         profile: 'settingsProfile',
@@ -789,9 +789,9 @@ function setupSettingsSubNav() {
     });
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* 
    MOBILE MENU
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+    */
 function setupMobileMenu() {
     document.getElementById('mobileToggle').addEventListener('click', () => {
         document.getElementById('sidebar').classList.toggle('open');
@@ -804,9 +804,9 @@ function setupMobileMenu() {
     });
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* 
    LOGOUT
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+    */
 function setupLogout() {
     document.getElementById('logoutBtn').addEventListener('click', () => {
         localStorage.removeItem('access_token');
@@ -816,9 +816,9 @@ function setupLogout() {
     });
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* 
    UTILITIES
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+    */
 function showToast(message, type = 'info') {
     const toast = document.getElementById('toast');
     toast.textContent = message;
@@ -848,11 +848,11 @@ function formatFileSize(bytes) {
     return (bytes / 1048576).toFixed(1) + ' MB';
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* 
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* 
    UPLOAD ZONES (drag-drop)
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+    */
 function setupUploadZones() {
     // Order CSV upload zone
     const orderZone = document.getElementById('orderUploadZone');
@@ -876,9 +876,9 @@ function setupUploadZones() {
     }
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* 
    TAB: ORDERS (V4 NEW)
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+    */
 let orderPage = 1;
 async function loadOrders(page = 1) {
     orderPage = page;
@@ -918,11 +918,11 @@ function renderOrderTable(orders) {
     tbody.innerHTML = orders.map(o => `
         <tr>
             <td><strong>${esc(o.order_id)}</strong></td>
-            <td>${esc(o.customer_name || 'â€”')}</td>
-            <td>${esc(o.customer_email || 'â€”')}</td>
+            <td>${esc(o.customer_name || '"')}</td>
+            <td>${esc(o.customer_email || '"')}</td>
             <td><span class="order-status order-status--${(o.status || 'pending').toLowerCase()}">${esc(o.status || 'pending')}</span></td>
-            <td>${o.total_amount ? `${o.currency || '$'}${Number(o.total_amount).toFixed(2)}` : 'â€”'}</td>
-            <td>${o.order_date ? new Date(o.order_date).toLocaleDateString() : 'â€”'}</td>
+            <td>${o.total_amount ? `${o.currency || '$'}${Number(o.total_amount).toFixed(2)}` : '"'}</td>
+            <td>${o.order_date ? new Date(o.order_date).toLocaleDateString() : '"'}</td>
             <td style="display:flex;gap:4px">
                 <button class="btn btn-sm btn-secondary" onclick="viewOrder('${esc(o.order_id)}')" title="View Details"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
                 <button class="btn btn-sm btn-ghost" onclick="deleteOrder(${o.id})" title="Delete"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>
@@ -937,7 +937,7 @@ async function uploadOrderCSV() {
     const formData = new FormData();
     formData.append('file', input.files[0]);
     try {
-        showToast('Uploading CSVâ€¦', 'info');
+        showToast('Uploading CSV', 'info');
         const result = await API.uploadOrderCSV(formData);
         showToast(`${result.created || 0} orders imported, ${result.skipped || 0} skipped!`, 'success');
         input.value = '';
@@ -960,9 +960,9 @@ async function deleteOrder(id) {
     }
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* 
    TAB: PRODUCTS (V4 NEW)
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+    */
 let productPage = 1;
 let editingProductId = null;
 
@@ -992,7 +992,7 @@ async function loadProducts(page = 1) {
 function renderProductGrid(products) {
     const grid = document.getElementById('productGrid');
     if (!products.length) {
-        grid.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px;height:48px;margin-bottom:12px;opacity:.3"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg><p>No products yet â€” add your first product or import via CSV</p></div>';
+        grid.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px;height:48px;margin-bottom:12px;opacity:.3"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg><p>No products yet " add your first product or import via CSV</p></div>';
         return;
     }
     grid.innerHTML = products.map(p => `
@@ -1104,7 +1104,7 @@ async function uploadProductCSV() {
     const formData = new FormData();
     formData.append('file', input.files[0]);
     try {
-        showToast('Uploading product CSVâ€¦', 'info');
+        showToast('Uploading product CSV', 'info');
         const result = await API.uploadProductCSV(formData);
         showToast(`${result.created || 0} products imported!`, 'success');
         input.value = '';
@@ -1115,37 +1115,37 @@ async function uploadProductCSV() {
     }
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* 
    PAGINATION RENDERER (generic)
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+    */
 function renderPagination(containerId, currentPage, totalPages, onPageChange) {
     const el = document.getElementById(containerId);
     if (!el || totalPages <= 1) { if (el) el.innerHTML = ''; return; }
-    let html = `<button class="pagination-btn" ${currentPage <= 1 ? 'disabled' : ''} onclick="void(0)">â€¹ Prev</button>`;
+    let html = `<button class="pagination-btn" ${currentPage <= 1 ? 'disabled' : ''} onclick="void(0)">&lsaquo; Prev</button>`;
     for (let i = 1; i <= totalPages; i++) {
         html += `<button class="pagination-btn ${i === currentPage ? 'active' : ''}" onclick="void(0)">${i}</button>`;
     }
-    html += `<button class="pagination-btn" ${currentPage >= totalPages ? 'disabled' : ''} onclick="void(0)">Next â€º</button>`;
+    html += `<button class="pagination-btn" ${currentPage >= totalPages ? 'disabled' : ''} onclick="void(0)">Next &rsaquo;</button>`;
     el.innerHTML = html;
     el.querySelectorAll('.pagination-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const txt = btn.textContent.trim();
-            if (txt === 'â€¹ Prev' && currentPage > 1) onPageChange(currentPage - 1);
-            else if (txt === 'Next â€º' && currentPage < totalPages) onPageChange(currentPage + 1);
+            if (txt.indexOf('Prev') !== -1 && currentPage > 1) onPageChange(currentPage - 1);
+            else if (txt.indexOf('Next') !== -1 && currentPage < totalPages) onPageChange(currentPage + 1);
             else if (!isNaN(txt)) onPageChange(parseInt(txt));
         });
     });
 }
 
-/* â”€â”€â”€ Debounce helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* """ Debounce helper """"""""""""""""""""""""""""""""""""""" */
 function debounce(fn, delay) {
     let timer;
     return (...args) => { clearTimeout(timer); timer = setTimeout(() => fn(...args), delay); };
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* 
    ORDER DETAIL MODAL
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+    */
 async function viewOrder(orderId) {
     const overlay = document.getElementById('orderDetailOverlay');
     const content = document.getElementById('orderDetailContent');
@@ -1153,7 +1153,7 @@ async function viewOrder(orderId) {
 
     // Show modal with loading state
     overlay.classList.add('active');
-    content.innerHTML = '<div class="loading-state"><div class="spinner"></div><p>Loading order detailsâ€¦</p></div>';
+    content.innerHTML = '<div class="loading-state"><div class="spinner"></div><p>Loading order details</p></div>';
 
     try {
         const result = await API.getOrder(orderId);
@@ -1166,7 +1166,7 @@ async function viewOrder(orderId) {
             itemsHtml = '<div class="order-detail-items">' + items.map(item =>
                 `<div class="order-detail-item-row">
                     <span class="order-detail-item-name">${esc(item.name || item.product || 'Item')}</span>
-                    <span class="order-detail-item-qty">Ã—${item.qty || item.quantity || 1}</span>
+                    <span class="order-detail-item-qty">-${item.qty || item.quantity || 1}</span>
                     ${item.price ? `<span class="order-detail-item-price">${o.currency || 'USD'} ${Number(item.price).toFixed(2)}</span>` : ''}
                 </div>`
             ).join('') + '</div>';
@@ -1174,29 +1174,33 @@ async function viewOrder(orderId) {
 
         // Build detail rows
         const rows = [
-            { label: 'Order ID', value: o.order_id, icon: 'ðŸ·ï¸' },
-            { label: 'Status', value: `<span class="order-status order-status--${(o.status || 'pending').toLowerCase()}">${esc(o.status || 'pending')}</span>`, raw: true, icon: 'ðŸ“Š' },
-            { label: 'Customer Name', value: o.customer_name, icon: 'ðŸ‘¤' },
-            { label: 'Customer Email', value: o.customer_email, icon: 'ðŸ“§' },
-            { label: 'Total Amount', value: o.total_amount ? `${o.currency || 'USD'} ${Number(o.total_amount).toFixed(2)}` : null, icon: 'ðŸ’°' },
-            { label: 'Currency', value: o.currency, icon: 'ðŸ’±' },
-            { label: 'Order Date', value: o.order_date ? new Date(o.order_date).toLocaleString() : null, icon: 'ðŸ“…' },
-            { label: 'Estimated Delivery', value: o.estimated_delivery ? new Date(o.estimated_delivery).toLocaleString() : null, icon: 'ðŸšš' },
-            { label: 'Tracking Number', value: o.tracking_number, icon: 'ðŸ“¦' },
-            { label: 'Carrier', value: o.carrier, icon: 'âœˆï¸' },
-            { label: 'Shipping Address', value: o.shipping_address, icon: 'ðŸ ' },
-            { label: 'Items', value: itemsHtml, raw: true, icon: 'ðŸ›’' },
-            { label: 'Notes', value: o.notes, icon: 'ðŸ“' },
-            { label: 'Source', value: o.source, icon: 'ðŸ”—' },
-            { label: 'Created At', value: o.created_at ? new Date(o.created_at).toLocaleString() : null, icon: 'ðŸ•' },
-            { label: 'Updated At', value: o.updated_at ? new Date(o.updated_at).toLocaleString() : null, icon: 'ðŸ”„' },
+            { label: 'Order ID', value: o.order_id, icon: '|' },
+            { label: 'Status', value: `<span class="order-status order-status--${(o.status || 'pending').toLowerCase()}">${esc(o.status || 'pending')}</span>`, raw: true, icon: '"' },
+            {
+                label: 'Customer Name', value: o.customer_name, icon: ''' },
+            { label: 'Customer Email', value: o.customer_email, icon: '"' },
+            {
+                label: 'Total Amount', value: o.total_amount ? `${o.currency || 'USD'} ${Number(o.total_amount).toFixed(2)}` : null, icon: ''' },
+            {
+                    label: 'Currency', value: o.currency, icon: ''' },
+            { label: 'Order Date', value: o.order_date ? new Date(o.order_date).toLocaleString() : null, icon: '"...' },
+            { label: 'Estimated Delivery', value: o.estimated_delivery ? new Date(o.estimated_delivery).toLocaleString() : null, icon: '' },
+            { label: 'Tracking Number', value: o.tracking_number, icon: '"' },
+            { label: 'Carrier', value: o.carrier, icon: '' },
+            { label: 'Shipping Address', value: o.shipping_address, icon: '' },
+            {
+                label: 'Items', value: itemsHtml, raw: true, icon: '>'' },
+            { label: 'Notes', value: o.notes, icon: '"' },
+            { label: 'Source', value: o.source, icon: '"-' },
+            { label: 'Created At', value: o.created_at ? new Date(o.created_at).toLocaleString() : null, icon: '' },
+            { label: 'Updated At', value: o.updated_at ? new Date(o.updated_at).toLocaleString() : null, icon: '"' },
         ];
 
         content.innerHTML = `
             <div class="order-detail-header">
                 <div>
                     <h3 class="order-detail-title">Order #${esc(o.order_id)}</h3>
-                    <p class="order-detail-subtitle">${o.customer_name ? esc(o.customer_name) : 'Customer'} ${o.order_date ? 'Â· ' + new Date(o.order_date).toLocaleDateString() : ''}</p>
+                    <p class="order-detail-subtitle">${o.customer_name ? esc(o.customer_name) : 'Customer'} ${o.order_date ? '| ' + new Date(o.order_date).toLocaleDateString() : ''}</p>
                 </div>
                 <button class="order-detail-close" onclick="closeOrderModal()" title="Close">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
