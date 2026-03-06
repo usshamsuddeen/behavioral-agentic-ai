@@ -1,4 +1,4 @@
-﻿/**
+/**
  * â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
  * Behavioral Agentic AI â€” Client Dashboard (Single-Page)
  * All 8 tabs powered by api.js (FRD v4.0)
@@ -1224,106 +1224,86 @@ function closeOrderModal() {
     if (overlay) overlay.classList.remove('active');
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   ABOUT COMPANY TAB â€” Enhanced, structured UI (V4.2)
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+// Make functions globally accessible (used by onclick in HTML)
+window.switchTab = switchTab;
+window.selectConversation = selectConversation;
+window.removeTeamMember = removeTeamMember;
+window.deleteOrder = deleteOrder;
+window.viewOrder = viewOrder;
+window.closeOrderModal = closeOrderModal;
+window.editProduct = editProduct;
+window.deleteProduct = deleteProduct;
+
+/* ===============================================================
+   ABOUT COMPANY TAB - Enhanced, structured UI (V4.2)
+   =============================================================== */
+
+var SVG_BUILDING = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9h1"/><path d="M9 13h1"/><path d="M9 17h1"/></svg>';
+var SVG_CLIP = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>';
+var SVG_UPLOAD = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>';
+var SVG_EDIT = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
+var SVG_IMAGE = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>';
+var SVG_FOLDER = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>';
+var SVG_CATEGORY = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>';
 
 async function loadAboutCompanyTab() {
-    const panel = document.querySelector('#panel-kb-about .kb-panel');
+    var panel = document.querySelector('#panel-kb-about .kb-panel');
     if (!panel) return;
 
-    panel.innerHTML = `
-        <div class="kb-section">
-            <!-- Company Info Card -->
-            <div class="kb-card">
-                <div class="kb-card-header">
-                    <div class="kb-card-icon">ðŸ¢</div>
-                    <div>
-                        <h3 class="kb-card-title">Company Information</h3>
-                        <p class="kb-card-desc">This data helps your AI respond accurately about your business</p>
-                    </div>
-                </div>
-                <div class="kb-form-grid">
-                    <div class="kb-field">
-                        <label class="kb-field-label">Company Name</label>
-                        <input type="text" class="kb-input" id="aboutCompanyName" placeholder="e.g. Acme Corporation">
-                    </div>
-                    <div class="kb-field">
-                        <label class="kb-field-label">Industry</label>
-                        <input type="text" class="kb-input" id="aboutIndustry" placeholder="e.g. E-Commerce, Technology">
-                    </div>
-                    <div class="kb-field">
-                        <label class="kb-field-label">Email</label>
-                        <input type="email" class="kb-input" id="aboutEmail" placeholder="support@company.com">
-                    </div>
-                    <div class="kb-field">
-                        <label class="kb-field-label">Phone</label>
-                        <input type="tel" class="kb-input" id="aboutPhone" placeholder="+1 (555) 123-4567">
-                    </div>
-                    <div class="kb-field">
-                        <label class="kb-field-label">Website</label>
-                        <input type="url" class="kb-input" id="aboutWebsite" placeholder="https://www.company.com">
-                    </div>
-                    <div class="kb-field">
-                        <label class="kb-field-label">Address</label>
-                        <input type="text" class="kb-input" id="aboutAddress" placeholder="123 Main St, City, Country">
-                    </div>
-                </div>
-                <div class="kb-field" style="margin-top:12px">
-                    <label class="kb-field-label">Company Mission / Description</label>
-                    <textarea class="kb-textarea" id="aboutMission" rows="4" placeholder="Tell us about your company â€” mission, values, what you do, key offerings..."></textarea>
-                </div>
-                <div class="kb-text-actions" style="margin-top:14px">
-                    <button class="btn btn-sm btn-primary" id="aboutSaveBtn">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-                        Save Company Info to Knowledge Base
-                    </button>
-                </div>
-            </div>
+    panel.innerHTML =
+        '<div class="kb-section">' +
+        '<div class="kb-card">' +
+        '<div class="kb-card-header">' +
+        '<div class="kb-card-icon">' + SVG_BUILDING + '</div>' +
+        '<div>' +
+        '<h3 class="kb-card-title">Company Information</h3>' +
+        '<p class="kb-card-desc">This data helps your AI respond accurately about your business</p>' +
+        '</div>' +
+        '</div>' +
+        '<div class="kb-form-grid">' +
+        '<div class="kb-field"><label class="kb-field-label">Company Name</label><input type="text" class="kb-input" id="aboutCompanyName" placeholder="e.g. Acme Corporation"></div>' +
+        '<div class="kb-field"><label class="kb-field-label">Industry</label><input type="text" class="kb-input" id="aboutIndustry" placeholder="e.g. E-Commerce, Technology"></div>' +
+        '<div class="kb-field"><label class="kb-field-label">Email</label><input type="email" class="kb-input" id="aboutEmail" placeholder="support@company.com"></div>' +
+        '<div class="kb-field"><label class="kb-field-label">Phone</label><input type="tel" class="kb-input" id="aboutPhone" placeholder="+1 (555) 123-4567"></div>' +
+        '<div class="kb-field"><label class="kb-field-label">Website</label><input type="url" class="kb-input" id="aboutWebsite" placeholder="https://www.company.com"></div>' +
+        '<div class="kb-field"><label class="kb-field-label">Address</label><input type="text" class="kb-input" id="aboutAddress" placeholder="123 Main St, City, Country"></div>' +
+        '</div>' +
+        '<div class="kb-field" style="margin-top:12px">' +
+        '<label class="kb-field-label">Company Mission / Description</label>' +
+        '<textarea class="kb-textarea" id="aboutMission" rows="4" placeholder="Tell us about your company - mission, values, what you do, key offerings..."></textarea>' +
+        '</div>' +
+        '<div class="kb-text-actions" style="margin-top:14px">' +
+        '<button class="btn btn-sm btn-primary" id="aboutSaveBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Save Company Info to Knowledge Base</button>' +
+        '</div>' +
+        '</div>' +
+        '<div class="kb-card">' +
+        '<div class="kb-card-header">' +
+        '<div class="kb-card-icon">' + SVG_CLIP + '</div>' +
+        '<div>' +
+        '<h3 class="kb-card-title">Upload Company Documents</h3>' +
+        '<p class="kb-card-desc">Upload brochures, about-us pages, or brand guidelines</p>' +
+        '</div>' +
+        '</div>' +
+        '<div class="kb-upload-zone" id="kbUpload-kb-about">' +
+        '<div class="kb-upload-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>' +
+        '<p class="kb-upload-title">Drag & drop files or <label class="kb-upload-link" for="kbFile-kb-about">browse</label></p>' +
+        '<p class="kb-upload-hint">PDF, DOCX, TXT, CSV, PNG, JPG</p>' +
+        '<input type="file" id="kbFile-kb-about" accept=".csv,.pdf,.docx,.doc,.txt,.json,.md,.png,.jpg,.jpeg,.webp" style="display:none" multiple>' +
+        '</div>' +
+        '<div class="kb-progress" id="kbProgress-kb-about" style="display:none"><div class="kb-progress-bar"><div class="kb-progress-fill"></div></div><span class="kb-progress-text">Uploading...</span></div>' +
+        '</div>' +
+        '</div>' +
+        '<div class="kb-docs-section">' +
+        '<div class="kb-docs-header">' +
+        '<h3 class="kb-docs-title">' + SVG_FOLDER + ' Company Documents</h3>' +
+        '<span class="kb-docs-count" id="kbCount-kb-about">loading...</span>' +
+        '</div>' +
+        '<div class="kb-docs-table-wrap" id="kbDocs-kb-about"><div class="loading-state"><div class="spinner"></div><p>Loading...</p></div></div>' +
+        '</div>';
 
-            <!-- File Upload for About -->
-            <div class="kb-card">
-                <div class="kb-card-header">
-                    <div class="kb-card-icon">ðŸ“Ž</div>
-                    <div>
-                        <h3 class="kb-card-title">Upload Company Documents</h3>
-                        <p class="kb-card-desc">Upload brochures, about-us pages, or brand guidelines</p>
-                    </div>
-                </div>
-                <div class="kb-upload-zone" id="kbUpload-kb-about">
-                    <div class="kb-upload-icon">
-                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-                            <polyline points="17 8 12 3 7 8"/>
-                            <line x1="12" y1="3" x2="12" y2="15"/>
-                        </svg>
-                    </div>
-                    <p class="kb-upload-title">Drag & drop files or <label class="kb-upload-link" for="kbFile-kb-about">browse</label></p>
-                    <p class="kb-upload-hint">PDF, DOCX, TXT, CSV, PNG, JPG</p>
-                    <input type="file" id="kbFile-kb-about" accept=".csv,.pdf,.docx,.doc,.txt,.json,.md,.png,.jpg,.jpeg,.webp" style="display:none" multiple>
-                </div>
-                <div class="kb-progress" id="kbProgress-kb-about" style="display:none">
-                    <div class="kb-progress-bar"><div class="kb-progress-fill"></div></div>
-                    <span class="kb-progress-text">Uploading...</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Documents -->
-        <div class="kb-docs-section">
-            <div class="kb-docs-header">
-                <h3 class="kb-docs-title">ðŸ“‚ Company Documents</h3>
-                <span class="kb-docs-count" id="kbCount-kb-about">loading...</span>
-            </div>
-            <div class="kb-docs-table-wrap" id="kbDocs-kb-about">
-                <div class="loading-state"><div class="spinner"></div><p>Loadingâ€¦</p></div>
-            </div>
-        </div>
-    `;
-
-    // â”€â”€ Wire events â”€â”€
-    document.getElementById('aboutSaveBtn').addEventListener('click', async () => {
-        const fields = {
+    // Wire save button
+    document.getElementById('aboutSaveBtn').addEventListener('click', async function () {
+        var fields = {
             name: document.getElementById('aboutCompanyName').value.trim(),
             industry: document.getElementById('aboutIndustry').value.trim(),
             email: document.getElementById('aboutEmail').value.trim(),
@@ -1332,8 +1312,7 @@ async function loadAboutCompanyTab() {
             address: document.getElementById('aboutAddress').value.trim(),
             mission: document.getElementById('aboutMission').value.trim(),
         };
-
-        const parts = [];
+        var parts = [];
         if (fields.name) parts.push('Company Name: ' + fields.name);
         if (fields.industry) parts.push('Industry: ' + fields.industry);
         if (fields.email) parts.push('Email: ' + fields.email);
@@ -1341,184 +1320,157 @@ async function loadAboutCompanyTab() {
         if (fields.website) parts.push('Website: ' + fields.website);
         if (fields.address) parts.push('Address: ' + fields.address);
         if (fields.mission) parts.push('About / Mission:\n' + fields.mission);
+        if (!parts.length) { showToast('Please fill in at least one field', 'warning'); return; }
 
-        if (!parts.length) { showToast('âš ï¸ Fill in at least one field', 'warning'); return; }
-
-        const text = parts.join('\n');
-        const token = localStorage.getItem('access_token');
+        var text = parts.join('\n');
+        var token = localStorage.getItem('access_token');
         try {
-            const res = await fetch(`${API}/api/knowledge/text`, {
+            var res = await fetch(API + '/api/knowledge/text', {
                 method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ text, source: 'company_info', doc_type: 'about', category: 'about' })
+                headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: text, source: 'company_info', doc_type: 'about', category: 'about' })
             });
-            const data = await res.json();
+            var data = await res.json();
             if (data.success) {
-                showToast('âœ… Company info saved (' + data.chunks_created + ' chunks)', 'success');
-                ['aboutCompanyName', 'aboutIndustry', 'aboutEmail', 'aboutPhone', 'aboutWebsite', 'aboutAddress', 'aboutMission'].forEach(id => document.getElementById(id).value = '');
+                showToast('Company info saved (' + data.chunks_created + ' chunks)', 'success');
+                ['aboutCompanyName', 'aboutIndustry', 'aboutEmail', 'aboutPhone', 'aboutWebsite', 'aboutAddress', 'aboutMission'].forEach(function (id) { document.getElementById(id).value = ''; });
                 await kbLoadDocuments('kb-about', 'about');
             } else {
-                showToast('âŒ ' + data.error, 'error');
+                showToast('Failed: ' + data.error, 'error');
             }
-        } catch (err) { showToast('âŒ ' + err.message, 'error'); }
+        } catch (err) { showToast('Error: ' + err.message, 'error'); }
     });
 
     kbWireUploadZone('kb-about', 'about', 'About Company');
     await kbLoadDocuments('kb-about', 'about');
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-   CUSTOM DATA TAB â€” Enhanced with category selector (V4.2)
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+/* ===============================================================
+   CUSTOM DATA TAB - Enhanced with category selector (V4.2)
+   =============================================================== */
 
-const CUSTOM_CATEGORIES = [
-    { value: 'privacy_policy', label: 'ðŸ”’ Privacy Policies' },
-    { value: 'refund_policy', label: 'ðŸ’¸ Refund Policies' },
-    { value: 'company_rules', label: 'ðŸ“‹ Company Rules' },
-    { value: 'terms_of_service', label: 'ðŸ“œ Terms of Service' },
-    { value: 'shipping_policy', label: 'ðŸšš Shipping Policies' },
-    { value: 'faq', label: 'â“ FAQs' },
-    { value: 'contact_info', label: 'ðŸ“ž Contact Information' },
-    { value: 'general', label: 'ðŸ“„ Other / General' },
+var CUSTOM_CATEGORIES = [
+    { value: 'privacy_policy', label: 'Privacy Policies' },
+    { value: 'refund_policy', label: 'Refund Policies' },
+    { value: 'company_rules', label: 'Company Rules' },
+    { value: 'terms_of_service', label: 'Terms of Service' },
+    { value: 'shipping_policy', label: 'Shipping Policies' },
+    { value: 'faq', label: 'FAQs' },
+    { value: 'contact_info', label: 'Contact Information' },
+    { value: 'general', label: 'Other / General' },
 ];
 
 async function loadCustomDataTab() {
-    const panel = document.querySelector('#panel-kb-custom .kb-panel');
+    var panel = document.querySelector('#panel-kb-custom .kb-panel');
     if (!panel) return;
 
-    const catOptions = CUSTOM_CATEGORIES.map(c =>
-        '<option value="' + c.value + '">' + c.label + '</option>'
-    ).join('');
+    var catOptions = CUSTOM_CATEGORIES.map(function (c) {
+        return '<option value="' + c.value + '">' + c.label + '</option>';
+    }).join('');
 
-    panel.innerHTML = `
-        <div class="kb-section">
-            <!-- Category Selector Card -->
-            <div class="kb-card">
-                <div class="kb-card-header">
-                    <div class="kb-card-icon">ðŸ—‚ï¸</div>
-                    <div>
-                        <h3 class="kb-card-title">Data Category</h3>
-                        <p class="kb-card-desc">Select the type of data you're uploading â€” keeps your knowledge base organized</p>
-                    </div>
-                </div>
-                <div class="kb-category-selector">
-                    <select class="kb-select" id="customCategory">
-                        ${catOptions}
-                    </select>
-                    <div class="kb-category-badge" id="customCategoryBadge">ðŸ”’ Privacy Policies</div>
-                </div>
-            </div>
+    panel.innerHTML =
+        '<div class="kb-section">' +
+        // Category Selector
+        '<div class="kb-card">' +
+        '<div class="kb-card-header">' +
+        '<div class="kb-card-icon">' + SVG_CATEGORY + '</div>' +
+        '<div>' +
+        '<h3 class="kb-card-title">Data Category</h3>' +
+        '<p class="kb-card-desc">Select the type of data you are uploading to keep your knowledge base organized</p>' +
+        '</div>' +
+        '</div>' +
+        '<div class="kb-category-selector">' +
+        '<select class="kb-select" id="customCategory">' + catOptions + '</select>' +
+        '<div class="kb-category-badge" id="customCategoryBadge">Privacy Policies</div>' +
+        '</div>' +
+        '</div>' +
+        // Upload Zone
+        '<div class="kb-card">' +
+        '<div class="kb-card-header">' +
+        '<div class="kb-card-icon">' + SVG_UPLOAD + '</div>' +
+        '<div>' +
+        '<h3 class="kb-card-title">Upload Documents</h3>' +
+        '<p class="kb-card-desc">Upload files to the selected category</p>' +
+        '</div>' +
+        '</div>' +
+        '<div class="kb-upload-zone" id="kbUpload-kb-custom">' +
+        '<div class="kb-upload-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>' +
+        '<p class="kb-upload-title">Drag & drop files or <label class="kb-upload-link" for="kbFile-kb-custom">browse</label></p>' +
+        '<p class="kb-upload-hint">CSV, PDF, DOCX, TXT, PNG, JPG - multi-file supported</p>' +
+        '<input type="file" id="kbFile-kb-custom" accept=".csv,.pdf,.docx,.doc,.txt,.json,.md,.png,.jpg,.jpeg,.webp" style="display:none" multiple>' +
+        '</div>' +
+        '<div class="kb-progress" id="kbProgress-kb-custom" style="display:none"><div class="kb-progress-bar"><div class="kb-progress-fill"></div></div><span class="kb-progress-text">Uploading...</span></div>' +
+        '</div>' +
+        // Manual Text
+        '<div class="kb-card">' +
+        '<div class="kb-card-header">' +
+        '<div class="kb-card-icon">' + SVG_EDIT + '</div>' +
+        '<div>' +
+        '<h3 class="kb-card-title">Add Text Manually</h3>' +
+        '<p class="kb-card-desc">Type or paste content directly</p>' +
+        '</div>' +
+        '</div>' +
+        '<textarea class="kb-textarea" id="kbText-kb-custom" rows="4" placeholder="Type or paste content here..."></textarea>' +
+        '<div class="kb-text-actions" style="margin-top:10px"><button class="btn btn-sm btn-primary" id="kbSaveText-kb-custom"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Save Text</button></div>' +
+        '</div>' +
+        // Image Upload
+        '<div class="kb-card">' +
+        '<div class="kb-card-header">' +
+        '<div class="kb-card-icon">' + SVG_IMAGE + '</div>' +
+        '<div>' +
+        '<h3 class="kb-card-title">Add Image</h3>' +
+        '<p class="kb-card-desc">Upload images to attach to this category</p>' +
+        '</div>' +
+        '</div>' +
+        '<div class="kb-img-upload-row">' +
+        '<label class="btn btn-sm btn-outline" for="kbImg-kb-custom" style="cursor:pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> Choose Image</label>' +
+        '<input type="file" id="kbImg-kb-custom" accept="image/*" style="display:none">' +
+        '<span class="kb-img-name" id="kbImgName-kb-custom">No file chosen</span>' +
+        '</div>' +
+        '</div>' +
+        '</div>' +
+        // Documents
+        '<div class="kb-docs-section">' +
+        '<div class="kb-docs-header">' +
+        '<h3 class="kb-docs-title">' + SVG_FOLDER + ' All Custom Documents</h3>' +
+        '<span class="kb-docs-count" id="kbCount-kb-custom">loading...</span>' +
+        '</div>' +
+        '<div class="kb-docs-table-wrap" id="kbDocs-kb-custom"><div class="loading-state"><div class="spinner"></div><p>Loading...</p></div></div>' +
+        '</div>';
 
-            <!-- Upload Zone -->
-            <div class="kb-card">
-                <div class="kb-card-header">
-                    <div class="kb-card-icon">ðŸ“¤</div>
-                    <div>
-                        <h3 class="kb-card-title">Upload Documents</h3>
-                        <p class="kb-card-desc">Upload files to the selected category</p>
-                    </div>
-                </div>
-                <div class="kb-upload-zone" id="kbUpload-kb-custom">
-                    <div class="kb-upload-icon">
-                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-                            <polyline points="17 8 12 3 7 8"/>
-                            <line x1="12" y1="3" x2="12" y2="15"/>
-                        </svg>
-                    </div>
-                    <p class="kb-upload-title">Drag & drop files or <label class="kb-upload-link" for="kbFile-kb-custom">browse</label></p>
-                    <p class="kb-upload-hint">CSV, PDF, DOCX, TXT, PNG, JPG â€” multi-file supported</p>
-                    <input type="file" id="kbFile-kb-custom" accept=".csv,.pdf,.docx,.doc,.txt,.json,.md,.png,.jpg,.jpeg,.webp" style="display:none" multiple>
-                </div>
-                <div class="kb-progress" id="kbProgress-kb-custom" style="display:none">
-                    <div class="kb-progress-bar"><div class="kb-progress-fill"></div></div>
-                    <span class="kb-progress-text">Uploading...</span>
-                </div>
-            </div>
-
-            <!-- Manual Text -->
-            <div class="kb-card">
-                <div class="kb-card-header">
-                    <div class="kb-card-icon">âœï¸</div>
-                    <div>
-                        <h3 class="kb-card-title">Add Text Manually</h3>
-                        <p class="kb-card-desc">Type or paste content directly</p>
-                    </div>
-                </div>
-                <textarea class="kb-textarea" id="kbText-kb-custom" rows="4" placeholder="Type or paste content here..."></textarea>
-                <div class="kb-text-actions" style="margin-top:10px">
-                    <button class="btn btn-sm btn-primary" id="kbSaveText-kb-custom">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-                        Save Text
-                    </button>
-                </div>
-            </div>
-
-            <!-- Image Upload -->
-            <div class="kb-card">
-                <div class="kb-card-header">
-                    <div class="kb-card-icon">ðŸ–¼ï¸</div>
-                    <div>
-                        <h3 class="kb-card-title">Add Image</h3>
-                        <p class="kb-card-desc">Upload images to attach to this category</p>
-                    </div>
-                </div>
-                <div class="kb-img-upload-row">
-                    <label class="btn btn-sm btn-outline" for="kbImg-kb-custom" style="cursor:pointer">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                        Choose Image
-                    </label>
-                    <input type="file" id="kbImg-kb-custom" accept="image/*" style="display:none">
-                    <span class="kb-img-name" id="kbImgName-kb-custom">No file chosen</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Documents -->
-        <div class="kb-docs-section">
-            <div class="kb-docs-header">
-                <h3 class="kb-docs-title">ðŸ“‚ All Custom Documents</h3>
-                <span class="kb-docs-count" id="kbCount-kb-custom">loading...</span>
-            </div>
-            <div class="kb-docs-table-wrap" id="kbDocs-kb-custom">
-                <div class="loading-state"><div class="spinner"></div><p>Loadingâ€¦</p></div>
-            </div>
-        </div>
-    `;
-
-    // â”€â”€ Category selector â”€â”€
-    const catSelect = document.getElementById('customCategory');
-    const catBadge = document.getElementById('customCategoryBadge');
-    catSelect.addEventListener('change', () => {
-        const cat = CUSTOM_CATEGORIES.find(c => c.value === catSelect.value);
+    // Category selector
+    var catSelect = document.getElementById('customCategory');
+    var catBadge = document.getElementById('customCategoryBadge');
+    catSelect.addEventListener('change', function () {
+        var cat = CUSTOM_CATEGORIES.find(function (c) { return c.value === catSelect.value; });
         catBadge.textContent = cat ? cat.label : catSelect.value;
     });
     function getDocType() { return catSelect.value; }
 
     // File upload
-    const zone = document.getElementById('kbUpload-kb-custom');
-    const fileInput = document.getElementById('kbFile-kb-custom');
-    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
-    zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
-    zone.addEventListener('drop', e => {
+    var zone = document.getElementById('kbUpload-kb-custom');
+    var fileInput = document.getElementById('kbFile-kb-custom');
+    zone.addEventListener('dragover', function (e) { e.preventDefault(); zone.classList.add('drag-over'); });
+    zone.addEventListener('dragleave', function () { zone.classList.remove('drag-over'); });
+    zone.addEventListener('drop', function (e) {
         e.preventDefault(); zone.classList.remove('drag-over');
         if (e.dataTransfer.files.length) kbUploadFiles('kb-custom', getDocType(), 'Custom Data', Array.from(e.dataTransfer.files));
     });
-    fileInput.addEventListener('change', () => {
+    fileInput.addEventListener('change', function () {
         if (fileInput.files.length) kbUploadFiles('kb-custom', getDocType(), 'Custom Data', Array.from(fileInput.files));
         fileInput.value = '';
     });
 
     // Manual text
-    document.getElementById('kbSaveText-kb-custom').addEventListener('click', () => {
-        const dt = getDocType();
-        const cat = CUSTOM_CATEGORIES.find(c => c.value === dt);
+    document.getElementById('kbSaveText-kb-custom').addEventListener('click', function () {
+        var dt = getDocType();
+        var cat = CUSTOM_CATEGORIES.find(function (c) { return c.value === dt; });
         kbSaveText('kb-custom', dt, cat ? cat.label : 'Custom');
     });
 
     // Image
-    const imgInput = document.getElementById('kbImg-kb-custom');
-    imgInput.addEventListener('change', () => {
+    var imgInput = document.getElementById('kbImg-kb-custom');
+    imgInput.addEventListener('change', function () {
         if (imgInput.files.length) {
             document.getElementById('kbImgName-kb-custom').textContent = imgInput.files[0].name;
             kbUploadFiles('kb-custom', getDocType(), 'Custom Data', Array.from(imgInput.files));
@@ -1529,50 +1481,51 @@ async function loadCustomDataTab() {
     await kbLoadAllCustomDocuments();
 }
 
-/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+/* ===============================================================
    KB SHARED HELPERS
-   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+   =============================================================== */
 
 function kbWireUploadZone(tabId, docType, label) {
-    const zone = document.getElementById('kbUpload-' + tabId);
-    const fileInput = document.getElementById('kbFile-' + tabId);
+    var zone = document.getElementById('kbUpload-' + tabId);
+    var fileInput = document.getElementById('kbFile-' + tabId);
     if (!zone || !fileInput) return;
-    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
-    zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
-    zone.addEventListener('drop', e => {
+    zone.addEventListener('dragover', function (e) { e.preventDefault(); zone.classList.add('drag-over'); });
+    zone.addEventListener('dragleave', function () { zone.classList.remove('drag-over'); });
+    zone.addEventListener('drop', function (e) {
         e.preventDefault(); zone.classList.remove('drag-over');
         if (e.dataTransfer.files.length) kbUploadFiles(tabId, docType, label, Array.from(e.dataTransfer.files));
     });
-    fileInput.addEventListener('change', () => {
+    fileInput.addEventListener('change', function () {
         if (fileInput.files.length) kbUploadFiles(tabId, docType, label, Array.from(fileInput.files));
         fileInput.value = '';
     });
 }
 
 async function kbUploadFiles(tabId, docType, label, files) {
-    const token = localStorage.getItem('access_token');
-    const progress = document.getElementById('kbProgress-' + tabId);
+    var token = localStorage.getItem('access_token');
+    var progress = document.getElementById('kbProgress-' + tabId);
     if (progress) progress.style.display = 'flex';
 
-    for (const file of files) {
-        const fd = new FormData();
+    for (var i = 0; i < files.length; i++) {
+        var file = files[i];
+        var fd = new FormData();
         fd.append('file', file);
         fd.append('doc_type', docType);
         fd.append('category', docType);
         try {
-            const res = await fetch(API + '/api/knowledge/upload', {
+            var res = await fetch(API + '/api/knowledge/upload', {
                 method: 'POST',
                 headers: { 'Authorization': 'Bearer ' + token },
                 body: fd
             });
-            const data = await res.json();
+            var data = await res.json();
             if (data.success) {
-                showToast('âœ… "' + file.name + '" indexed (' + data.chunks_created + ' chunks)', 'success');
+                showToast('"' + file.name + '" indexed (' + data.chunks_created + ' chunks)', 'success');
             } else {
-                showToast('âŒ Failed: ' + (data.error || 'Unknown error'), 'error');
+                showToast('Failed: ' + (data.error || 'Unknown error'), 'error');
             }
         } catch (err) {
-            showToast('âŒ Upload error: ' + err.message, 'error');
+            showToast('Upload error: ' + err.message, 'error');
         }
     }
 
@@ -1582,62 +1535,62 @@ async function kbUploadFiles(tabId, docType, label, files) {
 }
 
 async function kbSaveText(tabId, docType, label) {
-    const textArea = document.getElementById('kbText-' + tabId);
-    const text = textArea.value.trim();
-    if (!text) { showToast('âš ï¸ Please enter some text first', 'warning'); return; }
-    const token = localStorage.getItem('access_token');
+    var textArea = document.getElementById('kbText-' + tabId);
+    var text = textArea.value.trim();
+    if (!text) { showToast('Please enter some text first', 'warning'); return; }
+    var token = localStorage.getItem('access_token');
     try {
-        const res = await fetch(API + '/api/knowledge/text', {
+        var res = await fetch(API + '/api/knowledge/text', {
             method: 'POST',
             headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
             body: JSON.stringify({ text: text, source: 'manual_' + docType, doc_type: docType, category: docType })
         });
-        const data = await res.json();
+        var data = await res.json();
         if (data.success) {
-            showToast('âœ… ' + label + ' saved (' + data.chunks_created + ' chunks)', 'success');
+            showToast(label + ' saved (' + data.chunks_created + ' chunks)', 'success');
             textArea.value = '';
             if (tabId === 'kb-custom') { await kbLoadAllCustomDocuments(); }
             else { await kbLoadDocuments(tabId, docType); }
         } else {
-            showToast('âŒ Failed: ' + data.error, 'error');
+            showToast('Failed: ' + data.error, 'error');
         }
-    } catch (err) { showToast('âŒ Save error: ' + err.message, 'error'); }
+    } catch (err) { showToast('Save error: ' + err.message, 'error'); }
 }
 
 async function kbLoadDocuments(tabId, docType) {
-    const token = localStorage.getItem('access_token');
-    const container = document.getElementById('kbDocs-' + tabId);
-    const countEl = document.getElementById('kbCount-' + tabId);
+    var token = localStorage.getItem('access_token');
+    var container = document.getElementById('kbDocs-' + tabId);
+    var countEl = document.getElementById('kbCount-' + tabId);
     if (!container) return;
     try {
-        const res = await fetch(API + '/api/knowledge/documents', {
+        var res = await fetch(API + '/api/knowledge/documents', {
             headers: { 'Authorization': 'Bearer ' + token }
         });
-        const data = await res.json();
-        const docs = (data.documents || []).filter(function (d) { return d.doc_type === docType; });
+        var data = await res.json();
+        var docs = (data.documents || []).filter(function (d) { return d.doc_type === docType; });
         if (countEl) countEl.textContent = docs.length + ' document' + (docs.length !== 1 ? 's' : '');
         kbRenderDocsTable(container, docs, tabId, docType);
     } catch (err) {
-        container.innerHTML = '<div class="kb-empty"><p>âš ï¸ Failed to load documents</p></div>';
+        container.innerHTML = '<div class="kb-empty"><p>Failed to load documents</p></div>';
     }
 }
 
 async function kbLoadAllCustomDocuments() {
-    const token = localStorage.getItem('access_token');
-    const container = document.getElementById('kbDocs-kb-custom');
-    const countEl = document.getElementById('kbCount-kb-custom');
+    var token = localStorage.getItem('access_token');
+    var container = document.getElementById('kbDocs-kb-custom');
+    var countEl = document.getElementById('kbCount-kb-custom');
     if (!container) return;
     var excludeTypes = ['product', 'order', 'about'];
     try {
-        const res = await fetch(API + '/api/knowledge/documents', {
+        var res = await fetch(API + '/api/knowledge/documents', {
             headers: { 'Authorization': 'Bearer ' + token }
         });
-        const data = await res.json();
-        const docs = (data.documents || []).filter(function (d) { return excludeTypes.indexOf(d.doc_type) === -1; });
+        var data = await res.json();
+        var docs = (data.documents || []).filter(function (d) { return excludeTypes.indexOf(d.doc_type) === -1; });
         if (countEl) countEl.textContent = docs.length + ' document' + (docs.length !== 1 ? 's' : '');
         kbRenderDocsTable(container, docs, 'kb-custom', null);
     } catch (err) {
-        container.innerHTML = '<div class="kb-empty"><p>âš ï¸ Failed to load documents</p></div>';
+        container.innerHTML = '<div class="kb-empty"><p>Failed to load documents</p></div>';
     }
 }
 
@@ -1650,11 +1603,11 @@ function kbRenderDocsTable(container, docs, tabId, docType) {
     CUSTOM_CATEGORIES.forEach(function (c) { catMap[c.value] = c.label; });
 
     var rows = docs.map(function (d) {
-        var size = d.file_size ? (d.file_size / 1024).toFixed(1) + ' KB' : 'â€”';
-        var date = d.created_at ? new Date(d.created_at).toLocaleDateString() : 'â€”';
-        var chunks = d.chunk_count || 'â€”';
+        var size = d.file_size ? (d.file_size / 1024).toFixed(1) + ' KB' : '--';
+        var date = d.created_at ? new Date(d.created_at).toLocaleDateString() : '--';
+        var chunks = d.chunk_count || '--';
         var name = esc(d.filename || d.id);
-        var catLabel = catMap[d.doc_type] || d.doc_type || 'â€”';
+        var catLabel = catMap[d.doc_type] || d.doc_type || '--';
         var delType = docType || d.doc_type || 'general';
         return '<tr>' +
             '<td class="kb-doc-name" title="' + name + '">' + name + '</td>' +
@@ -1680,26 +1633,17 @@ async function kbDeleteDoc(docId, tabId, docType) {
             headers: { 'Authorization': 'Bearer ' + token }
         });
         if (res.ok) {
-            showToast('âœ… Document deleted', 'success');
+            showToast('Document deleted', 'success');
             if (tabId === 'kb-custom') { await kbLoadAllCustomDocuments(); }
             else { await kbLoadDocuments(tabId, docType); }
-        } else { showToast('âŒ Delete failed', 'error'); }
-    } catch (err) { showToast('âŒ ' + err.message, 'error'); }
+        } else { showToast('Delete failed', 'error'); }
+    } catch (err) { showToast('Error: ' + err.message, 'error'); }
 }
 
 function kbViewDoc(docId, filename) {
-    showToast('ðŸ“„ ' + filename + ' â€” ID: ' + docId, 'info');
+    showToast(filename + ' - ID: ' + docId, 'info');
 }
 
-// Make functions globally accessible (used by onclick in HTML)
-window.switchTab = switchTab;
-window.selectConversation = selectConversation;
-window.removeTeamMember = removeTeamMember;
-window.deleteOrder = deleteOrder;
-window.viewOrder = viewOrder;
-window.closeOrderModal = closeOrderModal;
-window.editProduct = editProduct;
-window.deleteProduct = deleteProduct;
+// Make KB functions globally accessible
 window.kbDeleteDoc = kbDeleteDoc;
 window.kbViewDoc = kbViewDoc;
-
