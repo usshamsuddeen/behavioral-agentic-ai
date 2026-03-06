@@ -1606,3 +1606,13 @@ function kbViewDoc(docId, filename) {
 // Make KB functions globally accessible
 window.kbDeleteDoc = kbDeleteDoc;
 window.kbViewDoc = kbViewDoc;
+
+// Make all onclick-referenced functions globally accessible
+window.switchTab = switchTab;
+window.selectConversation = selectConversation;
+window.removeTeamMember = removeTeamMember;
+window.deleteOrder = deleteOrder;
+window.viewOrder = viewOrder;
+window.closeOrderModal = closeOrderModal;
+window.editProduct = editProduct;
+window.deleteProduct = deleteProduct;
