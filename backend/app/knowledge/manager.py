@@ -232,10 +232,10 @@ class KnowledgeManager:
             {
                 "id": doc.id,
                 "filename": doc.filename,
-                "type": doc.doc_type,
+                "doc_type": doc.doc_type,
                 "category": doc.category,
-                "chunks": doc.chunk_count,
-                "size": doc.file_size,
+                "chunk_count": doc.chunk_count,
+                "file_size": doc.file_size,
                 "status": doc.status,
                 "created_at": doc.created_at
             }
