@@ -918,11 +918,11 @@ function renderOrderTable(orders) {
     tbody.innerHTML = orders.map(o => `
         <tr>
             <td><strong>${esc(o.order_id)}</strong></td>
-            <td>${esc(o.customer_name || '"')}</td>
-            <td>${esc(o.customer_email || '"')}</td>
+            <td>${esc(o.customer_name || '-')}</td>
+            <td>${esc(o.customer_email || '-')}</td>
             <td><span class="order-status order-status--${(o.status || 'pending').toLowerCase()}">${esc(o.status || 'pending')}</span></td>
-            <td>${o.total_amount ? `${o.currency || '$'}${Number(o.total_amount).toFixed(2)}` : '"'}</td>
-            <td>${o.order_date ? new Date(o.order_date).toLocaleDateString() : '"'}</td>
+            <td>${o.total_amount ? `${o.currency || '$'}${Number(o.total_amount).toFixed(2)}` : '-'}</td>
+            <td>${o.order_date ? new Date(o.order_date).toLocaleDateString() : '-'}</td>
             <td style="display:flex;gap:4px">
                 <button class="btn btn-sm btn-secondary" onclick="viewOrder('${esc(o.order_id)}')" title="View Details"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
                 <button class="btn btn-sm btn-ghost" onclick="deleteOrder(${o.id})" title="Delete"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>
@@ -1174,26 +1174,22 @@ async function viewOrder(orderId) {
 
         // Build detail rows
         const rows = [
-            { label: 'Order ID', value: o.order_id, icon: '|' },
-            { label: 'Status', value: `<span class="order-status order-status--${(o.status || 'pending').toLowerCase()}">${esc(o.status || 'pending')}</span>`, raw: true, icon: '"' },
-            {
-                label: 'Customer Name', value: o.customer_name, icon: ''' },
-            { label: 'Customer Email', value: o.customer_email, icon: '"' },
-            {
-                label: 'Total Amount', value: o.total_amount ? `${o.currency || 'USD'} ${Number(o.total_amount).toFixed(2)}` : null, icon: ''' },
-            {
-                    label: 'Currency', value: o.currency, icon: ''' },
-            { label: 'Order Date', value: o.order_date ? new Date(o.order_date).toLocaleString() : null, icon: '"...' },
+            { label: 'Order ID', value: o.order_id, icon: '#' },
+            { label: 'Status', value: `<span class="order-status order-status--${(o.status || 'pending').toLowerCase()}">${esc(o.status || 'pending')}</span>`, raw: true, icon: '' },
+            { label: 'Customer Name', value: o.customer_name, icon: '' },
+            { label: 'Customer Email', value: o.customer_email, icon: '' },
+            { label: 'Total Amount', value: o.total_amount ? `${o.currency || 'USD'} ${Number(o.total_amount).toFixed(2)}` : null, icon: '' },
+            { label: 'Currency', value: o.currency, icon: '' },
+            { label: 'Order Date', value: o.order_date ? new Date(o.order_date).toLocaleString() : null, icon: '' },
             { label: 'Estimated Delivery', value: o.estimated_delivery ? new Date(o.estimated_delivery).toLocaleString() : null, icon: '' },
-            { label: 'Tracking Number', value: o.tracking_number, icon: '"' },
+            { label: 'Tracking Number', value: o.tracking_number, icon: '' },
             { label: 'Carrier', value: o.carrier, icon: '' },
             { label: 'Shipping Address', value: o.shipping_address, icon: '' },
-            {
-                label: 'Items', value: itemsHtml, raw: true, icon: '>'' },
-            { label: 'Notes', value: o.notes, icon: '"' },
-            { label: 'Source', value: o.source, icon: '"-' },
+            { label: 'Items', value: itemsHtml, raw: true, icon: '' },
+            { label: 'Notes', value: o.notes, icon: '' },
+            { label: 'Source', value: o.source, icon: '' },
             { label: 'Created At', value: o.created_at ? new Date(o.created_at).toLocaleString() : null, icon: '' },
-            { label: 'Updated At', value: o.updated_at ? new Date(o.updated_at).toLocaleString() : null, icon: '"' },
+            { label: 'Updated At', value: o.updated_at ? new Date(o.updated_at).toLocaleString() : null, icon: '' },
         ];
 
         content.innerHTML = `
