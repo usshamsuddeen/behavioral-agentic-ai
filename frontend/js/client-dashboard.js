@@ -857,8 +857,6 @@ function formatFileSize(bytes) {
 }
 
 /* ═══════════════════════════════════════════════════════════
-
-/* ═══════════════════════════════════════════════════════════
    UPLOAD ZONES (drag-drop)
    ═══════════════════════════════════════════════════════════ */
 function setupUploadZones() {
@@ -1342,7 +1340,6 @@ async function loadKnowledgeTab(tabId, docType, label) {
 }
 
 async function kbUploadFiles(tabId, docType, label, files) {
-    const token = localStorage.getItem('access_token');
     const progress = document.getElementById(`kbProgress-${tabId}`);
     progress.style.display = 'flex';
 
@@ -1353,12 +1350,7 @@ async function kbUploadFiles(tabId, docType, label, files) {
         fd.append('category', docType);
 
         try {
-            const res = await fetch(`${API}/api/knowledge/upload`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${token}` },
-                body: fd
-            });
-            const data = await res.json();
+            const data = await API.uploadKnowledgeFile(fd);
             if (data.success) {
                 showToast(`✅ "${file.name}" indexed (${data.chunks_created} chunks)`, 'success');
             } else {
@@ -1378,22 +1370,8 @@ async function kbSaveText(tabId, docType, label) {
     const text = textArea.value.trim();
     if (!text) { showToast('⚠️ Please enter some text first', 'warning'); return; }
 
-    const token = localStorage.getItem('access_token');
     try {
-        const res = await fetch(`${API}/api/knowledge/text`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                text: text,
-                source: `manual_${docType}`,
-                doc_type: docType,
-                category: docType
-            })
-        });
-        const data = await res.json();
+        const data = await API.addKnowledgeText(text, `manual_${docType}`, docType, docType);
         if (data.success) {
             showToast(`✅ ${label} text saved (${data.chunks_created} chunks)`, 'success');
             textArea.value = '';
@@ -1407,15 +1385,11 @@ async function kbSaveText(tabId, docType, label) {
 }
 
 async function kbLoadDocuments(tabId, docType) {
-    const token = localStorage.getItem('access_token');
     const container = document.getElementById(`kbDocs-${tabId}`);
     const countEl = document.getElementById(`kbCount-${tabId}`);
 
     try {
-        const res = await fetch(`${API}/api/knowledge/documents`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const data = await res.json();
+        const data = await API.getKnowledgeDocuments();
         const docs = (data.documents || []).filter(d => d.doc_type === docType);
 
         countEl.textContent = `${docs.length} document${docs.length !== 1 ? 's' : ''}`;
@@ -1464,18 +1438,10 @@ async function kbLoadDocuments(tabId, docType) {
 
 async function kbDeleteDoc(docId, tabId, docType) {
     if (!confirm('Delete this document from the knowledge base?')) return;
-    const token = localStorage.getItem('access_token');
     try {
-        const res = await fetch(`${API}/api/knowledge/document/${docId}`, {
-            method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (res.ok) {
-            showToast('✅ Document deleted', 'success');
-            await kbLoadDocuments(tabId, docType);
-        } else {
-            showToast('❌ Delete failed', 'error');
-        }
+        await API.deleteKnowledgeDocument(docId);
+        showToast('✅ Document deleted', 'success');
+        await kbLoadDocuments(tabId, docType);
     } catch (err) {
         showToast(`❌ ${err.message}`, 'error');
     }
