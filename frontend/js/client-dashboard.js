@@ -1,29 +1,33 @@
 /**
- * ***********************************************************
- * Behavioral Agentic AI - Client Dashboard (Single-Page)
+ * ═══════════════════════════════════════════════════════════
+ * Behavioral Agentic AI — Client Dashboard (Single-Page)
  * All 8 tabs powered by api.js (FRD v4.0)
- * ***********************************************************
+ * ═══════════════════════════════════════════════════════════
  */
 
-/* --- State ------------------------------------------------ */
+/* ─── State ──────────────────────────────────────────────── */
 let currentTab = 'overview';
 let loadedTabs = {};          // track which tabs have been initialised
 let currentConvId = null;     // selected conversation
 let allConversations = [];    // cached conversation list
 
 const TAB_META = {
-    overview: { title: 'Overview', subtitle: 'Welcome back - here\'s what\'s happening today' },
+    overview: { title: 'Overview', subtitle: 'Welcome back — here\'s what\'s happening today' },
     conversations: { title: 'Conversations', subtitle: 'Monitor and respond to customer conversations' },
     orders: { title: 'Order Data', subtitle: 'Manage order data for AI order-tracking queries' },
     products: { title: 'Products', subtitle: 'Manage product listings for your AI catalog' },
     widget: { title: 'Widget Config', subtitle: 'Configure and deploy your chat widget' },
     analytics: { title: 'Analytics', subtitle: 'Insights into sentiment, escalations, and performance' },
     settings: { title: 'Settings', subtitle: 'Manage your profile, company, and preferences' },
-    'kb-about': { title: 'About Company', subtitle: 'Company description, mission, contact, and key info for AI' },
-    'kb-custom': { title: 'Custom Data', subtitle: 'Upload policies, rules, FAQs, and any knowledge base documents' },
+    'kb-policies': { title: 'Policies', subtitle: 'Upload privacy policies, terms of service, and guidelines' },
+    'kb-contact': { title: 'Contact Info', subtitle: 'Manage company contact details and support channels' },
+    'kb-about': { title: 'About Company', subtitle: 'Company description, mission, and key info' },
+    'kb-refund': { title: 'Refund Policy', subtitle: 'Upload and manage refund and return policies' },
+    'kb-faqs': { title: 'FAQs', subtitle: 'Frequently asked questions and answers' },
+    'kb-custom': { title: 'Custom Documents', subtitle: 'Upload any additional knowledge base documents' },
 };
 
-/* --- Init ------------------------------------------------- */
+/* ─── Init ───────────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
     // Auth guard
     const token = localStorage.getItem('access_token');
@@ -42,9 +46,9 @@ document.addEventListener('DOMContentLoaded', () => {
     switchTab(hash);
 });
 
-/* ***********************************************************
+/* ═══════════════════════════════════════════════════════════
    USER INFO
-   *********************************************************** */
+   ═══════════════════════════════════════════════════════════ */
 function loadUserInfo() {
     const user = JSON.parse(localStorage.getItem('user') || '{}');
     const name = user.name || user.full_name || 'User';
@@ -55,9 +59,9 @@ function loadUserInfo() {
     document.getElementById('sidebarRole').textContent = user.role === 'client' ? 'Client Admin' : (user.role || 'User');
 }
 
-/* ***********************************************************
+/* ═══════════════════════════════════════════════════════════
    TAB NAVIGATION
-   *********************************************************** */
+   ═══════════════════════════════════════════════════════════ */
 function setupTabNavigation() {
     document.querySelectorAll('.nav-item[data-tab]').forEach(item => {
         item.addEventListener('click', (e) => {
@@ -99,16 +103,16 @@ function switchTab(tab) {
     document.getElementById('sidebarOverlay').style.display = 'none';
 
     // Lazy-load tab data (orders/products/kb always refresh for fresh data)
-    const alwaysRefresh = ['orders', 'products', 'kb-about', 'kb-custom'];
+    const alwaysRefresh = ['orders', 'products', 'kb-policies', 'kb-contact', 'kb-about', 'kb-refund', 'kb-faqs', 'kb-custom'];
     if (alwaysRefresh.includes(tab) || !loadedTabs[tab]) {
         loadedTabs[tab] = true;
         loadTabData(tab);
     }
 }
 
-/* ***********************************************************
+/* ═══════════════════════════════════════════════════════════
    LAZY LOAD PER TAB
-   *********************************************************** */
+   ═══════════════════════════════════════════════════════════ */
 function loadTabData(tab) {
     switch (tab) {
         case 'overview': loadOverview(); break;
@@ -118,14 +122,18 @@ function loadTabData(tab) {
         case 'products': loadProducts(); break;
         case 'widget': loadWidget(); break;
         case 'settings': loadSettings(); break;
-        case 'kb-about': loadAboutCompanyTab(); break;
-        case 'kb-custom': loadCustomDataTab(); break;
+        case 'kb-policies': loadKnowledgeTab('kb-policies', 'policy', 'Policies'); break;
+        case 'kb-contact': loadKnowledgeTab('kb-contact', 'contact', 'Contact Info'); break;
+        case 'kb-about': loadKnowledgeTab('kb-about', 'about', 'About Company'); break;
+        case 'kb-refund': loadKnowledgeTab('kb-refund', 'refund', 'Refund Policy'); break;
+        case 'kb-faqs': loadKnowledgeTab('kb-faqs', 'faq', 'FAQs'); break;
+        case 'kb-custom': loadKnowledgeTab('kb-custom', 'general', 'Custom Documents'); break;
     }
 }
 
-/* ***********************************************************
+/* ═══════════════════════════════════════════════════════════
    TAB 1: OVERVIEW
-   *********************************************************** */
+   ═══════════════════════════════════════════════════════════ */
 async function loadOverview() {
     try {
         const data = await API.getDashboardMetrics();
@@ -203,7 +211,7 @@ function renderRecentEscalations(escalations) {
     if (!escalations || escalations.length === 0) {
         container.innerHTML = `<div class="empty-state">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-            <p>No escalations - all clear!</p>
+            <p>No escalations — all clear!</p>
         </div>`;
         return;
     }
@@ -221,12 +229,12 @@ function renderRecentEscalations(escalations) {
     }).join('');
 }
 
-/* ***********************************************************
+/* ═══════════════════════════════════════════════════════════
    TAB 2: CONVERSATIONS
-   *********************************************************** */
+   ═══════════════════════════════════════════════════════════ */
 async function loadConversations(statusFilter = null) {
     const container = document.getElementById('convListItems');
-    container.innerHTML = '<div class="loading-state"><div class="spinner"></div><p>Loading</p></div>';
+    container.innerHTML = '<div class="loading-state"><div class="spinner"></div><p>Loading…</p></div>';
 
     try {
         const data = await API.getConversations(statusFilter);
@@ -314,7 +322,7 @@ async function selectConversation(id) {
         document.getElementById('chatAvatar').textContent = name.slice(0, 2).toUpperCase();
         document.getElementById('chatName').textContent = name;
         document.getElementById('chatMeta').textContent =
-            `${conv.status || 'active'} | ${messages.length} messages | ${conv.language || 'en'}`;
+            `${conv.status || 'active'} · ${messages.length} messages · ${conv.language || 'en'}`;
 
         // Render messages
         renderMessages(messages);
@@ -329,7 +337,7 @@ async function selectConversation(id) {
 function formatMessageContent(content) {
     if (!content) return '';
     if (!content.includes('[IMAGE:')) return esc(content);
-    // Parse [IMAGE:url] tags ' rendered <img>, text parts escaped
+    // Parse [IMAGE:url] tags → rendered <img>, text parts escaped
     return content.split(/\[IMAGE:(.*?)\]/g).map((part, i) => {
         if (i % 2 === 0) return esc(part.trim());
         const url = part.trim();
@@ -349,26 +357,26 @@ function renderMessages(messages) {
         const type = m.sender_type || 'customer';
         const label = type === 'customer' ? (m.sender_name || 'Customer').slice(0, 2).toUpperCase()
             : type === 'ai' ? 'AI'
-                : 'AG';
+                : '🧑';
 
-        // -- Sentiment Pill Badge (hero section style) --------
+        // ── Sentiment Pill Badge (hero section style) ──────────────
         let sentimentBadge = '';
         if (m.sentiment_label || m.sentiment_score != null) {
             const score = m.sentiment_score != null ? m.sentiment_score : 0.5;
             const pct = Math.round(score * 100);
 
             if (type === 'ai') {
-                // AI responses -> white/subtle pill
+                // AI responses → white/subtle pill
                 const emotionLabel = _getEmotionLabel('positive', score);
                 sentimentBadge = `<span class="msg-sentiment-pill msg-sentiment-pill--ai">` +
-                    `<span class="msg-sentiment-dot"></span>${emotionLabel} | ${pct}%</span>`;
+                    `<span class="msg-sentiment-dot"></span>${emotionLabel} · ${pct}%</span>`;
             } else {
-                // Customer messages -> colorful pill by emotion
+                // Customer messages → colorful pill by emotion
                 const sentiment = m.sentiment_label || (score > 0.58 ? 'positive' : score < 0.42 ? 'negative' : 'neutral');
                 const emotionLabel = _getEmotionLabel(sentiment, score);
                 const cssClass = _labelToClass(emotionLabel);
                 sentimentBadge = `<span class="msg-sentiment-pill msg-sentiment-pill--${cssClass}">` +
-                    `<span class="msg-sentiment-dot"></span>${emotionLabel} | ${pct}%</span>`;
+                    `<span class="msg-sentiment-dot"></span>${emotionLabel} · ${pct}%</span>`;
             }
         }
 
@@ -388,7 +396,7 @@ function renderMessages(messages) {
 }
 
 /**
- * Map sentiment + score ' 16-tier emotion label
+ * Map sentiment + score → 16-tier emotion label
  * Mirrors backend get_sentiment_label() in sentiment.py
  */
 function _getEmotionLabel(sentiment, score) {
@@ -416,7 +424,7 @@ function _getEmotionLabel(sentiment, score) {
     return 'Neutral';
 }
 
-/** Convert label like "Very Frustrated" ' CSS class "very-frustrated" */
+/** Convert label like "Very Frustrated" → CSS class "very-frustrated" */
 function _labelToClass(label) {
     return label.toLowerCase().replace(/\s+/g, '-');
 }
@@ -459,9 +467,9 @@ function setupChatActions(convId, conv) {
     };
 }
 
-/* ***********************************************************
+/* ═══════════════════════════════════════════════════════════
    TAB 3: ANALYTICS
-   *********************************************************** */
+   ═══════════════════════════════════════════════════════════ */
 async function loadAnalytics() {
     try {
         const data = await API.getDashboardMetrics();
@@ -550,9 +558,9 @@ function renderBarChart(containerId, data) {
 
 
 
-/* ***********************************************************
+/* ═══════════════════════════════════════════════════════════
    TAB 5: WIDGET
-   *********************************************************** */
+   ═══════════════════════════════════════════════════════════ */
 async function loadWidget() {
     // Load config
     try {
@@ -581,7 +589,7 @@ async function loadWidget() {
         document.getElementById(id).addEventListener('input', updateWidgetPreview);
     });
 
-    // Sync color picker <-> text
+    // Sync color picker ↔ text
     document.getElementById('widgetColor').addEventListener('input', (e) => {
         document.getElementById('widgetColorText').value = e.target.value;
     });
@@ -628,9 +636,9 @@ function updateWidgetPreview() {
     document.getElementById('previewWelcome').textContent = welcome;
 }
 
-/* ***********************************************************
+/* ═══════════════════════════════════════════════════════════
    TAB 6: SETTINGS
-   *********************************************************** */
+   ═══════════════════════════════════════════════════════════ */
 async function loadSettings() {
     try {
         const resp = await API.getSettings();
@@ -644,17 +652,17 @@ async function loadSettings() {
         document.getElementById('settingsName').value = profile.name || profile.full_name || '';
         document.getElementById('settingsEmail').value = profile.email || '';
 
-        // Company — backend returns business_name, business_type, store_url, support_email
-        document.getElementById('settingsCompanyName').value = tenant.business_name || profile.company_name || '';
-        document.getElementById('settingsIndustry').value = tenant.business_type || '';
+        // Company
+        document.getElementById('settingsCompanyName').value = tenant.company_name || profile.company_name || '';
+        document.getElementById('settingsIndustry').value = tenant.industry || '';
         document.getElementById('settingsSupportEmail').value = tenant.support_email || '';
-        document.getElementById('settingsWebsite').value = tenant.store_url || '';
+        document.getElementById('settingsWebsite').value = tenant.website || '';
 
         // Team
         renderTeamList(team);
 
-        // API key — backend returns { key: '...', is_active: bool }
-        document.getElementById('apiKeyValue').textContent = (resp.api_key && resp.api_key.key) || '************';
+        // API key
+        document.getElementById('apiKeyValue').textContent = resp.api_key || resp.widget_api_key || '••••••••••••';
 
         // Preferences (from settings sub-object)
         if (prefs) {
@@ -665,9 +673,9 @@ async function loadSettings() {
         console.error('Settings load error:', err);
     }
 
-    // Save profile — backend expects 'full_name' (not 'name')
+    // Save profile
     document.getElementById('saveProfileBtn').onclick = async () => {
-        const data = { full_name: document.getElementById('settingsName').value };
+        const data = { name: document.getElementById('settingsName').value };
         const pw = document.getElementById('settingsPassword').value;
         if (pw) {
             if (pw !== document.getElementById('settingsPasswordConfirm').value) {
@@ -675,35 +683,17 @@ async function loadSettings() {
             }
             data.password = pw;
         }
-        try {
-            const result = await API.updateProfile(data);
-            // Update localStorage so sidebar/UI reflects the new name immediately
-            const user = JSON.parse(localStorage.getItem('user') || '{}');
-            if (result.profile) {
-                Object.assign(user, result.profile);
-            } else if (data.full_name) {
-                user.full_name = data.full_name;
-                user.name = data.full_name;
-                // Recompute initials
-                const parts = data.full_name.trim().split(/\s+/);
-                user.initials = parts.length >= 2
-                    ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
-                    : data.full_name.slice(0, 2).toUpperCase();
-            }
-            localStorage.setItem('user', JSON.stringify(user));
-            loadUserInfo(); // Refresh sidebar user name/avatar
-            showToast('Profile updated!', 'success');
-        }
+        try { await API.updateProfile(data); showToast('Profile updated!', 'success'); }
         catch { showToast('Update failed', 'error'); }
     };
 
-    // Save company — backend expects business_name, business_type, store_url, support_email
+    // Save company
     document.getElementById('saveCompanyBtn').onclick = async () => {
         const data = {
-            business_name: document.getElementById('settingsCompanyName').value,
-            business_type: document.getElementById('settingsIndustry').value,
+            company_name: document.getElementById('settingsCompanyName').value,
+            industry: document.getElementById('settingsIndustry').value,
             support_email: document.getElementById('settingsSupportEmail').value,
-            store_url: document.getElementById('settingsWebsite').value,
+            website: document.getElementById('settingsWebsite').value,
         };
         try { await API.updateTenantSettings(data); showToast('Company settings updated!', 'success'); }
         catch { showToast('Update failed', 'error'); }
@@ -731,7 +721,7 @@ async function loadSettings() {
         if (!confirm('Regenerate your API key? Your current embed code will stop working.')) return;
         try {
             const result = await API.regenerateApiKey();
-            document.getElementById('apiKeyValue').textContent = result.new_key || result.api_key || '--';
+            document.getElementById('apiKeyValue').textContent = result.api_key || result.widget_api_key || '—';
             showToast('API key regenerated', 'success');
         } catch { showToast('Regeneration failed', 'error'); }
     };
@@ -785,9 +775,9 @@ async function removeTeamMember(id) {
     } catch { showToast('Remove failed', 'error'); }
 }
 
-/* ***********************************************************
+/* ═══════════════════════════════════════════════════════════
    SETTINGS SUB-NAV
-   *********************************************************** */
+   ═══════════════════════════════════════════════════════════ */
 function setupSettingsSubNav() {
     const map = {
         profile: 'settingsProfile',
@@ -807,44 +797,24 @@ function setupSettingsSubNav() {
     });
 }
 
-/* ***********************************************************
+/* ═══════════════════════════════════════════════════════════
    MOBILE MENU
-   *********************************************************** */
+   ═══════════════════════════════════════════════════════════ */
 function setupMobileMenu() {
-    const toggle = document.getElementById('mobileToggle');
-    const sidebar = document.getElementById('sidebar');
-    const overlay = document.getElementById('sidebarOverlay');
-
-    if (!toggle || !sidebar) return; // Guard: elements must exist
-
-    toggle.addEventListener('click', () => {
-        sidebar.classList.toggle('open');
-        if (overlay) {
-            overlay.style.display = sidebar.classList.contains('open') ? 'block' : 'none';
-        }
+    document.getElementById('mobileToggle').addEventListener('click', () => {
+        document.getElementById('sidebar').classList.toggle('open');
+        const overlay = document.getElementById('sidebarOverlay');
+        overlay.style.display = overlay.style.display === 'block' ? 'none' : 'block';
     });
-
-    if (overlay) {
-        overlay.addEventListener('click', () => {
-            sidebar.classList.remove('open');
-            overlay.style.display = 'none';
-        });
-    }
-
-    // Auto-close sidebar on mobile when a nav item is clicked
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.addEventListener('click', () => {
-            if (window.innerWidth <= 768) {
-                sidebar.classList.remove('open');
-                if (overlay) overlay.style.display = 'none';
-            }
-        });
+    document.getElementById('sidebarOverlay').addEventListener('click', () => {
+        document.getElementById('sidebar').classList.remove('open');
+        document.getElementById('sidebarOverlay').style.display = 'none';
     });
 }
 
-/* ***********************************************************
+/* ═══════════════════════════════════════════════════════════
    LOGOUT
-   *********************************************************** */
+   ═══════════════════════════════════════════════════════════ */
 function setupLogout() {
     document.getElementById('logoutBtn').addEventListener('click', () => {
         localStorage.removeItem('access_token');
@@ -854,9 +824,9 @@ function setupLogout() {
     });
 }
 
-/* ***********************************************************
+/* ═══════════════════════════════════════════════════════════
    UTILITIES
-   *********************************************************** */
+   ═══════════════════════════════════════════════════════════ */
 function showToast(message, type = 'info') {
     const toast = document.getElementById('toast');
     toast.textContent = message;
@@ -912,9 +882,9 @@ function setupUploadZones() {
     }
 }
 
-/* ***********************************************************
+/* ═══════════════════════════════════════════════════════════
    TAB: ORDERS (V4 NEW)
-   *********************************************************** */
+   ═══════════════════════════════════════════════════════════ */
 let orderPage = 1;
 async function loadOrders(page = 1) {
     orderPage = page;
@@ -954,11 +924,11 @@ function renderOrderTable(orders) {
     tbody.innerHTML = orders.map(o => `
         <tr>
             <td><strong>${esc(o.order_id)}</strong></td>
-            <td>${esc(o.customer_name || '--')}</td>
-            <td>${esc(o.customer_email || '--')}</td>
+            <td>${esc(o.customer_name || '—')}</td>
+            <td>${esc(o.customer_email || '—')}</td>
             <td><span class="order-status order-status--${(o.status || 'pending').toLowerCase()}">${esc(o.status || 'pending')}</span></td>
-            <td>${o.total_amount ? `${o.currency || '$'}${Number(o.total_amount).toFixed(2)}` : '--'}</td>
-            <td>${o.order_date ? new Date(o.order_date).toLocaleDateString() : '--'}</td>
+            <td>${o.total_amount ? `${o.currency || '$'}${Number(o.total_amount).toFixed(2)}` : '—'}</td>
+            <td>${o.order_date ? new Date(o.order_date).toLocaleDateString() : '—'}</td>
             <td style="display:flex;gap:4px">
                 <button class="btn btn-sm btn-secondary" onclick="viewOrder('${esc(o.order_id)}')" title="View Details"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
                 <button class="btn btn-sm btn-ghost" onclick="deleteOrder(${o.id})" title="Delete"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>
@@ -973,7 +943,7 @@ async function uploadOrderCSV() {
     const formData = new FormData();
     formData.append('file', input.files[0]);
     try {
-        showToast('Uploading CSV', 'info');
+        showToast('Uploading CSV…', 'info');
         const result = await API.uploadOrderCSV(formData);
         showToast(`${result.created || 0} orders imported, ${result.skipped || 0} skipped!`, 'success');
         input.value = '';
@@ -996,9 +966,9 @@ async function deleteOrder(id) {
     }
 }
 
-/* ***********************************************************
+/* ═══════════════════════════════════════════════════════════
    TAB: PRODUCTS (V4 NEW)
-   *********************************************************** */
+   ═══════════════════════════════════════════════════════════ */
 let productPage = 1;
 let editingProductId = null;
 
@@ -1028,7 +998,7 @@ async function loadProducts(page = 1) {
 function renderProductGrid(products) {
     const grid = document.getElementById('productGrid');
     if (!products.length) {
-        grid.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px;height:48px;margin-bottom:12px;opacity:.3"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg><p>No products yet - add your first product or import via CSV</p></div>';
+        grid.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px;height:48px;margin-bottom:12px;opacity:.3"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/></svg><p>No products yet — add your first product or import via CSV</p></div>';
         return;
     }
     grid.innerHTML = products.map(p => `
@@ -1140,7 +1110,7 @@ async function uploadProductCSV() {
     const formData = new FormData();
     formData.append('file', input.files[0]);
     try {
-        showToast('Uploading product CSV', 'info');
+        showToast('Uploading product CSV…', 'info');
         const result = await API.uploadProductCSV(formData);
         showToast(`${result.created || 0} products imported!`, 'success');
         input.value = '';
@@ -1151,37 +1121,37 @@ async function uploadProductCSV() {
     }
 }
 
-/* ***********************************************************
+/* ═══════════════════════════════════════════════════════════
    PAGINATION RENDERER (generic)
-   *********************************************************** */
+   ═══════════════════════════════════════════════════════════ */
 function renderPagination(containerId, currentPage, totalPages, onPageChange) {
     const el = document.getElementById(containerId);
     if (!el || totalPages <= 1) { if (el) el.innerHTML = ''; return; }
-    let html = `<button class="pagination-btn" ${currentPage <= 1 ? 'disabled' : ''} onclick="void(0)">Prev</button>`;
+    let html = `<button class="pagination-btn" ${currentPage <= 1 ? 'disabled' : ''} onclick="void(0)">‹ Prev</button>`;
     for (let i = 1; i <= totalPages; i++) {
         html += `<button class="pagination-btn ${i === currentPage ? 'active' : ''}" onclick="void(0)">${i}</button>`;
     }
-    html += `<button class="pagination-btn" ${currentPage >= totalPages ? 'disabled' : ''} onclick="void(0)">Next</button>`;
+    html += `<button class="pagination-btn" ${currentPage >= totalPages ? 'disabled' : ''} onclick="void(0)">Next ›</button>`;
     el.innerHTML = html;
     el.querySelectorAll('.pagination-btn').forEach(btn => {
         btn.addEventListener('click', () => {
             const txt = btn.textContent.trim();
-            if (txt === 'Prev' && currentPage > 1) onPageChange(currentPage - 1);
-            else if (txt === 'Next' && currentPage < totalPages) onPageChange(currentPage + 1);
+            if (txt === '‹ Prev' && currentPage > 1) onPageChange(currentPage - 1);
+            else if (txt === 'Next ›' && currentPage < totalPages) onPageChange(currentPage + 1);
             else if (!isNaN(txt)) onPageChange(parseInt(txt));
         });
     });
 }
 
-/* """ Debounce helper """"""""""""""""""""""""""""""""""""""" */
+/* ─── Debounce helper ─────────────────────────────────────── */
 function debounce(fn, delay) {
     let timer;
     return (...args) => { clearTimeout(timer); timer = setTimeout(() => fn(...args), delay); };
 }
 
-/* ***********************************************************
+/* ═══════════════════════════════════════════════════════════
    ORDER DETAIL MODAL
-   *********************************************************** */
+   ═══════════════════════════════════════════════════════════ */
 async function viewOrder(orderId) {
     const overlay = document.getElementById('orderDetailOverlay');
     const content = document.getElementById('orderDetailContent');
@@ -1189,7 +1159,7 @@ async function viewOrder(orderId) {
 
     // Show modal with loading state
     overlay.classList.add('active');
-    content.innerHTML = '<div class="loading-state"><div class="spinner"></div><p>Loading order details</p></div>';
+    content.innerHTML = '<div class="loading-state"><div class="spinner"></div><p>Loading order details…</p></div>';
 
     try {
         const result = await API.getOrder(orderId);
@@ -1202,7 +1172,7 @@ async function viewOrder(orderId) {
             itemsHtml = '<div class="order-detail-items">' + items.map(item =>
                 `<div class="order-detail-item-row">
                     <span class="order-detail-item-name">${esc(item.name || item.product || 'Item')}</span>
-                    <span class="order-detail-item-qty">--${item.qty || item.quantity || 1}</span>
+                    <span class="order-detail-item-qty">×${item.qty || item.quantity || 1}</span>
                     ${item.price ? `<span class="order-detail-item-price">${o.currency || 'USD'} ${Number(item.price).toFixed(2)}</span>` : ''}
                 </div>`
             ).join('') + '</div>';
@@ -1210,29 +1180,29 @@ async function viewOrder(orderId) {
 
         // Build detail rows
         const rows = [
-            { label: 'Order ID', value: o.order_id, icon: '#' },
-            { label: 'Status', value: `<span class="order-status order-status--${(o.status || 'pending').toLowerCase()}">${esc(o.status || 'pending')}</span>`, raw: true, icon: '*' },
-            { label: 'Customer Name', value: o.customer_name, icon: '@' },
-            { label: 'Customer Email', value: o.customer_email, icon: '@' },
-            { label: 'Total Amount', value: o.total_amount ? `${o.currency || 'USD'} ${Number(o.total_amount).toFixed(2)}` : null, icon: '$' },
-            { label: 'Currency', value: o.currency, icon: '$' },
-            { label: 'Order Date', value: o.order_date ? new Date(o.order_date).toLocaleString() : null, icon: '>' },
-            { label: 'Estimated Delivery', value: o.estimated_delivery ? new Date(o.estimated_delivery).toLocaleString() : null, icon: '>' },
-            { label: 'Tracking Number', value: o.tracking_number, icon: '#' },
-            { label: 'Carrier', value: o.carrier, icon: '>' },
-            { label: 'Shipping Address', value: o.shipping_address, icon: '>' },
-            { label: 'Items', value: itemsHtml, raw: true, icon: '*' },
-            { label: 'Notes', value: o.notes, icon: '*' },
-            { label: 'Source', value: o.source, icon: '>' },
-            { label: 'Created At', value: o.created_at ? new Date(o.created_at).toLocaleString() : null, icon: '>' },
-            { label: 'Updated At', value: o.updated_at ? new Date(o.updated_at).toLocaleString() : null, icon: '>' },
+            { label: 'Order ID', value: o.order_id, icon: '🏷️' },
+            { label: 'Status', value: `<span class="order-status order-status--${(o.status || 'pending').toLowerCase()}">${esc(o.status || 'pending')}</span>`, raw: true, icon: '📊' },
+            { label: 'Customer Name', value: o.customer_name, icon: '👤' },
+            { label: 'Customer Email', value: o.customer_email, icon: '📧' },
+            { label: 'Total Amount', value: o.total_amount ? `${o.currency || 'USD'} ${Number(o.total_amount).toFixed(2)}` : null, icon: '💰' },
+            { label: 'Currency', value: o.currency, icon: '💱' },
+            { label: 'Order Date', value: o.order_date ? new Date(o.order_date).toLocaleString() : null, icon: '📅' },
+            { label: 'Estimated Delivery', value: o.estimated_delivery ? new Date(o.estimated_delivery).toLocaleString() : null, icon: '🚚' },
+            { label: 'Tracking Number', value: o.tracking_number, icon: '📦' },
+            { label: 'Carrier', value: o.carrier, icon: '✈️' },
+            { label: 'Shipping Address', value: o.shipping_address, icon: '🏠' },
+            { label: 'Items', value: itemsHtml, raw: true, icon: '🛒' },
+            { label: 'Notes', value: o.notes, icon: '📝' },
+            { label: 'Source', value: o.source, icon: '🔗' },
+            { label: 'Created At', value: o.created_at ? new Date(o.created_at).toLocaleString() : null, icon: '🕐' },
+            { label: 'Updated At', value: o.updated_at ? new Date(o.updated_at).toLocaleString() : null, icon: '🔄' },
         ];
 
         content.innerHTML = `
             <div class="order-detail-header">
                 <div>
                     <h3 class="order-detail-title">Order #${esc(o.order_id)}</h3>
-                    <p class="order-detail-subtitle">${o.customer_name ? esc(o.customer_name) : 'Customer'} ${o.order_date ? '  ' + new Date(o.order_date).toLocaleDateString() : ''}</p>
+                    <p class="order-detail-subtitle">${o.customer_name ? esc(o.customer_name) : 'Customer'} ${o.order_date ? '· ' + new Date(o.order_date).toLocaleDateString() : ''}</p>
                 </div>
                 <button class="order-detail-close" onclick="closeOrderModal()" title="Close">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -1260,390 +1230,228 @@ function closeOrderModal() {
     if (overlay) overlay.classList.remove('active');
 }
 
+/* ═══════════════════════════════════════════════════════════
+   KNOWLEDGE BASE — Shared loader for all KB tabs (V4.2)
+   ═══════════════════════════════════════════════════════════ */
 
-/* ===============================================================
-   ABOUT COMPANY TAB - Enhanced, structured UI (V4.2)
-   =============================================================== */
-
-var SVG_BUILDING = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9h1"/><path d="M9 13h1"/><path d="M9 17h1"/></svg>';
-var SVG_CLIP = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>';
-var SVG_UPLOAD = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>';
-var SVG_EDIT = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
-var SVG_IMAGE = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>';
-var SVG_FOLDER = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>';
-var SVG_CATEGORY = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>';
-
-async function loadAboutCompanyTab() {
-    var panel = document.querySelector('#panel-kb-about .kb-panel');
+async function loadKnowledgeTab(tabId, docType, label) {
+    const panel = document.querySelector(`#panel-${tabId} .kb-panel`);
     if (!panel) return;
 
-    panel.innerHTML =
-        '<div class="kb-section">' +
-        '<div class="kb-card">' +
-        '<div class="kb-card-header">' +
-        '<div class="kb-card-icon">' + SVG_BUILDING + '</div>' +
-        '<div>' +
-        '<h3 class="kb-card-title">Company Information</h3>' +
-        '<p class="kb-card-desc">This data helps your AI respond accurately about your business</p>' +
-        '</div>' +
-        '</div>' +
-        '<div class="kb-form-grid">' +
-        '<div class="kb-field"><label class="kb-field-label">Company Name</label><input type="text" class="kb-input" id="aboutCompanyName" placeholder="e.g. Acme Corporation"></div>' +
-        '<div class="kb-field"><label class="kb-field-label">Industry</label><input type="text" class="kb-input" id="aboutIndustry" placeholder="e.g. E-Commerce, Technology"></div>' +
-        '<div class="kb-field"><label class="kb-field-label">Email</label><input type="email" class="kb-input" id="aboutEmail" placeholder="support@company.com"></div>' +
-        '<div class="kb-field"><label class="kb-field-label">Phone</label><input type="tel" class="kb-input" id="aboutPhone" placeholder="+1 (555) 123-4567"></div>' +
-        '<div class="kb-field"><label class="kb-field-label">Website</label><input type="url" class="kb-input" id="aboutWebsite" placeholder="https://www.company.com"></div>' +
-        '<div class="kb-field"><label class="kb-field-label">Address</label><input type="text" class="kb-input" id="aboutAddress" placeholder="123 Main St, City, Country"></div>' +
-        '</div>' +
-        '<div class="kb-field" style="margin-top:12px">' +
-        '<label class="kb-field-label">Company Mission / Description</label>' +
-        '<textarea class="kb-textarea" id="aboutMission" rows="4" placeholder="Tell us about your company - mission, values, what you do, key offerings..."></textarea>' +
-        '</div>' +
-        '<div class="kb-text-actions" style="margin-top:14px">' +
-        '<button class="btn btn-sm btn-primary" id="aboutSaveBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Save Company Info to Knowledge Base</button>' +
-        '</div>' +
-        '</div>' +
-        '<div class="kb-card">' +
-        '<div class="kb-card-header">' +
-        '<div class="kb-card-icon">' + SVG_CLIP + '</div>' +
-        '<div>' +
-        '<h3 class="kb-card-title">Upload Company Documents</h3>' +
-        '<p class="kb-card-desc">Upload brochures, about-us pages, or brand guidelines</p>' +
-        '</div>' +
-        '</div>' +
-        '<div class="kb-upload-zone" id="kbUpload-kb-about">' +
-        '<div class="kb-upload-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>' +
-        '<p class="kb-upload-title">Drag & drop files or <label class="kb-upload-link" for="kbFile-kb-about">browse</label></p>' +
-        '<p class="kb-upload-hint">PDF, DOCX, TXT, CSV, PNG, JPG</p>' +
-        '<input type="file" id="kbFile-kb-about" accept=".csv,.pdf,.docx,.doc,.txt,.json,.md,.png,.jpg,.jpeg,.webp" style="display:none" multiple>' +
-        '</div>' +
-        '<div class="kb-progress" id="kbProgress-kb-about" style="display:none"><div class="kb-progress-bar"><div class="kb-progress-fill"></div></div><span class="kb-progress-text">Uploading...</span></div>' +
-        '</div>' +
-        '</div>' +
-        '<div class="kb-docs-section">' +
-        '<div class="kb-docs-header">' +
-        '<h3 class="kb-docs-title">' + SVG_FOLDER + ' Company Documents</h3>' +
-        '<span class="kb-docs-count" id="kbCount-kb-about">loading...</span>' +
-        '</div>' +
-        '<div class="kb-docs-table-wrap" id="kbDocs-kb-about"><div class="loading-state"><div class="spinner"></div><p>Loading...</p></div></div>' +
-        '</div>';
+    // ── Render the KB UI ──
+    panel.innerHTML = `
+        <div class="kb-section">
+            <!-- Upload Zone -->
+            <div class="kb-upload-zone" id="kbUpload-${tabId}">
+                <div class="kb-upload-icon">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                        <polyline points="17 8 12 3 7 8"/>
+                        <line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                </div>
+                <p class="kb-upload-title">Drag & drop files here or <label class="kb-upload-link" for="kbFile-${tabId}">browse</label></p>
+                <p class="kb-upload-hint">Supports CSV, PDF, DOCX, TXT, PNG, JPG</p>
+                <input type="file" id="kbFile-${tabId}" accept=".csv,.pdf,.docx,.doc,.txt,.json,.md,.png,.jpg,.jpeg,.webp" style="display:none" multiple>
+            </div>
+            <div class="kb-progress" id="kbProgress-${tabId}" style="display:none">
+                <div class="kb-progress-bar"><div class="kb-progress-fill"></div></div>
+                <span class="kb-progress-text">Uploading...</span>
+            </div>
 
-    // Wire save button
-    document.getElementById('aboutSaveBtn').addEventListener('click', async function () {
-        var fields = {
-            name: document.getElementById('aboutCompanyName').value.trim(),
-            industry: document.getElementById('aboutIndustry').value.trim(),
-            email: document.getElementById('aboutEmail').value.trim(),
-            phone: document.getElementById('aboutPhone').value.trim(),
-            website: document.getElementById('aboutWebsite').value.trim(),
-            address: document.getElementById('aboutAddress').value.trim(),
-            mission: document.getElementById('aboutMission').value.trim(),
-        };
-        var parts = [];
-        if (fields.name) parts.push('Company Name: ' + fields.name);
-        if (fields.industry) parts.push('Industry: ' + fields.industry);
-        if (fields.email) parts.push('Email: ' + fields.email);
-        if (fields.phone) parts.push('Phone: ' + fields.phone);
-        if (fields.website) parts.push('Website: ' + fields.website);
-        if (fields.address) parts.push('Address: ' + fields.address);
-        if (fields.mission) parts.push('About / Mission:\n' + fields.mission);
-        if (!parts.length) { showToast('Please fill in at least one field', 'warning'); return; }
+            <!-- Manual Text Input -->
+            <div class="kb-text-section">
+                <div class="kb-text-header">
+                    <span class="kb-text-label">✏️ Or add text manually</span>
+                </div>
+                <textarea class="kb-textarea" id="kbText-${tabId}" placeholder="Type or paste ${label.toLowerCase()} content here..."></textarea>
+                <div class="kb-text-actions">
+                    <button class="btn btn-sm btn-primary" id="kbSaveText-${tabId}">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                        Save to Knowledge Base
+                    </button>
+                </div>
+            </div>
 
-        var text = parts.join('\n');
-        try {
-            var data = await API.addKnowledgeText(text, 'company_info', 'about', 'about');
-            if (data.success) {
-                showToast('Company info saved (' + data.chunks_created + ' chunks)', 'success');
-                ['aboutCompanyName', 'aboutIndustry', 'aboutEmail', 'aboutPhone', 'aboutWebsite', 'aboutAddress', 'aboutMission'].forEach(function (id) { document.getElementById(id).value = ''; });
-                await kbLoadDocuments('kb-about', 'about');
-            } else {
-                showToast('Failed: ' + (data.error || 'Unknown error'), 'error');
-            }
-        } catch (err) { showToast('Error: ' + err.message, 'error'); }
+            <!-- Image Upload -->
+            <div class="kb-text-section">
+                <div class="kb-text-header">
+                    <span class="kb-text-label">🖼️ Add image manually</span>
+                </div>
+                <div class="kb-img-upload-row">
+                    <label class="btn btn-sm btn-outline" for="kbImg-${tabId}" style="cursor:pointer">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                        Choose Image
+                    </label>
+                    <input type="file" id="kbImg-${tabId}" accept="image/*" style="display:none">
+                    <span class="kb-img-name" id="kbImgName-${tabId}">No file chosen</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Documents Table -->
+        <div class="kb-docs-section">
+            <div class="kb-docs-header">
+                <h3 class="kb-docs-title">📂 Uploaded Documents</h3>
+                <span class="kb-docs-count" id="kbCount-${tabId}">loading...</span>
+            </div>
+            <div class="kb-docs-table-wrap" id="kbDocs-${tabId}">
+                <div class="loading-state"><div class="spinner"></div><p>Loading documents…</p></div>
+            </div>
+        </div>
+    `;
+
+    // ── Wire up events ──
+    const fileInput = document.getElementById(`kbFile-${tabId}`);
+    const zone = document.getElementById(`kbUpload-${tabId}`);
+    const textArea = document.getElementById(`kbText-${tabId}`);
+    const saveBtn = document.getElementById(`kbSaveText-${tabId}`);
+    const imgInput = document.getElementById(`kbImg-${tabId}`);
+
+    // Drag & drop
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+    zone.addEventListener('drop', e => {
+        e.preventDefault();
+        zone.classList.remove('drag-over');
+        if (e.dataTransfer.files.length) kbUploadFiles(tabId, docType, label, Array.from(e.dataTransfer.files));
     });
 
-    kbWireUploadZone('kb-about', 'about', 'About Company');
-    await kbLoadDocuments('kb-about', 'about');
-}
-
-/* ===============================================================
-   CUSTOM DATA TAB - Enhanced with category selector (V4.2)
-   =============================================================== */
-
-var CUSTOM_CATEGORIES = [
-    { value: 'privacy_policy', label: 'Privacy Policies' },
-    { value: 'refund_policy', label: 'Refund Policies' },
-    { value: 'company_rules', label: 'Company Rules' },
-    { value: 'terms_of_service', label: 'Terms of Service' },
-    { value: 'shipping_policy', label: 'Shipping Policies' },
-    { value: 'faq', label: 'FAQs' },
-    { value: 'contact_info', label: 'Contact Information' },
-    { value: 'general', label: 'Other / General' },
-];
-
-async function loadCustomDataTab() {
-    var panel = document.querySelector('#panel-kb-custom .kb-panel');
-    if (!panel) return;
-
-    var catOptions = CUSTOM_CATEGORIES.map(function (c) {
-        return '<option value="' + c.value + '">' + c.label + '</option>';
-    }).join('');
-
-    panel.innerHTML =
-        '<div class="kb-section">' +
-        // Category Selector
-        '<div class="kb-card">' +
-        '<div class="kb-card-header">' +
-        '<div class="kb-card-icon">' + SVG_CATEGORY + '</div>' +
-        '<div>' +
-        '<h3 class="kb-card-title">Data Category</h3>' +
-        '<p class="kb-card-desc">Select the type of data you are uploading to keep your knowledge base organized</p>' +
-        '</div>' +
-        '</div>' +
-        '<div class="kb-category-selector">' +
-        '<select class="kb-select" id="customCategory">' + catOptions + '</select>' +
-        '<div class="kb-category-badge" id="customCategoryBadge">Privacy Policies</div>' +
-        '</div>' +
-        '</div>' +
-        // Upload Zone
-        '<div class="kb-card">' +
-        '<div class="kb-card-header">' +
-        '<div class="kb-card-icon">' + SVG_UPLOAD + '</div>' +
-        '<div>' +
-        '<h3 class="kb-card-title">Upload Documents</h3>' +
-        '<p class="kb-card-desc">Upload files to the selected category</p>' +
-        '</div>' +
-        '</div>' +
-        '<div class="kb-upload-zone" id="kbUpload-kb-custom">' +
-        '<div class="kb-upload-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>' +
-        '<p class="kb-upload-title">Drag & drop files or <label class="kb-upload-link" for="kbFile-kb-custom">browse</label></p>' +
-        '<p class="kb-upload-hint">CSV, PDF, DOCX, TXT, PNG, JPG - multi-file supported</p>' +
-        '<input type="file" id="kbFile-kb-custom" accept=".csv,.pdf,.docx,.doc,.txt,.json,.md,.png,.jpg,.jpeg,.webp" style="display:none" multiple>' +
-        '</div>' +
-        '<div class="kb-progress" id="kbProgress-kb-custom" style="display:none"><div class="kb-progress-bar"><div class="kb-progress-fill"></div></div><span class="kb-progress-text">Uploading...</span></div>' +
-        '</div>' +
-        // Manual Text
-        '<div class="kb-card">' +
-        '<div class="kb-card-header">' +
-        '<div class="kb-card-icon">' + SVG_EDIT + '</div>' +
-        '<div>' +
-        '<h3 class="kb-card-title">Add Text Manually</h3>' +
-        '<p class="kb-card-desc">Type or paste content directly</p>' +
-        '</div>' +
-        '</div>' +
-        '<textarea class="kb-textarea" id="kbText-kb-custom" rows="4" placeholder="Type or paste content here..."></textarea>' +
-        '<div class="kb-text-actions" style="margin-top:10px"><button class="btn btn-sm btn-primary" id="kbSaveText-kb-custom"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Save Text</button></div>' +
-        '</div>' +
-        // Image Upload
-        '<div class="kb-card">' +
-        '<div class="kb-card-header">' +
-        '<div class="kb-card-icon">' + SVG_IMAGE + '</div>' +
-        '<div>' +
-        '<h3 class="kb-card-title">Add Image</h3>' +
-        '<p class="kb-card-desc">Upload images to attach to this category</p>' +
-        '</div>' +
-        '</div>' +
-        '<div class="kb-img-upload-row">' +
-        '<label class="btn btn-sm btn-outline" for="kbImg-kb-custom" style="cursor:pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> Choose Image</label>' +
-        '<input type="file" id="kbImg-kb-custom" accept="image/*" style="display:none">' +
-        '<span class="kb-img-name" id="kbImgName-kb-custom">No file chosen</span>' +
-        '</div>' +
-        '</div>' +
-        '</div>' +
-        // Documents
-        '<div class="kb-docs-section">' +
-        '<div class="kb-docs-header">' +
-        '<h3 class="kb-docs-title">' + SVG_FOLDER + ' All Custom Documents</h3>' +
-        '<span class="kb-docs-count" id="kbCount-kb-custom">loading...</span>' +
-        '</div>' +
-        '<div class="kb-docs-table-wrap" id="kbDocs-kb-custom"><div class="loading-state"><div class="spinner"></div><p>Loading...</p></div></div>' +
-        '</div>';
-
-    // Category selector
-    var catSelect = document.getElementById('customCategory');
-    var catBadge = document.getElementById('customCategoryBadge');
-    catSelect.addEventListener('change', function () {
-        var cat = CUSTOM_CATEGORIES.find(function (c) { return c.value === catSelect.value; });
-        catBadge.textContent = cat ? cat.label : catSelect.value;
-    });
-    function getDocType() { return catSelect.value; }
-
-    // File upload
-    var zone = document.getElementById('kbUpload-kb-custom');
-    var fileInput = document.getElementById('kbFile-kb-custom');
-    zone.addEventListener('dragover', function (e) { e.preventDefault(); zone.classList.add('drag-over'); });
-    zone.addEventListener('dragleave', function () { zone.classList.remove('drag-over'); });
-    zone.addEventListener('drop', function (e) {
-        e.preventDefault(); zone.classList.remove('drag-over');
-        if (e.dataTransfer.files.length) kbUploadFiles('kb-custom', getDocType(), 'Custom Data', Array.from(e.dataTransfer.files));
-    });
-    fileInput.addEventListener('change', function () {
-        if (fileInput.files.length) kbUploadFiles('kb-custom', getDocType(), 'Custom Data', Array.from(fileInput.files));
+    // File browse
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files.length) kbUploadFiles(tabId, docType, label, Array.from(fileInput.files));
         fileInput.value = '';
     });
 
-    // Manual text
-    document.getElementById('kbSaveText-kb-custom').addEventListener('click', function () {
-        var dt = getDocType();
-        var cat = CUSTOM_CATEGORIES.find(function (c) { return c.value === dt; });
-        kbSaveText('kb-custom', dt, cat ? cat.label : 'Custom');
-    });
+    // Manual text save
+    saveBtn.addEventListener('click', () => kbSaveText(tabId, docType, label));
 
-    // Image
-    var imgInput = document.getElementById('kbImg-kb-custom');
-    imgInput.addEventListener('change', function () {
+    // Image upload
+    imgInput.addEventListener('change', () => {
         if (imgInput.files.length) {
-            document.getElementById('kbImgName-kb-custom').textContent = imgInput.files[0].name;
-            kbUploadFiles('kb-custom', getDocType(), 'Custom Data', Array.from(imgInput.files));
+            document.getElementById(`kbImgName-${tabId}`).textContent = imgInput.files[0].name;
+            kbUploadFiles(tabId, docType, label, Array.from(imgInput.files));
             imgInput.value = '';
         }
     });
 
-    await kbLoadAllCustomDocuments();
-}
-
-/* ===============================================================
-   KB SHARED HELPERS
-   =============================================================== */
-
-function kbWireUploadZone(tabId, docType, label) {
-    var zone = document.getElementById('kbUpload-' + tabId);
-    var fileInput = document.getElementById('kbFile-' + tabId);
-    if (!zone || !fileInput) return;
-    zone.addEventListener('dragover', function (e) { e.preventDefault(); zone.classList.add('drag-over'); });
-    zone.addEventListener('dragleave', function () { zone.classList.remove('drag-over'); });
-    zone.addEventListener('drop', function (e) {
-        e.preventDefault(); zone.classList.remove('drag-over');
-        if (e.dataTransfer.files.length) kbUploadFiles(tabId, docType, label, Array.from(e.dataTransfer.files));
-    });
-    fileInput.addEventListener('change', function () {
-        if (fileInput.files.length) kbUploadFiles(tabId, docType, label, Array.from(fileInput.files));
-        fileInput.value = '';
-    });
+    // Load documents
+    await kbLoadDocuments(tabId, docType);
 }
 
 async function kbUploadFiles(tabId, docType, label, files) {
-    var progress = document.getElementById('kbProgress-' + tabId);
-    if (progress) progress.style.display = 'flex';
+    const progress = document.getElementById(`kbProgress-${tabId}`);
+    progress.style.display = 'flex';
 
-    for (var i = 0; i < files.length; i++) {
-        var file = files[i];
-        var fd = new FormData();
+    for (const file of files) {
+        const fd = new FormData();
         fd.append('file', file);
         fd.append('doc_type', docType);
         fd.append('category', docType);
+
         try {
-            var data = await API.uploadKnowledgeFile(fd);
+            const data = await API.uploadKnowledgeFile(fd);
             if (data.success) {
-                showToast('"' + file.name + '" indexed (' + data.chunks_created + ' chunks)', 'success');
+                showToast(`✅ "${file.name}" indexed (${data.chunks_created} chunks)`, 'success');
             } else {
-                showToast('Failed: ' + (data.error || 'Unknown error'), 'error');
+                showToast(`❌ Failed: ${data.error || 'Unknown error'}`, 'error');
             }
         } catch (err) {
-            showToast('Upload error: ' + err.message, 'error');
+            showToast(`❌ Upload error: ${err.message}`, 'error');
         }
     }
 
-    if (progress) progress.style.display = 'none';
-    if (tabId === 'kb-custom') { await kbLoadAllCustomDocuments(); }
-    else { await kbLoadDocuments(tabId, docType); }
+    progress.style.display = 'none';
+    await kbLoadDocuments(tabId, docType);
 }
 
 async function kbSaveText(tabId, docType, label) {
-    var textArea = document.getElementById('kbText-' + tabId);
-    var text = textArea.value.trim();
-    if (!text) { showToast('Please enter some text first', 'warning'); return; }
+    const textArea = document.getElementById(`kbText-${tabId}`);
+    const text = textArea.value.trim();
+    if (!text) { showToast('⚠️ Please enter some text first', 'warning'); return; }
+
     try {
-        var data = await API.addKnowledgeText(text, 'manual_' + docType, docType, docType);
+        const data = await API.addKnowledgeText(text, `manual_${docType}`, docType, docType);
         if (data.success) {
-            showToast(label + ' saved (' + data.chunks_created + ' chunks)', 'success');
+            showToast(`✅ ${label} text saved (${data.chunks_created} chunks)`, 'success');
             textArea.value = '';
-            if (tabId === 'kb-custom') { await kbLoadAllCustomDocuments(); }
-            else { await kbLoadDocuments(tabId, docType); }
+            await kbLoadDocuments(tabId, docType);
         } else {
-            showToast('Failed: ' + (data.error || 'Unknown error'), 'error');
+            showToast(`❌ Failed: ${data.error}`, 'error');
         }
-    } catch (err) { showToast('Save error: ' + err.message, 'error'); }
+    } catch (err) {
+        showToast(`❌ Save error: ${err.message}`, 'error');
+    }
 }
 
 async function kbLoadDocuments(tabId, docType) {
-    var container = document.getElementById('kbDocs-' + tabId);
-    var countEl = document.getElementById('kbCount-' + tabId);
-    if (!container) return;
+    const container = document.getElementById(`kbDocs-${tabId}`);
+    const countEl = document.getElementById(`kbCount-${tabId}`);
+
     try {
-        var data = await API.getKnowledgeDocuments();
-        var docs = (data.documents || []).filter(function (d) { return d.doc_type === docType; });
-        if (countEl) countEl.textContent = docs.length + ' document' + (docs.length !== 1 ? 's' : '');
-        kbRenderDocsTable(container, docs, tabId, docType);
+        const data = await API.getKnowledgeDocuments();
+        const docs = (data.documents || []).filter(d => d.doc_type === docType);
+
+        countEl.textContent = `${docs.length} document${docs.length !== 1 ? 's' : ''}`;
+
+        if (!docs.length) {
+            container.innerHTML = `<div class="kb-empty">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5">
+                    <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                </svg>
+                <p>No documents uploaded yet</p>
+            </div>`;
+            return;
+        }
+
+        let rows = docs.map(d => {
+            const size = d.file_size ? (d.file_size / 1024).toFixed(1) + ' KB' : '—';
+            const date = d.created_at ? new Date(d.created_at).toLocaleDateString() : '—';
+            const chunks = d.chunk_count || d.chunks || '—';
+            const name = esc(d.filename || d.id);
+            return `<tr>
+                <td class="kb-doc-name" title="${name}">${name}</td>
+                <td>${size}</td>
+                <td>${chunks}</td>
+                <td>${date}</td>
+                <td class="kb-doc-actions">
+                    <button class="kb-btn kb-btn-view" onclick="kbViewDoc('${d.id}','${esc(d.filename)}')" title="View">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </button>
+                    <button class="kb-btn kb-btn-del" onclick="kbDeleteDoc('${d.id}','${tabId}','${docType}')" title="Delete">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                    </button>
+                </td>
+            </tr>`;
+        }).join('');
+
+        container.innerHTML = `<table class="kb-table">
+            <thead><tr><th>Document</th><th>Size</th><th>Chunks</th><th>Date</th><th>Actions</th></tr></thead>
+            <tbody>${rows}</tbody>
+        </table>`;
+
     } catch (err) {
-        container.innerHTML = '<div class="kb-empty"><p>Failed to load documents</p></div>';
+        container.innerHTML = `<div class="kb-empty"><p>⚠️ Failed to load documents</p></div>`;
     }
-}
-
-async function kbLoadAllCustomDocuments() {
-    var container = document.getElementById('kbDocs-kb-custom');
-    var countEl = document.getElementById('kbCount-kb-custom');
-    if (!container) return;
-    var excludeTypes = ['product', 'order', 'about'];
-    try {
-        var data = await API.getKnowledgeDocuments();
-        var docs = (data.documents || []).filter(function (d) { return excludeTypes.indexOf(d.doc_type) === -1; });
-        if (countEl) countEl.textContent = docs.length + ' document' + (docs.length !== 1 ? 's' : '');
-        kbRenderDocsTable(container, docs, 'kb-custom', null);
-    } catch (err) {
-        container.innerHTML = '<div class="kb-empty"><p>Failed to load documents</p></div>';
-    }
-}
-
-function kbRenderDocsTable(container, docs, tabId, docType) {
-    if (!docs.length) {
-        container.innerHTML = '<div class="kb-empty"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><p>No documents uploaded yet</p></div>';
-        return;
-    }
-    var catMap = {};
-    CUSTOM_CATEGORIES.forEach(function (c) { catMap[c.value] = c.label; });
-
-    var rows = docs.map(function (d) {
-        var size = d.file_size ? (d.file_size / 1024).toFixed(1) + ' KB' : '--';
-        var date = d.created_at ? new Date(d.created_at).toLocaleDateString() : '--';
-        var chunks = d.chunk_count || '--';
-        var name = esc(d.filename || d.id);
-        var catLabel = catMap[d.doc_type] || d.doc_type || '--';
-        var delType = docType || d.doc_type || 'general';
-        return '<tr>' +
-            '<td class="kb-doc-name" title="' + name + '">' + name + '</td>' +
-            '<td><span class="kb-cat-pill">' + catLabel + '</span></td>' +
-            '<td>' + size + '</td>' +
-            '<td>' + chunks + '</td>' +
-            '<td>' + date + '</td>' +
-            '<td class="kb-doc-actions">' +
-            '<button class="kb-btn kb-btn-view" onclick="kbViewDoc(\'' + d.id + '\',\'' + esc(d.filename) + '\')" title="View"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>' +
-            '<button class="kb-btn kb-btn-del" onclick="kbDeleteDoc(\'' + d.id + '\',\'' + tabId + '\',\'' + delType + '\')" title="Delete"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>' +
-            '</td></tr>';
-    }).join('');
-
-    container.innerHTML = '<table class="kb-table"><thead><tr><th>Document</th><th>Category</th><th>Size</th><th>Chunks</th><th>Date</th><th>Actions</th></tr></thead><tbody>' + rows + '</tbody></table>';
 }
 
 async function kbDeleteDoc(docId, tabId, docType) {
     if (!confirm('Delete this document from the knowledge base?')) return;
     try {
         await API.deleteKnowledgeDocument(docId);
-        showToast('Document deleted', 'success');
-        if (tabId === 'kb-custom') { await kbLoadAllCustomDocuments(); }
-        else { await kbLoadDocuments(tabId, docType); }
-    } catch (err) { showToast('Delete failed: ' + err.message, 'error'); }
+        showToast('✅ Document deleted', 'success');
+        await kbLoadDocuments(tabId, docType);
+    } catch (err) {
+        showToast(`❌ ${err.message}`, 'error');
+    }
 }
 
 function kbViewDoc(docId, filename) {
-    showToast(filename + ' - ID: ' + docId, 'info');
+    showToast(`📄 ${filename} — ID: ${docId}`, 'info');
 }
 
-// Make KB functions globally accessible
-window.kbDeleteDoc = kbDeleteDoc;
-window.kbViewDoc = kbViewDoc;
-
-// Make all onclick-referenced functions globally accessible
+// Make functions globally accessible (used by onclick in HTML)
 window.switchTab = switchTab;
 window.selectConversation = selectConversation;
 window.removeTeamMember = removeTeamMember;
@@ -1652,3 +1460,5 @@ window.viewOrder = viewOrder;
 window.closeOrderModal = closeOrderModal;
 window.editProduct = editProduct;
 window.deleteProduct = deleteProduct;
+window.kbDeleteDoc = kbDeleteDoc;
+window.kbViewDoc = kbViewDoc;
