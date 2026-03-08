@@ -856,9 +856,9 @@ function formatFileSize(bytes) {
     return (bytes / 1048576).toFixed(1) + ' MB';
 }
 
-/* ***********************************************************
+/* ═══════════════════════════════════════════════════════════
    UPLOAD ZONES (drag-drop)
-   *********************************************************** */
+   ═══════════════════════════════════════════════════════════ */
 function setupUploadZones() {
     // Order CSV upload zone
     const orderZone = document.getElementById('orderUploadZone');
