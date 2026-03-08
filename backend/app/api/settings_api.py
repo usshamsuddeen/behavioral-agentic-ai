@@ -54,6 +54,11 @@ class UpdateSettingsRequest(BaseModel):
     enabled_languages: Optional[List[str]] = None
 
 
+class UpdateRestrictionsRequest(BaseModel):
+    """AI Restrictions / Rules — stored in tenant.description, injected into LLM system prompt"""
+    restrictions: str = ""
+
+
 class InviteTeamMemberRequest(BaseModel):
     """FR-3.6.5: Team member invitation"""
     email: str
@@ -231,6 +236,52 @@ async def update_settings(
     return {
         "message": "Settings updated successfully",
         "settings": settings.to_dict()
+    }
+
+
+# ═══════════════════════════════════════════════════════════════════
+# AI Restrictions / Rules — stored in tenant.description
+# Automatically injected into LLM system prompt via company_guidelines
+# ═══════════════════════════════════════════════════════════════════
+
+@router.get("/restrictions")
+async def get_restrictions(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get AI restrictions/rules for this tenant."""
+    tenant = get_tenant_for_user(current_user, db)
+    if not tenant:
+        raise HTTPException(status_code=404, detail="No tenant found")
+    
+    return {
+        "restrictions": tenant.description or "",
+        "tenant_id": tenant.id
+    }
+
+
+@router.put("/restrictions")
+async def update_restrictions(
+    data: UpdateRestrictionsRequest,
+    current_user: User = Depends(require_role(["client", "super_admin", "admin"])),
+    db: Session = Depends(get_db)
+):
+    """
+    Save AI restrictions/rules for this tenant.
+    Stored in tenant.description → piped to LLM as GUIDELINES in system prompt.
+    """
+    tenant = get_tenant_for_user(current_user, db)
+    if not tenant:
+        raise HTTPException(status_code=404, detail="No tenant found")
+    
+    tenant.description = data.restrictions.strip()
+    tenant.updated_at = datetime.utcnow()
+    db.commit()
+    
+    return {
+        "message": "Restrictions saved successfully",
+        "restrictions": tenant.description,
+        "tenant_id": tenant.id
     }
 
 

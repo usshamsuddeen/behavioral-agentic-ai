@@ -19,8 +19,8 @@ const TAB_META = {
     widget: { title: 'Widget Config', subtitle: 'Configure and deploy your chat widget' },
     analytics: { title: 'Analytics', subtitle: 'Insights into sentiment, escalations, and performance' },
     settings: { title: 'Settings', subtitle: 'Manage your profile, company, and preferences' },
-    'kb-about': { title: 'About Company', subtitle: 'Company description, mission, contact, and key info for AI' },
-    'kb-custom': { title: 'Custom Data', subtitle: 'Upload policies, rules, FAQs, and any knowledge base documents' },
+    'kb-about': { title: 'Restrictions / Rules', subtitle: 'Set instructions and restrictions that guide your AI chatbot\'s behavior' },
+    'kb-custom': { title: 'Custom Data', subtitle: 'Upload policies, FAQs, company info, and any knowledge base documents' },
 };
 
 /* --- Init ------------------------------------------------- */
@@ -33,7 +33,6 @@ document.addEventListener('DOMContentLoaded', () => {
     setupTabNavigation();
 
     setupMobileMenu();
-    setupSettingsSubNav();
     setupLogout();
     setupUploadZones();
 
@@ -118,7 +117,7 @@ function loadTabData(tab) {
         case 'products': loadProducts(); break;
         case 'widget': loadWidget(); break;
         case 'settings': loadSettings(); break;
-        case 'kb-about': loadAboutCompanyTab(); break;
+        case 'kb-about': loadRestrictionsTab(); break;
         case 'kb-custom': loadCustomDataTab(); break;
     }
 }
@@ -629,43 +628,220 @@ function updateWidgetPreview() {
 }
 
 /* ***********************************************************
-   TAB 6: SETTINGS
+   TAB 6: SETTINGS — Single-page scrollable layout (V4.3)
+   Five premium glassmorphism cards:
+   1. Account Overview  2. Profile  3. Company
+   4. Widget API Key    5. AI Behavior
    *********************************************************** */
 async function loadSettings() {
+    const c = document.getElementById('settingsContainer');
+    if (!c) return;
+
+    /* ---- Fetch data ---- */
+    let profile = {}, tenant = {}, prefs = {}, apiKey = '';
     try {
         const resp = await API.getSettings();
-        // /settings returns { profile, tenant, settings, widget, api_key, team }
-        const profile = resp.profile || {};
-        const tenant = resp.tenant || {};
-        const prefs = resp.settings || {};
-        const team = resp.team || [];
-
-        // Profile
-        document.getElementById('settingsName').value = profile.name || profile.full_name || '';
-        document.getElementById('settingsEmail').value = profile.email || '';
-
-        // Company — backend returns business_name, business_type, store_url, support_email
-        document.getElementById('settingsCompanyName').value = tenant.business_name || profile.company_name || '';
-        document.getElementById('settingsIndustry').value = tenant.business_type || '';
-        document.getElementById('settingsSupportEmail').value = tenant.support_email || '';
-        document.getElementById('settingsWebsite').value = tenant.store_url || '';
-
-        // Team
-        renderTeamList(team);
-
-        // API key — backend returns { key: '...', is_active: bool }
-        document.getElementById('apiKeyValue').textContent = (resp.api_key && resp.api_key.key) || '************';
-
-        // Preferences (from settings sub-object)
-        if (prefs) {
-            document.getElementById('prefSensitivity').value = prefs.auto_escalation_threshold ? (prefs.auto_escalation_threshold / 100) : 0.7;
-            document.getElementById('sensitivityValue').textContent = prefs.auto_escalation_threshold ? (prefs.auto_escalation_threshold / 100).toFixed(2) : '0.70';
-        }
+        profile = resp.profile || {};
+        tenant = resp.tenant || {};
+        prefs = resp.settings || {};
+        apiKey = (resp.api_key && resp.api_key.key) || '••••••••••••';
     } catch (err) {
         console.error('Settings load error:', err);
+        c.innerHTML = '<div class="stg-error"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg><p>Failed to load settings</p></div>';
+        return;
     }
 
-    // Save profile — backend expects 'full_name' (not 'name')
+    const userName = profile.name || profile.full_name || 'User';
+    const userEmail = profile.email || '';
+    const initials = userName.trim().split(/\s+/).length >= 2
+        ? (userName.trim().split(/\s+/)[0][0] + userName.trim().split(/\s+/).slice(-1)[0][0]).toUpperCase()
+        : userName.slice(0, 2).toUpperCase();
+    const joinedDate = tenant.created_at
+        ? new Date(tenant.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+        : 'N/A';
+    const sensitivityVal = prefs.auto_escalation_threshold
+        ? (prefs.auto_escalation_threshold / 100).toFixed(2)
+        : '0.70';
+
+    /* ---- Render all cards ---- */
+    c.innerHTML = `
+    <!-- ════════ 1. ACCOUNT OVERVIEW ════════ -->
+    <div class="stg-card stg-card--accent">
+        <div class="stg-account-row">
+            <div class="stg-avatar">${esc(initials)}</div>
+            <div class="stg-account-info">
+                <h3 class="stg-account-name">${esc(userName)}</h3>
+                <p class="stg-account-email">${esc(userEmail)}</p>
+            </div>
+            <div class="stg-account-meta">
+                <div class="stg-meta-chip">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    Joined ${esc(joinedDate)}
+                </div>
+                <div class="stg-meta-chip stg-meta-chip--green">
+                    <span class="stg-status-dot"></span>
+                    Active
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ════════ 2. PROFILE ════════ -->
+    <div class="stg-card">
+        <div class="stg-card-header">
+            <div class="stg-card-icon stg-card-icon--blue">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <div>
+                <h3 class="stg-card-title">Profile</h3>
+                <p class="stg-card-desc">Manage your personal information and password</p>
+            </div>
+        </div>
+        <div class="stg-form-grid">
+            <div class="stg-field">
+                <label class="stg-label">Full Name</label>
+                <input type="text" class="stg-input" id="settingsName" value="${esc(userName)}">
+            </div>
+            <div class="stg-field">
+                <label class="stg-label">Email Address</label>
+                <input type="email" class="stg-input stg-input--disabled" id="settingsEmail" value="${esc(userEmail)}" disabled>
+            </div>
+            <div class="stg-field">
+                <label class="stg-label">New Password</label>
+                <input type="password" class="stg-input" id="settingsPassword" placeholder="Leave blank to keep current">
+            </div>
+            <div class="stg-field">
+                <label class="stg-label">Confirm Password</label>
+                <input type="password" class="stg-input" id="settingsPasswordConfirm" placeholder="Repeat new password">
+            </div>
+        </div>
+        <div class="stg-actions">
+            <button class="btn btn-primary btn--glow" id="saveProfileBtn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                Save Profile
+            </button>
+        </div>
+    </div>
+
+    <!-- ════════ 3. COMPANY ════════ -->
+    <div class="stg-card">
+        <div class="stg-card-header">
+            <div class="stg-card-icon stg-card-icon--purple">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            </div>
+            <div>
+                <h3 class="stg-card-title">Company Information</h3>
+                <p class="stg-card-desc">Your business details shown to the AI and in the widget</p>
+            </div>
+        </div>
+        <div class="stg-form-grid">
+            <div class="stg-field">
+                <label class="stg-label">Company Name</label>
+                <input type="text" class="stg-input" id="settingsCompanyName" value="${esc(tenant.business_name || profile.company_name || '')}">
+            </div>
+            <div class="stg-field">
+                <label class="stg-label">Industry</label>
+                <input type="text" class="stg-input" id="settingsIndustry" value="${esc(tenant.business_type || '')}" placeholder="e.g. Fashion, Electronics">
+            </div>
+            <div class="stg-field">
+                <label class="stg-label">Support Email</label>
+                <input type="email" class="stg-input" id="settingsSupportEmail" value="${esc(tenant.support_email || '')}" placeholder="support@company.com">
+            </div>
+            <div class="stg-field">
+                <label class="stg-label">Website URL</label>
+                <input type="url" class="stg-input" id="settingsWebsite" value="${esc(tenant.store_url || '')}" placeholder="https://your-store.com">
+            </div>
+        </div>
+        <div class="stg-actions">
+            <button class="btn btn-primary btn--glow" id="saveCompanyBtn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                Save Company
+            </button>
+        </div>
+    </div>
+
+    <!-- ════════ 4. WIDGET API KEY ════════ -->
+    <div class="stg-card">
+        <div class="stg-card-header">
+            <div class="stg-card-icon stg-card-icon--amber">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+            </div>
+            <div>
+                <h3 class="stg-card-title">Widget API Key</h3>
+                <p class="stg-card-desc">Use this key in your widget embed code. Regenerating will invalidate existing embeds.</p>
+            </div>
+        </div>
+        <div class="stg-api-key-box">
+            <code class="stg-api-key-value" id="apiKeyValue">${esc(apiKey)}</code>
+            <button class="stg-api-btn" id="copyApiKeyBtn" title="Copy to clipboard">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+            </button>
+        </div>
+        <div class="stg-actions">
+            <button class="btn btn-secondary" id="regenApiKeyBtn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+                Regenerate Key
+            </button>
+        </div>
+    </div>
+
+    <!-- ════════ 5. AI BEHAVIOR ════════ -->
+    <div class="stg-card">
+        <div class="stg-card-header">
+            <div class="stg-card-icon stg-card-icon--green">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 014 4c0 1.95-2 3-2 8h-4c0-5-2-6.05-2-8a4 4 0 014-4z"/><line x1="10" y1="22" x2="14" y2="22"/><line x1="9" y1="18" x2="15" y2="18"/></svg>
+            </div>
+            <div>
+                <h3 class="stg-card-title">AI Behavior</h3>
+                <p class="stg-card-desc">Control how aggressively the AI escalates frustrated customers to a human agent</p>
+            </div>
+        </div>
+        <div class="stg-slider-group">
+            <label class="stg-label">Auto-Escalation Sensitivity</label>
+            <div class="stg-slider-row">
+                <span class="stg-slider-label">Low</span>
+                <input type="range" min="0" max="1" step="0.05" value="${sensitivityVal}" id="prefSensitivity" class="stg-slider">
+                <span class="stg-slider-label">High</span>
+                <span class="stg-slider-value" id="sensitivityValue">${sensitivityVal}</span>
+            </div>
+            <p class="stg-slider-hint">
+                <strong>Low</strong> = AI handles more on its own &nbsp;·&nbsp; <strong>High</strong> = faster escalation to human agents
+            </p>
+        </div>
+        <div class="stg-actions">
+            <button class="btn btn-primary btn--glow" id="savePrefsBtn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                Save Preferences
+            </button>
+        </div>
+    </div>
+
+    <!-- ════════ 6. DANGER ZONE ════════ -->
+    <div class="stg-card stg-card--danger">
+        <div class="stg-card-header">
+            <div class="stg-card-icon stg-card-icon--red">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <div>
+                <h3 class="stg-card-title" style="color:#f87171;">Danger Zone</h3>
+                <p class="stg-card-desc">Irreversible actions — proceed with caution</p>
+            </div>
+        </div>
+        <div class="stg-danger-actions">
+            <div class="stg-danger-row">
+                <div>
+                    <strong class="stg-danger-label">Clear All Conversations</strong>
+                    <p class="stg-danger-hint">Delete all chat history and conversation data for this account</p>
+                </div>
+                <button class="btn stg-btn-danger" id="clearConversationsBtn">Clear Conversations</button>
+            </div>
+        </div>
+    </div>
+    `;
+
+    /* ──────────── Event Handlers ──────────── */
+
+    // Save profile
     document.getElementById('saveProfileBtn').onclick = async () => {
         const data = { full_name: document.getElementById('settingsName').value };
         const pw = document.getElementById('settingsPassword').value;
@@ -677,27 +853,27 @@ async function loadSettings() {
         }
         try {
             const result = await API.updateProfile(data);
-            // Update localStorage so sidebar/UI reflects the new name immediately
             const user = JSON.parse(localStorage.getItem('user') || '{}');
             if (result.profile) {
                 Object.assign(user, result.profile);
             } else if (data.full_name) {
                 user.full_name = data.full_name;
                 user.name = data.full_name;
-                // Recompute initials
                 const parts = data.full_name.trim().split(/\s+/);
                 user.initials = parts.length >= 2
                     ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
                     : data.full_name.slice(0, 2).toUpperCase();
             }
             localStorage.setItem('user', JSON.stringify(user));
-            loadUserInfo(); // Refresh sidebar user name/avatar
+            loadUserInfo();
             showToast('Profile updated!', 'success');
-        }
-        catch { showToast('Update failed', 'error'); }
+            // Clear password fields
+            document.getElementById('settingsPassword').value = '';
+            document.getElementById('settingsPasswordConfirm').value = '';
+        } catch { showToast('Update failed', 'error'); }
     };
 
-    // Save company — backend expects business_name, business_type, store_url, support_email
+    // Save company
     document.getElementById('saveCompanyBtn').onclick = async () => {
         const data = {
             business_name: document.getElementById('settingsCompanyName').value,
@@ -709,24 +885,13 @@ async function loadSettings() {
         catch { showToast('Update failed', 'error'); }
     };
 
-    // Invite
-    document.getElementById('inviteBtn').onclick = async () => {
-        const data = {
-            name: document.getElementById('inviteName').value,
-            email: document.getElementById('inviteEmail').value,
-        };
-        if (!data.email) { showToast('Email is required', 'error'); return; }
-        try {
-            await API.inviteTeamMember(data);
-            showToast('Team member added!', 'success');
-            document.getElementById('inviteName').value = '';
-            document.getElementById('inviteEmail').value = '';
-            loadedTabs['settings'] = false;
-            loadSettings();
-        } catch { showToast('Invite failed', 'error'); }
+    // Copy API key
+    document.getElementById('copyApiKeyBtn').onclick = () => {
+        const key = document.getElementById('apiKeyValue').textContent;
+        navigator.clipboard.writeText(key).then(() => showToast('API key copied!', 'success'));
     };
 
-    // Regen API key
+    // Regenerate API key
     document.getElementById('regenApiKeyBtn').onclick = async () => {
         if (!confirm('Regenerate your API key? Your current embed code will stop working.')) return;
         try {
@@ -736,15 +901,9 @@ async function loadSettings() {
         } catch { showToast('Regeneration failed', 'error'); }
     };
 
-    // Copy API key
-    document.getElementById('copyApiKeyBtn').onclick = () => {
-        const key = document.getElementById('apiKeyValue').textContent;
-        navigator.clipboard.writeText(key).then(() => showToast('API key copied!', 'success'));
-    };
-
     // Sensitivity slider
     document.getElementById('prefSensitivity').addEventListener('input', (e) => {
-        document.getElementById('sensitivityValue').textContent = e.target.value;
+        document.getElementById('sensitivityValue').textContent = parseFloat(e.target.value).toFixed(2);
     });
 
     // Save preferences
@@ -755,56 +914,19 @@ async function loadSettings() {
         try { await API.updatePreferences(data); showToast('Preferences saved!', 'success'); }
         catch { showToast('Update failed', 'error'); }
     };
-}
 
-function renderTeamList(team) {
-    const container = document.getElementById('teamList');
-    if (!team.length) {
-        container.innerHTML = '<div class="empty-state"><p>No team members yet</p></div>';
-        return;
-    }
-    container.innerHTML = team.map(m => `<div class="team-item">
-        <div class="avatar avatar-sm">${(m.name || 'U').slice(0, 2).toUpperCase()}</div>
-        <div class="team-item-info">
-            <div class="team-item-name">${esc(m.name || 'Unknown')}</div>
-            <div class="team-item-email">${esc(m.email || '')}</div>
-        </div>
-        <button class="doc-delete" onclick="removeTeamMember('${m.id}')" title="Remove">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </button>
-    </div>`).join('');
-}
-
-async function removeTeamMember(id) {
-    if (!confirm('Remove this team member?')) return;
-    try {
-        await API.removeTeamMember(id);
-        showToast('Member removed', 'success');
-        loadedTabs['settings'] = false;
-        loadSettings();
-    } catch { showToast('Remove failed', 'error'); }
-}
-
-/* ***********************************************************
-   SETTINGS SUB-NAV
-   *********************************************************** */
-function setupSettingsSubNav() {
-    const map = {
-        profile: 'settingsProfile',
-        company: 'settingsCompany',
-        team: 'settingsTeam',
-        api: 'settingsApi',
-        preferences: 'settingsPreferences',
+    // Clear conversations (Danger Zone)
+    document.getElementById('clearConversationsBtn').onclick = async () => {
+        const confirmText = prompt('Type "DELETE" to confirm clearing all conversations:');
+        if (confirmText !== 'DELETE') {
+            if (confirmText !== null) showToast('Cancelled — text did not match', 'info');
+            return;
+        }
+        try {
+            await API.request('/conversations/clear', { method: 'DELETE' });
+            showToast('All conversations cleared', 'success');
+        } catch { showToast('Clear failed — endpoint may not exist yet', 'error'); }
     };
-    document.querySelectorAll('.settings-nav-item').forEach(item => {
-        item.addEventListener('click', () => {
-            document.querySelectorAll('.settings-nav-item').forEach(n => n.classList.remove('active'));
-            document.querySelectorAll('.settings-panel').forEach(p => p.classList.remove('active'));
-            item.classList.add('active');
-            const panel = document.getElementById(map[item.dataset.settings]);
-            if (panel) panel.classList.add('active');
-        });
-    });
 }
 
 /* ***********************************************************
@@ -1262,213 +1384,268 @@ function closeOrderModal() {
 
 
 /* ===============================================================
-   ABOUT COMPANY TAB - Enhanced, structured UI (V4.2)
+   RESTRICTIONS / RULES TAB - Premium glassmorphism UI (V4.3)
+   Saves to tenant.description → injected into LLM system prompt
    =============================================================== */
 
-var SVG_BUILDING = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9h1"/><path d="M9 13h1"/><path d="M9 17h1"/></svg>';
-var SVG_CLIP = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>';
+var SVG_SHIELD = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>';
 var SVG_UPLOAD = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>';
 var SVG_EDIT = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
 var SVG_IMAGE = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>';
 var SVG_FOLDER = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>';
 var SVG_CATEGORY = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>';
+var SVG_SPARKLE = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
+var SVG_LIGHTBULB = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 00-4 12.7V17h8v-2.3A7 7 0 0012 2z"/></svg>';
 
-async function loadAboutCompanyTab() {
+var RESTRICTION_SUGGESTIONS = [
+    'Do not show any product images in responses',
+    'Always respond in a formal and professional tone',
+    'Never mention competitor brands or products',
+    'Do not discuss pricing or discounts unless asked',
+    'Always recommend contacting support for refund requests',
+    'Keep all responses under 3 sentences',
+    'Do not share internal company policies with customers',
+    'Always greet the customer by name if available',
+];
+
+async function loadRestrictionsTab() {
     var panel = document.querySelector('#panel-kb-about .kb-panel');
     if (!panel) return;
 
+    var chipHtml = RESTRICTION_SUGGESTIONS.map(function (s) {
+        return '<button class="restriction-chip" type="button">' + SVG_SPARKLE + ' ' + esc(s) + '</button>';
+    }).join('');
+
     panel.innerHTML =
-        '<div class="kb-section">' +
-        '<div class="kb-card">' +
+        '<div class="kb-section restrictions-section">' +
+        // Hero Card
+        '<div class="kb-card kb-card--glass kb-card--restrictions">' +
         '<div class="kb-card-header">' +
-        '<div class="kb-card-icon">' + SVG_BUILDING + '</div>' +
+        '<div class="kb-card-icon kb-card-icon--shield">' + SVG_SHIELD + '</div>' +
         '<div>' +
-        '<h3 class="kb-card-title">Company Information</h3>' +
-        '<p class="kb-card-desc">This data helps your AI respond accurately about your business</p>' +
+        '<h3 class="kb-card-title">AI Restrictions &amp; Rules</h3>' +
+        '<p class="kb-card-desc">Define instructions and boundaries for your AI chatbot. These rules are injected directly into the AI\'s system prompt and override default behavior.</p>' +
         '</div>' +
         '</div>' +
-        '<div class="kb-form-grid">' +
-        '<div class="kb-field"><label class="kb-field-label">Company Name</label><input type="text" class="kb-input" id="aboutCompanyName" placeholder="e.g. Acme Corporation"></div>' +
-        '<div class="kb-field"><label class="kb-field-label">Industry</label><input type="text" class="kb-input" id="aboutIndustry" placeholder="e.g. E-Commerce, Technology"></div>' +
-        '<div class="kb-field"><label class="kb-field-label">Email</label><input type="email" class="kb-input" id="aboutEmail" placeholder="support@company.com"></div>' +
-        '<div class="kb-field"><label class="kb-field-label">Phone</label><input type="tel" class="kb-input" id="aboutPhone" placeholder="+1 (555) 123-4567"></div>' +
-        '<div class="kb-field"><label class="kb-field-label">Website</label><input type="url" class="kb-input" id="aboutWebsite" placeholder="https://www.company.com"></div>' +
-        '<div class="kb-field"><label class="kb-field-label">Address</label><input type="text" class="kb-input" id="aboutAddress" placeholder="123 Main St, City, Country"></div>' +
+        '<div class="restriction-status" id="restrictionStatus">' +
+        '<span class="restriction-status-dot restriction-status-dot--loading"></span>' +
+        '<span class="restriction-status-text">Loading current restrictions...</span>' +
         '</div>' +
-        '<div class="kb-field" style="margin-top:12px">' +
-        '<label class="kb-field-label">Company Mission / Description</label>' +
-        '<textarea class="kb-textarea" id="aboutMission" rows="4" placeholder="Tell us about your company - mission, values, what you do, key offerings..."></textarea>' +
-        '</div>' +
-        '<div class="kb-text-actions" style="margin-top:14px">' +
-        '<button class="btn btn-sm btn-primary" id="aboutSaveBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Save Company Info to Knowledge Base</button>' +
+        '<div class="restriction-editor">' +
+        '<textarea class="kb-textarea kb-textarea--restrictions" id="restrictionText" rows="8" placeholder="Enter your AI restrictions and rules here...\n\nExamples:\n• Do not show any product images\n• Always respond in formal English\n• Never mention competitor products\n• Keep responses under 3 sentences"></textarea>' +
+        '<div class="restriction-footer">' +
+        '<span class="restriction-char-count" id="restrictionCharCount">0 / 2000 characters</span>' +
+        '<div class="restriction-actions">' +
+        '<button class="btn btn-sm btn-ghost" id="restrictionClearBtn" type="button">Clear All</button>' +
+        '<button class="btn btn-sm btn-primary btn--glow" id="restrictionSaveBtn" type="button">' + SVG_SHIELD + ' Save Restrictions</button>' +
         '</div>' +
         '</div>' +
-        '<div class="kb-card">' +
+        '</div>' +
+        '</div>' +
+        // Suggestion Chips
+        '<div class="kb-card kb-card--glass">' +
         '<div class="kb-card-header">' +
-        '<div class="kb-card-icon">' + SVG_CLIP + '</div>' +
+        '<div class="kb-card-icon kb-card-icon--idea">' + SVG_LIGHTBULB + '</div>' +
         '<div>' +
-        '<h3 class="kb-card-title">Upload Company Documents</h3>' +
-        '<p class="kb-card-desc">Upload brochures, about-us pages, or brand guidelines</p>' +
+        '<h3 class="kb-card-title">Quick Suggestions</h3>' +
+        '<p class="kb-card-desc">Click any suggestion to add it to your restrictions</p>' +
         '</div>' +
         '</div>' +
-        '<div class="kb-upload-zone" id="kbUpload-kb-about">' +
-        '<div class="kb-upload-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>' +
-        '<p class="kb-upload-title">Drag & drop files or <label class="kb-upload-link" for="kbFile-kb-about">browse</label></p>' +
-        '<p class="kb-upload-hint">PDF, DOCX, TXT, CSV, PNG, JPG</p>' +
-        '<input type="file" id="kbFile-kb-about" accept=".csv,.pdf,.docx,.doc,.txt,.json,.md,.png,.jpg,.jpeg,.webp" style="display:none" multiple>' +
+        '<div class="restriction-chips">' + chipHtml + '</div>' +
         '</div>' +
-        '<div class="kb-progress" id="kbProgress-kb-about" style="display:none"><div class="kb-progress-bar"><div class="kb-progress-fill"></div></div><span class="kb-progress-text">Uploading...</span></div>' +
+        // How it works
+        '<div class="kb-card kb-card--glass kb-card--pipeline">' +
+        '<div class="kb-card-header">' +
+        '<div class="kb-card-icon kb-card-icon--info"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></div>' +
+        '<div>' +
+        '<h3 class="kb-card-title">How It Works</h3>' +
+        '<p class="kb-card-desc">Your restrictions flow through the AI pipeline</p>' +
         '</div>' +
         '</div>' +
-        '<div class="kb-docs-section">' +
-        '<div class="kb-docs-header">' +
-        '<h3 class="kb-docs-title">' + SVG_FOLDER + ' Company Documents</h3>' +
-        '<span class="kb-docs-count" id="kbCount-kb-about">loading...</span>' +
+        '<div class="pipeline-flow">' +
+        '<div class="pipeline-step"><div class="pipeline-step-num">1</div><div class="pipeline-step-label">You write restrictions here</div></div>' +
+        '<div class="pipeline-arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>' +
+        '<div class="pipeline-step"><div class="pipeline-step-num">2</div><div class="pipeline-step-label">Saved as AI guidelines</div></div>' +
+        '<div class="pipeline-arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>' +
+        '<div class="pipeline-step"><div class="pipeline-step-num">3</div><div class="pipeline-step-label">Injected into LLM system prompt</div></div>' +
+        '<div class="pipeline-arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>' +
+        '<div class="pipeline-step pipeline-step--final"><div class="pipeline-step-num">' + SVG_SPARKLE + '</div><div class="pipeline-step-label">AI follows your rules</div></div>' +
         '</div>' +
-        '<div class="kb-docs-table-wrap" id="kbDocs-kb-about"><div class="loading-state"><div class="spinner"></div><p>Loading...</p></div></div>' +
+        '</div>' +
         '</div>';
 
-    // Wire save button
-    document.getElementById('aboutSaveBtn').addEventListener('click', async function () {
-        var fields = {
-            name: document.getElementById('aboutCompanyName').value.trim(),
-            industry: document.getElementById('aboutIndustry').value.trim(),
-            email: document.getElementById('aboutEmail').value.trim(),
-            phone: document.getElementById('aboutPhone').value.trim(),
-            website: document.getElementById('aboutWebsite').value.trim(),
-            address: document.getElementById('aboutAddress').value.trim(),
-            mission: document.getElementById('aboutMission').value.trim(),
-        };
-        var parts = [];
-        if (fields.name) parts.push('Company Name: ' + fields.name);
-        if (fields.industry) parts.push('Industry: ' + fields.industry);
-        if (fields.email) parts.push('Email: ' + fields.email);
-        if (fields.phone) parts.push('Phone: ' + fields.phone);
-        if (fields.website) parts.push('Website: ' + fields.website);
-        if (fields.address) parts.push('Address: ' + fields.address);
-        if (fields.mission) parts.push('About / Mission:\n' + fields.mission);
-        if (!parts.length) { showToast('Please fill in at least one field', 'warning'); return; }
+    // --- Load existing restrictions ---
+    var textarea = document.getElementById('restrictionText');
+    var charCount = document.getElementById('restrictionCharCount');
+    var statusEl = document.getElementById('restrictionStatus');
 
-        var text = parts.join('\n');
+    function updateCharCount() {
+        var len = textarea.value.length;
+        charCount.textContent = len + ' / 2000 characters';
+        charCount.classList.toggle('over-limit', len > 2000);
+    }
+    textarea.addEventListener('input', updateCharCount);
+
+    try {
+        var resp = await API.getRestrictions();
+        textarea.value = resp.restrictions || '';
+        updateCharCount();
+        if (resp.restrictions && resp.restrictions.trim()) {
+            statusEl.innerHTML = '<span class="restriction-status-dot restriction-status-dot--active"></span>' +
+                '<span class="restriction-status-text">' + resp.restrictions.trim().split('\n').length + ' restriction(s) active</span>';
+        } else {
+            statusEl.innerHTML = '<span class="restriction-status-dot restriction-status-dot--empty"></span>' +
+                '<span class="restriction-status-text">No restrictions set — AI uses default behavior</span>';
+        }
+    } catch (err) {
+        statusEl.innerHTML = '<span class="restriction-status-dot restriction-status-dot--empty"></span>' +
+            '<span class="restriction-status-text">Could not load restrictions</span>';
+    }
+
+    // --- Save restrictions ---
+    document.getElementById('restrictionSaveBtn').addEventListener('click', async function () {
+        var text = textarea.value.trim();
+        if (text.length > 2000) { showToast('Restrictions too long (max 2000 chars)', 'warning'); return; }
         try {
-            var data = await API.addKnowledgeText(text, 'company_info', 'about', 'about');
-            if (data.success) {
-                showToast('Company info saved (' + data.chunks_created + ' chunks)', 'success');
-                ['aboutCompanyName', 'aboutIndustry', 'aboutEmail', 'aboutPhone', 'aboutWebsite', 'aboutAddress', 'aboutMission'].forEach(function (id) { document.getElementById(id).value = ''; });
-                await kbLoadDocuments('kb-about', 'about');
-            } else {
-                showToast('Failed: ' + (data.error || 'Unknown error'), 'error');
-            }
-        } catch (err) { showToast('Error: ' + err.message, 'error'); }
+            var data = await API.updateRestrictions(text);
+            showToast('Restrictions saved — AI will follow these rules', 'success');
+            var lines = text ? text.split('\n').filter(function (l) { return l.trim(); }).length : 0;
+            statusEl.innerHTML = lines > 0
+                ? '<span class="restriction-status-dot restriction-status-dot--active"></span><span class="restriction-status-text">' + lines + ' restriction(s) active</span>'
+                : '<span class="restriction-status-dot restriction-status-dot--empty"></span><span class="restriction-status-text">No restrictions set — AI uses default behavior</span>';
+        } catch (err) { showToast('Failed to save: ' + err.message, 'error'); }
     });
 
-    kbWireUploadZone('kb-about', 'about', 'About Company');
-    await kbLoadDocuments('kb-about', 'about');
+    // --- Clear ---
+    document.getElementById('restrictionClearBtn').addEventListener('click', function () {
+        if (!confirm('Clear all restrictions? This will not save automatically.')) return;
+        textarea.value = '';
+        updateCharCount();
+    });
+
+    // --- Suggestion chips ---
+    document.querySelectorAll('.restriction-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+            var suggestion = chip.textContent.trim();
+            var current = textarea.value.trim();
+            if (current && !current.endsWith('\n')) current += '\n';
+            textarea.value = current + '• ' + suggestion + '\n';
+            updateCharCount();
+            textarea.scrollTop = textarea.scrollHeight;
+            chip.classList.add('restriction-chip--used');
+        });
+    });
 }
 
 /* ===============================================================
-   CUSTOM DATA TAB - Enhanced with category selector (V4.2)
+   CUSTOM DATA TAB - Premium enhanced with categories (V4.3)
    =============================================================== */
 
 var CUSTOM_CATEGORIES = [
-    { value: 'privacy_policy', label: 'Privacy Policies' },
-    { value: 'refund_policy', label: 'Refund Policies' },
-    { value: 'company_rules', label: 'Company Rules' },
-    { value: 'terms_of_service', label: 'Terms of Service' },
-    { value: 'shipping_policy', label: 'Shipping Policies' },
-    { value: 'faq', label: 'FAQs' },
-    { value: 'contact_info', label: 'Contact Information' },
-    { value: 'general', label: 'Other / General' },
+    { value: 'privacy_policy', label: 'Privacy Policy', icon: '🔒', color: '#6366f1' },
+    { value: 'refund_policy', label: 'Return / Refund', icon: '↩️', color: '#f59e0b' },
+    { value: 'about_company', label: 'About Company', icon: '🏢', color: '#3b82f6' },
+    { value: 'faq', label: 'FAQs', icon: '❓', color: '#10b981' },
+    { value: 'contact_info', label: 'Contact Info', icon: '📞', color: '#8b5cf6' },
+    { value: 'shipping_policy', label: 'Shipping Policy', icon: '🚚', color: '#ec4899' },
+    { value: 'terms_of_service', label: 'Terms & Conditions', icon: '📋', color: '#14b8a6' },
+    { value: 'general', label: 'Other / General', icon: '📁', color: '#64748b' },
 ];
 
 async function loadCustomDataTab() {
     var panel = document.querySelector('#panel-kb-custom .kb-panel');
     if (!panel) return;
 
-    var catOptions = CUSTOM_CATEGORIES.map(function (c) {
-        return '<option value="' + c.value + '">' + c.label + '</option>';
+    // Build category cards
+    var catCardsHtml = CUSTOM_CATEGORIES.map(function (c, i) {
+        var active = i === 0 ? ' kb-cat-card--active' : '';
+        return '<button class="kb-cat-card' + active + '" data-cat="' + c.value + '" style="--cat-color:' + c.color + '" type="button">' +
+            '<span class="kb-cat-card-icon">' + c.icon + '</span>' +
+            '<span class="kb-cat-card-label">' + c.label + '</span>' +
+            '</button>';
     }).join('');
 
     panel.innerHTML =
-        '<div class="kb-section">' +
-        // Category Selector
-        '<div class="kb-card">' +
+        '<div class="kb-section custom-data-section">' +
+        // Category Selector Cards
+        '<div class="kb-card kb-card--glass">' +
         '<div class="kb-card-header">' +
-        '<div class="kb-card-icon">' + SVG_CATEGORY + '</div>' +
+        '<div class="kb-card-icon kb-card-icon--category">' + SVG_CATEGORY + '</div>' +
         '<div>' +
-        '<h3 class="kb-card-title">Data Category</h3>' +
-        '<p class="kb-card-desc">Select the type of data you are uploading to keep your knowledge base organized</p>' +
+        '<h3 class="kb-card-title">Select Category</h3>' +
+        '<p class="kb-card-desc">Choose the type of knowledge you\'re adding to keep your AI\'s data organized</p>' +
         '</div>' +
         '</div>' +
-        '<div class="kb-category-selector">' +
-        '<select class="kb-select" id="customCategory">' + catOptions + '</select>' +
-        '<div class="kb-category-badge" id="customCategoryBadge">Privacy Policies</div>' +
+        '<div class="kb-cat-grid" id="customCatGrid">' + catCardsHtml + '</div>' +
         '</div>' +
+        // Input Mode Toggle
+        '<div class="kb-card kb-card--glass">' +
+        '<div class="kb-input-mode-toggle">' +
+        '<button class="kb-mode-btn kb-mode-btn--active" data-mode="upload" type="button">' + SVG_UPLOAD + ' Upload File</button>' +
+        '<button class="kb-mode-btn" data-mode="text" type="button">' + SVG_EDIT + ' Paste Text</button>' +
+        '<button class="kb-mode-btn" data-mode="image" type="button">' + SVG_IMAGE + ' Upload Image</button>' +
         '</div>' +
-        // Upload Zone
-        '<div class="kb-card">' +
-        '<div class="kb-card-header">' +
-        '<div class="kb-card-icon">' + SVG_UPLOAD + '</div>' +
-        '<div>' +
-        '<h3 class="kb-card-title">Upload Documents</h3>' +
-        '<p class="kb-card-desc">Upload files to the selected category</p>' +
-        '</div>' +
-        '</div>' +
+        // Upload Mode
+        '<div class="kb-input-pane kb-input-pane--active" id="customPane-upload">' +
         '<div class="kb-upload-zone" id="kbUpload-kb-custom">' +
-        '<div class="kb-upload-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>' +
-        '<p class="kb-upload-title">Drag & drop files or <label class="kb-upload-link" for="kbFile-kb-custom">browse</label></p>' +
-        '<p class="kb-upload-hint">CSV, PDF, DOCX, TXT, PNG, JPG - multi-file supported</p>' +
-        '<input type="file" id="kbFile-kb-custom" accept=".csv,.pdf,.docx,.doc,.txt,.json,.md,.png,.jpg,.jpeg,.webp" style="display:none" multiple>' +
+        '<div class="kb-upload-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>' +
+        '<p class="kb-upload-title">Drag &amp; drop files or <label class="kb-upload-link" for="kbFile-kb-custom">browse</label></p>' +
+        '<p class="kb-upload-hint">PDF, DOCX, TXT, CSV, JSON, MD &mdash; multi-file supported</p>' +
+        '<input type="file" id="kbFile-kb-custom" accept=".csv,.pdf,.docx,.doc,.txt,.json,.md" style="display:none" multiple>' +
         '</div>' +
         '<div class="kb-progress" id="kbProgress-kb-custom" style="display:none"><div class="kb-progress-bar"><div class="kb-progress-fill"></div></div><span class="kb-progress-text">Uploading...</span></div>' +
         '</div>' +
-        // Manual Text
-        '<div class="kb-card">' +
-        '<div class="kb-card-header">' +
-        '<div class="kb-card-icon">' + SVG_EDIT + '</div>' +
-        '<div>' +
-        '<h3 class="kb-card-title">Add Text Manually</h3>' +
-        '<p class="kb-card-desc">Type or paste content directly</p>' +
+        // Text Mode
+        '<div class="kb-input-pane" id="customPane-text">' +
+        '<textarea class="kb-textarea" id="kbText-kb-custom" rows="6" placeholder="Paste or type your content here...\n\nThis text will be chunked, embedded, and added to your AI\'s knowledge base under the selected category."></textarea>' +
+        '<div class="kb-text-actions" style="margin-top:10px">' +
+        '<button class="btn btn-sm btn-primary" id="kbSaveText-kb-custom">' + SVG_EDIT + ' Save to Knowledge Base</button>' +
         '</div>' +
         '</div>' +
-        '<textarea class="kb-textarea" id="kbText-kb-custom" rows="4" placeholder="Type or paste content here..."></textarea>' +
-        '<div class="kb-text-actions" style="margin-top:10px"><button class="btn btn-sm btn-primary" id="kbSaveText-kb-custom"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Save Text</button></div>' +
-        '</div>' +
-        // Image Upload
-        '<div class="kb-card">' +
-        '<div class="kb-card-header">' +
-        '<div class="kb-card-icon">' + SVG_IMAGE + '</div>' +
-        '<div>' +
-        '<h3 class="kb-card-title">Add Image</h3>' +
-        '<p class="kb-card-desc">Upload images to attach to this category</p>' +
-        '</div>' +
-        '</div>' +
-        '<div class="kb-img-upload-row">' +
-        '<label class="btn btn-sm btn-outline" for="kbImg-kb-custom" style="cursor:pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> Choose Image</label>' +
+        // Image Mode
+        '<div class="kb-input-pane" id="customPane-image">' +
+        '<div class="kb-upload-zone kb-upload-zone--image" id="kbImgZone-kb-custom">' +
+        '<div class="kb-upload-icon">' + SVG_IMAGE + '</div>' +
+        '<p class="kb-upload-title">Drag &amp; drop an image or <label class="kb-upload-link" for="kbImg-kb-custom">browse</label></p>' +
+        '<p class="kb-upload-hint">PNG, JPG, JPEG, WEBP</p>' +
         '<input type="file" id="kbImg-kb-custom" accept="image/*" style="display:none">' +
-        '<span class="kb-img-name" id="kbImgName-kb-custom">No file chosen</span>' +
+        '</div>' +
+        '<div class="kb-progress" id="kbImgProgress-kb-custom" style="display:none"><div class="kb-progress-bar"><div class="kb-progress-fill"></div></div><span class="kb-progress-text">Uploading image...</span></div>' +
         '</div>' +
         '</div>' +
-        '</div>' +
-        // Documents
-        '<div class="kb-docs-section">' +
+        // Documents Table
+        '<div class="kb-card kb-card--glass">' +
         '<div class="kb-docs-header">' +
-        '<h3 class="kb-docs-title">' + SVG_FOLDER + ' All Custom Documents</h3>' +
+        '<h3 class="kb-docs-title">' + SVG_FOLDER + ' Knowledge Base Documents</h3>' +
         '<span class="kb-docs-count" id="kbCount-kb-custom">loading...</span>' +
         '</div>' +
         '<div class="kb-docs-table-wrap" id="kbDocs-kb-custom"><div class="loading-state"><div class="spinner"></div><p>Loading...</p></div></div>' +
+        '</div>' +
         '</div>';
 
-    // Category selector
-    var catSelect = document.getElementById('customCategory');
-    var catBadge = document.getElementById('customCategoryBadge');
-    catSelect.addEventListener('change', function () {
-        var cat = CUSTOM_CATEGORIES.find(function (c) { return c.value === catSelect.value; });
-        catBadge.textContent = cat ? cat.label : catSelect.value;
+    // --- Category Card Selection ---
+    var selectedCat = CUSTOM_CATEGORIES[0].value;
+    document.querySelectorAll('.kb-cat-card').forEach(function (card) {
+        card.addEventListener('click', function () {
+            document.querySelectorAll('.kb-cat-card').forEach(function (c) { c.classList.remove('kb-cat-card--active'); });
+            card.classList.add('kb-cat-card--active');
+            selectedCat = card.dataset.cat;
+        });
     });
-    function getDocType() { return catSelect.value; }
+    function getDocType() { return selectedCat; }
 
-    // File upload
+    // --- Input Mode Toggle ---
+    document.querySelectorAll('.kb-mode-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            document.querySelectorAll('.kb-mode-btn').forEach(function (b) { b.classList.remove('kb-mode-btn--active'); });
+            btn.classList.add('kb-mode-btn--active');
+            document.querySelectorAll('.kb-input-pane').forEach(function (p) { p.classList.remove('kb-input-pane--active'); });
+            var pane = document.getElementById('customPane-' + btn.dataset.mode);
+            if (pane) pane.classList.add('kb-input-pane--active');
+        });
+    });
+
+    // --- File Upload ---
     var zone = document.getElementById('kbUpload-kb-custom');
     var fileInput = document.getElementById('kbFile-kb-custom');
     zone.addEventListener('dragover', function (e) { e.preventDefault(); zone.classList.add('drag-over'); });
@@ -1482,18 +1659,24 @@ async function loadCustomDataTab() {
         fileInput.value = '';
     });
 
-    // Manual text
+    // --- Manual Text ---
     document.getElementById('kbSaveText-kb-custom').addEventListener('click', function () {
         var dt = getDocType();
         var cat = CUSTOM_CATEGORIES.find(function (c) { return c.value === dt; });
         kbSaveText('kb-custom', dt, cat ? cat.label : 'Custom');
     });
 
-    // Image
+    // --- Image Upload ---
+    var imgZone = document.getElementById('kbImgZone-kb-custom');
     var imgInput = document.getElementById('kbImg-kb-custom');
+    imgZone.addEventListener('dragover', function (e) { e.preventDefault(); imgZone.classList.add('drag-over'); });
+    imgZone.addEventListener('dragleave', function () { imgZone.classList.remove('drag-over'); });
+    imgZone.addEventListener('drop', function (e) {
+        e.preventDefault(); imgZone.classList.remove('drag-over');
+        if (e.dataTransfer.files.length) kbUploadFiles('kb-custom', getDocType(), 'Custom Data', Array.from(e.dataTransfer.files));
+    });
     imgInput.addEventListener('change', function () {
         if (imgInput.files.length) {
-            document.getElementById('kbImgName-kb-custom').textContent = imgInput.files[0].name;
             kbUploadFiles('kb-custom', getDocType(), 'Custom Data', Array.from(imgInput.files));
             imgInput.value = '';
         }
@@ -1646,7 +1829,6 @@ window.kbViewDoc = kbViewDoc;
 // Make all onclick-referenced functions globally accessible
 window.switchTab = switchTab;
 window.selectConversation = selectConversation;
-window.removeTeamMember = removeTeamMember;
 window.deleteOrder = deleteOrder;
 window.viewOrder = viewOrder;
 window.closeOrderModal = closeOrderModal;

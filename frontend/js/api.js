@@ -437,6 +437,21 @@ const API = {
 
     async uploadKnowledgeFile(formData) {
         return this.upload('/knowledge/upload', formData);
+    },
+
+    // ==========================================
+    // AI RESTRICTIONS (stored in tenant.description → LLM system prompt)
+    // ==========================================
+
+    async getRestrictions() {
+        return this.request('/settings/restrictions');
+    },
+
+    async updateRestrictions(text) {
+        return this.request('/settings/restrictions', {
+            method: 'PUT',
+            body: JSON.stringify({ restrictions: text })
+        });
     }
 };
 
