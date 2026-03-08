@@ -1973,13 +1973,12 @@
    ═══════════════════════════════════════════════════ */
 
 /* ── Scroll container ─────────────────────────────── */
-.stg-scroll {
+/* ── Settings full-width container (matches other tab panels) ── */
+.stg-grid-wrap {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  max-width: 1000px;
-  /* widened for 2-col bento grid rows */
-  margin: 0 auto;
+  width: 100%;
   padding-bottom: 40px;
 }
 
@@ -2211,10 +2210,6 @@
 @media (max-width: 860px) {
   .stg-bento-row {
     grid-template-columns: 1fr;
-  }
-
-  .stg-scroll {
-    max-width: 100%;
   }
 }
 
