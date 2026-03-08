@@ -31,6 +31,10 @@ from app.api import orders_api              # ★ V4 NEW — Zone 8: Order Gatew
 from app.api import products_api            # ★ V4 NEW — Zone 3: Product Listings
 from app.websocket.manager import get_manager
 
+# ── Import KnowledgeChunk so SQLAlchemy registers the table ──
+# This MUST be imported before Base.metadata.create_all() runs.
+from app.models import knowledge_chunk as _kc_model  # noqa: F401
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -77,8 +81,14 @@ def ensure_super_admin():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan - create tables on startup"""
-    Base.metadata.create_all(bind=engine,checkfirst=True)
+    # 1. Create / migrate all SQL tables (including knowledge_chunks)
+    Base.metadata.create_all(bind=engine, checkfirst=True)
+    # 2. Seed super admin on first boot
     ensure_super_admin()
+    # 3. Restore vector store from SQLite if JSON files were wiped
+    #    (e.g. after a Coolify redeploy that recreated the Docker volume)
+    from app.ai.vector_store import restore_vector_store_from_db
+    restore_vector_store_from_db()
     logger.info("🚀 Behavioral Agentic AI started")
     yield
     logger.info("👋 Behavioral Agentic AI shutdown")

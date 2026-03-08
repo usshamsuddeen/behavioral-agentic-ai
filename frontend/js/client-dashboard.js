@@ -663,9 +663,9 @@ async function loadSettings() {
         ? (prefs.auto_escalation_threshold / 100).toFixed(2)
         : '0.70';
 
-    /* ---- Render all cards ---- */
+    /* ---- Render all cards (Bento Grid layout) ---- */
     c.innerHTML = `
-    <!-- ════════ 1. ACCOUNT OVERVIEW ════════ -->
+    <!-- ════════ 1. ACCOUNT OVERVIEW — full width ════════ -->
     <div class="stg-card stg-card--accent">
         <div class="stg-account-row">
             <div class="stg-avatar">${esc(initials)}</div>
@@ -686,137 +686,143 @@ async function loadSettings() {
         </div>
     </div>
 
-    <!-- ════════ 2. PROFILE ════════ -->
-    <div class="stg-card">
-        <div class="stg-card-header">
-            <div class="stg-card-icon stg-card-icon--blue">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <!-- ════════ ROW 1: PROFILE + COMPANY ════════ -->
+    <div class="stg-bento-row">
+        <!-- 2. PROFILE -->
+        <div class="stg-card">
+            <div class="stg-card-header">
+                <div class="stg-card-icon stg-card-icon--blue">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </div>
+                <div>
+                    <h3 class="stg-card-title">Profile</h3>
+                    <p class="stg-card-desc">Personal information &amp; password</p>
+                </div>
             </div>
-            <div>
-                <h3 class="stg-card-title">Profile</h3>
-                <p class="stg-card-desc">Manage your personal information and password</p>
+            <div class="stg-form-grid stg-form-grid--single">
+                <div class="stg-field">
+                    <label class="stg-label">Full Name</label>
+                    <input type="text" class="stg-input" id="settingsName" value="${esc(userName)}">
+                </div>
+                <div class="stg-field">
+                    <label class="stg-label">Email Address</label>
+                    <input type="email" class="stg-input stg-input--disabled" id="settingsEmail" value="${esc(userEmail)}" disabled>
+                </div>
+                <div class="stg-field">
+                    <label class="stg-label">New Password</label>
+                    <input type="password" class="stg-input" id="settingsPassword" placeholder="Leave blank to keep">
+                </div>
+                <div class="stg-field">
+                    <label class="stg-label">Confirm Password</label>
+                    <input type="password" class="stg-input" id="settingsPasswordConfirm" placeholder="Repeat password">
+                </div>
+            </div>
+            <div class="stg-actions">
+                <button class="btn btn-primary btn--glow" id="saveProfileBtn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                    Save Profile
+                </button>
             </div>
         </div>
-        <div class="stg-form-grid">
-            <div class="stg-field">
-                <label class="stg-label">Full Name</label>
-                <input type="text" class="stg-input" id="settingsName" value="${esc(userName)}">
+
+        <!-- 3. COMPANY -->
+        <div class="stg-card">
+            <div class="stg-card-header">
+                <div class="stg-card-icon stg-card-icon--purple">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                </div>
+                <div>
+                    <h3 class="stg-card-title">Company</h3>
+                    <p class="stg-card-desc">Business details for your AI &amp; widget</p>
+                </div>
             </div>
-            <div class="stg-field">
-                <label class="stg-label">Email Address</label>
-                <input type="email" class="stg-input stg-input--disabled" id="settingsEmail" value="${esc(userEmail)}" disabled>
+            <div class="stg-form-grid stg-form-grid--single">
+                <div class="stg-field">
+                    <label class="stg-label">Company Name</label>
+                    <input type="text" class="stg-input" id="settingsCompanyName" value="${esc(tenant.business_name || profile.company_name || '')}">
+                </div>
+                <div class="stg-field">
+                    <label class="stg-label">Industry</label>
+                    <input type="text" class="stg-input" id="settingsIndustry" value="${esc(tenant.business_type || '')}" placeholder="e.g. Fashion, Electronics">
+                </div>
+                <div class="stg-field">
+                    <label class="stg-label">Support Email</label>
+                    <input type="email" class="stg-input" id="settingsSupportEmail" value="${esc(tenant.support_email || '')}" placeholder="support@company.com">
+                </div>
+                <div class="stg-field">
+                    <label class="stg-label">Website URL</label>
+                    <input type="url" class="stg-input" id="settingsWebsite" value="${esc(tenant.store_url || '')}" placeholder="https://your-store.com">
+                </div>
             </div>
-            <div class="stg-field">
-                <label class="stg-label">New Password</label>
-                <input type="password" class="stg-input" id="settingsPassword" placeholder="Leave blank to keep current">
+            <div class="stg-actions">
+                <button class="btn btn-primary btn--glow" id="saveCompanyBtn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                    Save Company
+                </button>
             </div>
-            <div class="stg-field">
-                <label class="stg-label">Confirm Password</label>
-                <input type="password" class="stg-input" id="settingsPasswordConfirm" placeholder="Repeat new password">
-            </div>
-        </div>
-        <div class="stg-actions">
-            <button class="btn btn-primary btn--glow" id="saveProfileBtn">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-                Save Profile
-            </button>
         </div>
     </div>
 
-    <!-- ════════ 3. COMPANY ════════ -->
-    <div class="stg-card">
-        <div class="stg-card-header">
-            <div class="stg-card-icon stg-card-icon--purple">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <!-- ════════ ROW 2: API KEY + AI BEHAVIOR ════════ -->
+    <div class="stg-bento-row">
+        <!-- 4. WIDGET API KEY -->
+        <div class="stg-card">
+            <div class="stg-card-header">
+                <div class="stg-card-icon stg-card-icon--amber">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+                </div>
+                <div>
+                    <h3 class="stg-card-title">Widget API Key</h3>
+                    <p class="stg-card-desc">Embed key — regenerating invalidates old embeds</p>
+                </div>
             </div>
-            <div>
-                <h3 class="stg-card-title">Company Information</h3>
-                <p class="stg-card-desc">Your business details shown to the AI and in the widget</p>
+            <div class="stg-api-key-box">
+                <code class="stg-api-key-value" id="apiKeyValue">${esc(apiKey)}</code>
+                <button class="stg-api-btn" id="copyApiKeyBtn" title="Copy to clipboard">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                </button>
             </div>
-        </div>
-        <div class="stg-form-grid">
-            <div class="stg-field">
-                <label class="stg-label">Company Name</label>
-                <input type="text" class="stg-input" id="settingsCompanyName" value="${esc(tenant.business_name || profile.company_name || '')}">
-            </div>
-            <div class="stg-field">
-                <label class="stg-label">Industry</label>
-                <input type="text" class="stg-input" id="settingsIndustry" value="${esc(tenant.business_type || '')}" placeholder="e.g. Fashion, Electronics">
-            </div>
-            <div class="stg-field">
-                <label class="stg-label">Support Email</label>
-                <input type="email" class="stg-input" id="settingsSupportEmail" value="${esc(tenant.support_email || '')}" placeholder="support@company.com">
-            </div>
-            <div class="stg-field">
-                <label class="stg-label">Website URL</label>
-                <input type="url" class="stg-input" id="settingsWebsite" value="${esc(tenant.store_url || '')}" placeholder="https://your-store.com">
+            <div class="stg-actions">
+                <button class="btn btn-secondary" id="regenApiKeyBtn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+                    Regenerate Key
+                </button>
             </div>
         </div>
-        <div class="stg-actions">
-            <button class="btn btn-primary btn--glow" id="saveCompanyBtn">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-                Save Company
-            </button>
+
+        <!-- 5. AI BEHAVIOR -->
+        <div class="stg-card">
+            <div class="stg-card-header">
+                <div class="stg-card-icon stg-card-icon--green">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>
+                </div>
+                <div>
+                    <h3 class="stg-card-title">AI Behavior</h3>
+                    <p class="stg-card-desc">Control escalation sensitivity to human agents</p>
+                </div>
+            </div>
+            <div class="stg-slider-group">
+                <label class="stg-label">Auto-Escalation Sensitivity</label>
+                <div class="stg-slider-row">
+                    <span class="stg-slider-label">Low</span>
+                    <input type="range" min="0" max="1" step="0.05" value="${sensitivityVal}" id="prefSensitivity" class="stg-slider">
+                    <span class="stg-slider-label">High</span>
+                    <span class="stg-slider-value" id="sensitivityValue">${sensitivityVal}</span>
+                </div>
+                <p class="stg-slider-hint">
+                    <strong>Low</strong> = AI handles more &nbsp;·&nbsp; <strong>High</strong> = faster escalation to humans
+                </p>
+            </div>
+            <div class="stg-actions">
+                <button class="btn btn-primary btn--glow" id="savePrefsBtn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                    Save Preferences
+                </button>
+            </div>
         </div>
     </div>
 
-    <!-- ════════ 4. WIDGET API KEY ════════ -->
-    <div class="stg-card">
-        <div class="stg-card-header">
-            <div class="stg-card-icon stg-card-icon--amber">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
-            </div>
-            <div>
-                <h3 class="stg-card-title">Widget API Key</h3>
-                <p class="stg-card-desc">Use this key in your widget embed code. Regenerating will invalidate existing embeds.</p>
-            </div>
-        </div>
-        <div class="stg-api-key-box">
-            <code class="stg-api-key-value" id="apiKeyValue">${esc(apiKey)}</code>
-            <button class="stg-api-btn" id="copyApiKeyBtn" title="Copy to clipboard">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-            </button>
-        </div>
-        <div class="stg-actions">
-            <button class="btn btn-secondary" id="regenApiKeyBtn">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:4px"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
-                Regenerate Key
-            </button>
-        </div>
-    </div>
-
-    <!-- ════════ 5. AI BEHAVIOR ════════ -->
-    <div class="stg-card">
-        <div class="stg-card-header">
-            <div class="stg-card-icon stg-card-icon--green">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a4 4 0 014 4c0 1.95-2 3-2 8h-4c0-5-2-6.05-2-8a4 4 0 014-4z"/><line x1="10" y1="22" x2="14" y2="22"/><line x1="9" y1="18" x2="15" y2="18"/></svg>
-            </div>
-            <div>
-                <h3 class="stg-card-title">AI Behavior</h3>
-                <p class="stg-card-desc">Control how aggressively the AI escalates frustrated customers to a human agent</p>
-            </div>
-        </div>
-        <div class="stg-slider-group">
-            <label class="stg-label">Auto-Escalation Sensitivity</label>
-            <div class="stg-slider-row">
-                <span class="stg-slider-label">Low</span>
-                <input type="range" min="0" max="1" step="0.05" value="${sensitivityVal}" id="prefSensitivity" class="stg-slider">
-                <span class="stg-slider-label">High</span>
-                <span class="stg-slider-value" id="sensitivityValue">${sensitivityVal}</span>
-            </div>
-            <p class="stg-slider-hint">
-                <strong>Low</strong> = AI handles more on its own &nbsp;·&nbsp; <strong>High</strong> = faster escalation to human agents
-            </p>
-        </div>
-        <div class="stg-actions">
-            <button class="btn btn-primary btn--glow" id="savePrefsBtn">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-                Save Preferences
-            </button>
-        </div>
-    </div>
-
-    <!-- ════════ 6. DANGER ZONE ════════ -->
+    <!-- ════════ 6. DANGER ZONE — full width ════════ -->
     <div class="stg-card stg-card--danger">
         <div class="stg-card-header">
             <div class="stg-card-icon stg-card-icon--red">
@@ -1542,78 +1548,114 @@ async function loadRestrictionsTab() {
    =============================================================== */
 
 var CUSTOM_CATEGORIES = [
-    { value: 'privacy_policy', label: 'Privacy Policy', icon: '🔒', color: '#6366f1' },
-    { value: 'refund_policy', label: 'Return / Refund', icon: '↩️', color: '#f59e0b' },
-    { value: 'about_company', label: 'About Company', icon: '🏢', color: '#3b82f6' },
-    { value: 'faq', label: 'FAQs', icon: '❓', color: '#10b981' },
-    { value: 'contact_info', label: 'Contact Info', icon: '📞', color: '#8b5cf6' },
-    { value: 'shipping_policy', label: 'Shipping Policy', icon: '🚚', color: '#ec4899' },
-    { value: 'terms_of_service', label: 'Terms & Conditions', icon: '📋', color: '#14b8a6' },
-    { value: 'general', label: 'Other / General', icon: '📁', color: '#64748b' },
+    {
+        value: 'privacy_policy', label: 'Privacy Policy', color: '#6366f1',
+        svg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>'
+    },
+    {
+        value: 'refund_policy', label: 'Return / Refund', color: '#f59e0b',
+        svg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>'
+    },
+    {
+        value: 'about_company', label: 'About Company', color: '#3b82f6',
+        svg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>'
+    },
+    {
+        value: 'faq', label: 'FAQs', color: '#10b981',
+        svg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'
+    },
+    {
+        value: 'contact_info', label: 'Contact Info', color: '#8b5cf6',
+        svg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8 19.79 19.79 0 01.06 1.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.72 6.72l1.28-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>'
+    },
+    {
+        value: 'shipping_policy', label: 'Shipping', color: '#ec4899',
+        svg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>'
+    },
+    {
+        value: 'terms_of_service', label: 'Terms &amp; Conditions', color: '#14b8a6',
+        svg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>'
+    },
+    {
+        value: 'general', label: 'Other / General', color: '#64748b',
+        svg: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>'
+    },
 ];
 
 async function loadCustomDataTab() {
     var panel = document.querySelector('#panel-kb-custom .kb-panel');
     if (!panel) return;
 
-    // Build category cards
+    // Build category cards with SVG icons
     var catCardsHtml = CUSTOM_CATEGORIES.map(function (c, i) {
         var active = i === 0 ? ' kb-cat-card--active' : '';
         return '<button class="kb-cat-card' + active + '" data-cat="' + c.value + '" style="--cat-color:' + c.color + '" type="button">' +
-            '<span class="kb-cat-card-icon">' + c.icon + '</span>' +
+            '<span class="kb-cat-card-icon">' + c.svg + '</span>' +
             '<span class="kb-cat-card-label">' + c.label + '</span>' +
             '</button>';
     }).join('');
 
     panel.innerHTML =
         '<div class="kb-section custom-data-section">' +
-        // Category Selector Cards
+
+        // ── Category Selector ──────────────────────────────────────────
         '<div class="kb-card kb-card--glass">' +
         '<div class="kb-card-header">' +
         '<div class="kb-card-icon kb-card-icon--category">' + SVG_CATEGORY + '</div>' +
         '<div>' +
         '<h3 class="kb-card-title">Select Category</h3>' +
-        '<p class="kb-card-desc">Choose the type of knowledge you\'re adding to keep your AI\'s data organized</p>' +
+        '<p class="kb-card-desc">Choose the type of knowledge to keep your AI\'s data organised</p>' +
         '</div>' +
         '</div>' +
         '<div class="kb-cat-grid" id="customCatGrid">' + catCardsHtml + '</div>' +
         '</div>' +
-        // Input Mode Toggle
+
+        // ── Input Mode Toggle + Panes ──────────────────────────────────
         '<div class="kb-card kb-card--glass">' +
         '<div class="kb-input-mode-toggle">' +
-        '<button class="kb-mode-btn kb-mode-btn--active" data-mode="upload" type="button">' + SVG_UPLOAD + ' Upload File</button>' +
-        '<button class="kb-mode-btn" data-mode="text" type="button">' + SVG_EDIT + ' Paste Text</button>' +
-        '<button class="kb-mode-btn" data-mode="image" type="button">' + SVG_IMAGE + ' Upload Image</button>' +
+        '<button class="kb-mode-btn kb-mode-btn--active" data-mode="upload" type="button">' +
+        SVG_UPLOAD + ' <span>Upload File</span></button>' +
+        '<button class="kb-mode-btn" data-mode="text" type="button">' +
+        SVG_EDIT + ' <span>Paste Text</span></button>' +
+        '<button class="kb-mode-btn" data-mode="image" type="button">' +
+        SVG_IMAGE + ' <span>Upload Image</span></button>' +
         '</div>' +
-        // Upload Mode
+
+        // Upload pane
         '<div class="kb-input-pane kb-input-pane--active" id="customPane-upload">' +
         '<div class="kb-upload-zone" id="kbUpload-kb-custom">' +
         '<div class="kb-upload-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>' +
-        '<p class="kb-upload-title">Drag &amp; drop files or <label class="kb-upload-link" for="kbFile-kb-custom">browse</label></p>' +
-        '<p class="kb-upload-hint">PDF, DOCX, TXT, CSV, JSON, MD &mdash; multi-file supported</p>' +
-        '<input type="file" id="kbFile-kb-custom" accept=".csv,.pdf,.docx,.doc,.txt,.json,.md" style="display:none" multiple>' +
+        '<p class="kb-upload-title">Drag &amp; drop files or <span class="kb-upload-link" id="kbBrowseTrigger">browse</span></p>' +
+        '<p class="kb-upload-hint">PDF, DOCX, TXT, CSV, JSON, MD, XLSX, RTF — multi-file supported</p>' +
+        '<input type="file" id="kbFile-kb-custom" accept=".csv,.pdf,.docx,.doc,.txt,.json,.md,.xlsx,.xls,.rtf,.pptx,.ppt" style="display:none" multiple>' +
         '</div>' +
         '<div class="kb-progress" id="kbProgress-kb-custom" style="display:none"><div class="kb-progress-bar"><div class="kb-progress-fill"></div></div><span class="kb-progress-text">Uploading...</span></div>' +
         '</div>' +
-        // Text Mode
+
+        // Text pane
         '<div class="kb-input-pane" id="customPane-text">' +
-        '<textarea class="kb-textarea" id="kbText-kb-custom" rows="6" placeholder="Paste or type your content here...\n\nThis text will be chunked, embedded, and added to your AI\'s knowledge base under the selected category."></textarea>' +
-        '<div class="kb-text-actions" style="margin-top:10px">' +
-        '<button class="btn btn-sm btn-primary" id="kbSaveText-kb-custom">' + SVG_EDIT + ' Save to Knowledge Base</button>' +
+        '<textarea class="kb-textarea" id="kbText-kb-custom" rows="7" placeholder="Paste or type your content here...\n\nThis text will be chunked, embedded, and added to your AI\'s knowledge base under the selected category."></textarea>' +
+        '<div class="kb-text-actions">' +
+        '<button class="btn btn-primary btn--glow" id="kbSaveText-kb-custom" type="button">' +
+        SVG_EDIT + ' Save to Knowledge Base' +
+        '</button>' +
         '</div>' +
         '</div>' +
-        // Image Mode
+
+        // Image pane
         '<div class="kb-input-pane" id="customPane-image">' +
         '<div class="kb-upload-zone kb-upload-zone--image" id="kbImgZone-kb-custom">' +
         '<div class="kb-upload-icon">' + SVG_IMAGE + '</div>' +
-        '<p class="kb-upload-title">Drag &amp; drop an image or <label class="kb-upload-link" for="kbImg-kb-custom">browse</label></p>' +
+        '<p class="kb-upload-title">Drag &amp; drop an image or <span class="kb-upload-link" id="kbImgBrowseTrigger">browse</span></p>' +
         '<p class="kb-upload-hint">PNG, JPG, JPEG, WEBP</p>' +
         '<input type="file" id="kbImg-kb-custom" accept="image/*" style="display:none">' +
         '</div>' +
         '<div class="kb-progress" id="kbImgProgress-kb-custom" style="display:none"><div class="kb-progress-bar"><div class="kb-progress-fill"></div></div><span class="kb-progress-text">Uploading image...</span></div>' +
         '</div>' +
-        '</div>' +
-        // Documents Table
+
+        '</div>' + // end kb-card
+
+        // ── Documents Table ────────────────────────────────────────────
         '<div class="kb-card kb-card--glass">' +
         '<div class="kb-docs-header">' +
         '<h3 class="kb-docs-title">' + SVG_FOLDER + ' Knowledge Base Documents</h3>' +
@@ -1621,67 +1663,125 @@ async function loadCustomDataTab() {
         '</div>' +
         '<div class="kb-docs-table-wrap" id="kbDocs-kb-custom"><div class="loading-state"><div class="spinner"></div><p>Loading...</p></div></div>' +
         '</div>' +
-        '</div>';
 
-    // --- Category Card Selection ---
+        '</div>'; // end kb-section
+
+    // ── Selected category state ────────────────────────────────────────
     var selectedCat = CUSTOM_CATEGORIES[0].value;
+
     document.querySelectorAll('.kb-cat-card').forEach(function (card) {
         card.addEventListener('click', function () {
-            document.querySelectorAll('.kb-cat-card').forEach(function (c) { c.classList.remove('kb-cat-card--active'); });
+            document.querySelectorAll('.kb-cat-card').forEach(function (c) {
+                c.classList.remove('kb-cat-card--active');
+            });
             card.classList.add('kb-cat-card--active');
             selectedCat = card.dataset.cat;
         });
     });
+
     function getDocType() { return selectedCat; }
 
-    // --- Input Mode Toggle ---
+    // ── Mode toggle ────────────────────────────────────────────────────
     document.querySelectorAll('.kb-mode-btn').forEach(function (btn) {
         btn.addEventListener('click', function () {
-            document.querySelectorAll('.kb-mode-btn').forEach(function (b) { b.classList.remove('kb-mode-btn--active'); });
+            document.querySelectorAll('.kb-mode-btn').forEach(function (b) {
+                b.classList.remove('kb-mode-btn--active');
+            });
             btn.classList.add('kb-mode-btn--active');
-            document.querySelectorAll('.kb-input-pane').forEach(function (p) { p.classList.remove('kb-input-pane--active'); });
+            document.querySelectorAll('.kb-input-pane').forEach(function (p) {
+                p.classList.remove('kb-input-pane--active');
+            });
             var pane = document.getElementById('customPane-' + btn.dataset.mode);
             if (pane) pane.classList.add('kb-input-pane--active');
         });
     });
 
-    // --- File Upload ---
+    // ── File upload zone — click ANYWHERE in zone opens file picker ──
     var zone = document.getElementById('kbUpload-kb-custom');
     var fileInput = document.getElementById('kbFile-kb-custom');
-    zone.addEventListener('dragover', function (e) { e.preventDefault(); zone.classList.add('drag-over'); });
+
+    // Clicking anywhere inside the upload zone triggers the file picker
+    zone.addEventListener('click', function (e) {
+        // Don't re-trigger if user somehow clicked the hidden input itself
+        if (e.target === fileInput) return;
+        fileInput.click();
+    });
+    zone.addEventListener('dragover', function (e) {
+        e.preventDefault(); zone.classList.add('drag-over');
+    });
     zone.addEventListener('dragleave', function () { zone.classList.remove('drag-over'); });
     zone.addEventListener('drop', function (e) {
         e.preventDefault(); zone.classList.remove('drag-over');
-        if (e.dataTransfer.files.length) kbUploadFiles('kb-custom', getDocType(), 'Custom Data', Array.from(e.dataTransfer.files));
+        if (e.dataTransfer.files.length) {
+            kbUploadFiles('kb-custom', getDocType(), 'Custom Data', Array.from(e.dataTransfer.files));
+        }
     });
     fileInput.addEventListener('change', function () {
-        if (fileInput.files.length) kbUploadFiles('kb-custom', getDocType(), 'Custom Data', Array.from(fileInput.files));
+        if (fileInput.files.length) {
+            kbUploadFiles('kb-custom', getDocType(), 'Custom Data', Array.from(fileInput.files));
+        }
         fileInput.value = '';
     });
 
-    // --- Manual Text ---
+    // ── Text save ─────────────────────────────────────────────────────
     document.getElementById('kbSaveText-kb-custom').addEventListener('click', function () {
         var dt = getDocType();
         var cat = CUSTOM_CATEGORIES.find(function (c) { return c.value === dt; });
         kbSaveText('kb-custom', dt, cat ? cat.label : 'Custom');
     });
 
-    // --- Image Upload ---
+    // ── Image upload zone ──────────────────────────────────────────────
     var imgZone = document.getElementById('kbImgZone-kb-custom');
     var imgInput = document.getElementById('kbImg-kb-custom');
-    imgZone.addEventListener('dragover', function (e) { e.preventDefault(); imgZone.classList.add('drag-over'); });
+    var imgBrowse = document.getElementById('kbImgBrowseTrigger');
+
+    imgBrowse.addEventListener('click', function (e) {
+        e.stopPropagation();
+        imgInput.click();
+    });
+    imgZone.addEventListener('click', function () { imgInput.click(); });
+    imgZone.addEventListener('dragover', function (e) {
+        e.preventDefault(); imgZone.classList.add('drag-over');
+    });
     imgZone.addEventListener('dragleave', function () { imgZone.classList.remove('drag-over'); });
     imgZone.addEventListener('drop', function (e) {
         e.preventDefault(); imgZone.classList.remove('drag-over');
-        if (e.dataTransfer.files.length) kbUploadFiles('kb-custom', getDocType(), 'Custom Data', Array.from(e.dataTransfer.files));
+        if (e.dataTransfer.files.length) {
+            kbUploadImgFiles(getDocType(), Array.from(e.dataTransfer.files));
+        }
     });
     imgInput.addEventListener('change', function () {
         if (imgInput.files.length) {
-            kbUploadFiles('kb-custom', getDocType(), 'Custom Data', Array.from(imgInput.files));
+            kbUploadImgFiles(getDocType(), Array.from(imgInput.files));
             imgInput.value = '';
         }
     });
 
+    await kbLoadAllCustomDocuments();
+}
+
+// Separate image upload helper so it uses the image progress bar
+async function kbUploadImgFiles(docType, files) {
+    var progress = document.getElementById('kbImgProgress-kb-custom');
+    if (progress) progress.style.display = 'flex';
+    for (var i = 0; i < files.length; i++) {
+        var file = files[i];
+        var fd = new FormData();
+        fd.append('file', file);
+        fd.append('doc_type', docType);
+        fd.append('category', docType);
+        try {
+            var data = await API.uploadKnowledgeFile(fd);
+            if (data.success) {
+                showToast('"' + file.name + '" indexed (' + data.chunks_created + ' chunks)', 'success');
+            } else {
+                showToast('Failed: ' + (data.error || 'Unknown error'), 'error');
+            }
+        } catch (err) {
+            showToast('Upload error: ' + err.message, 'error');
+        }
+    }
+    if (progress) progress.style.display = 'none';
     await kbLoadAllCustomDocuments();
 }
 

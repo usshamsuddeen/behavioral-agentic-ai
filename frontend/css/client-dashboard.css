@@ -1977,7 +1977,8 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
-  max-width: 780px;
+  max-width: 1000px;
+  /* widened for 2-col bento grid rows */
   margin: 0 auto;
   padding-bottom: 40px;
 }
@@ -2175,11 +2176,48 @@
   margin-bottom: 4px;
 }
 
+/* Single-column form (inside bento cards where space is constrained) */
+.stg-form-grid--single {
+  grid-template-columns: 1fr;
+}
+
 @media (max-width: 640px) {
   .stg-form-grid {
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Bento grid row — 2-column side-by-side ──────── */
+.stg-bento-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  /* Cards inside maintain full height */
+  align-items: stretch;
+}
+
+.stg-bento-row>.stg-card {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Grow actions to push to the bottom of each card */
+.stg-bento-row>.stg-card .stg-actions {
+  margin-top: auto;
+  padding-top: 18px;
+}
+
+/* Responsive: collapse bento rows to single column */
+@media (max-width: 860px) {
+  .stg-bento-row {
+    grid-template-columns: 1fr;
+  }
+
+  .stg-scroll {
+    max-width: 100%;
+  }
+}
+
 
 .stg-field {
   display: flex;
@@ -4554,10 +4592,25 @@
 }
 
 .kb-cat-card-icon {
-  font-size: 1.5rem;
-  line-height: 1;
+  /* SVG icon — sized and colored via var(--cat-color) */
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--cat-color) 12%, transparent);
+  color: var(--cat-color);
   position: relative;
   z-index: 1;
+  flex-shrink: 0;
+  transition: background 0.25s;
+}
+
+.kb-cat-card-icon svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
 }
 
 .kb-cat-card-label {
@@ -4590,7 +4643,9 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 10px 16px;
+  padding: 12px 16px;
+  min-height: 48px;
+  /* ← ensures buttons are never too short */
   border: none;
   border-radius: var(--radius-sm);
   background: transparent;
@@ -4600,6 +4655,7 @@
   cursor: pointer;
   transition: all 0.25s ease;
   font-family: inherit;
+  white-space: nowrap;
 }
 
 .kb-mode-btn:hover {

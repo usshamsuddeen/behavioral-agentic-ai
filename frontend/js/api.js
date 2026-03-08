@@ -70,18 +70,56 @@ const API = {
         const url = `${this.BASE_URL}${endpoint}`;
         const authHeaders = (typeof Auth !== 'undefined') ? Auth.getAuthHeader() : {};
 
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: { ...authHeaders },
-            body: formData,
-        });
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { ...authHeaders },
+                body: formData,
+            });
 
-        if (response.status === 401 && typeof Auth !== 'undefined') {
-            Auth.redirectToLogin();
-            throw new Error('Session expired');
+            // Handle auth expiry
+            if (response.status === 401) {
+                if (typeof Auth !== 'undefined') {
+                    const refreshed = await Auth.refreshAccessToken();
+                    if (refreshed) {
+                        const retryResp = await fetch(url, {
+                            method: 'POST',
+                            headers: { ...Auth.getAuthHeader() },
+                            body: formData,
+                        });
+                        if (!retryResp.ok) {
+                            const errData = await retryResp.json().catch(() => ({}));
+                            throw new Error(errData.detail || errData.error || `Upload failed (${retryResp.status})`);
+                        }
+                        return await retryResp.json();
+                    } else {
+                        Auth.redirectToLogin();
+                        throw new Error('Session expired');
+                    }
+                }
+                Auth.redirectToLogin();
+                throw new Error('Session expired');
+            }
+
+            if (!response.ok) {
+                // Parse the FastAPI error body for a human-readable message
+                let errMsg = `Upload failed (${response.status})`;
+                try {
+                    const errData = await response.json();
+                    errMsg = errData.detail || errData.error || errData.message || errMsg;
+                    // FastAPI validation errors come as [{loc, msg, type}]
+                    if (Array.isArray(errMsg)) {
+                        errMsg = errMsg.map(e => e.msg || JSON.stringify(e)).join('; ');
+                    }
+                } catch (_) { /* keep default msg */ }
+                throw new Error(errMsg);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error(`Upload Failed: ${endpoint}`, error);
+            throw error;
         }
-
-        return await response.json();
     },
 
     // ==========================================

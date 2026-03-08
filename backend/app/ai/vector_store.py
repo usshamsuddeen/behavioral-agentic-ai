@@ -24,6 +24,95 @@ from datetime import datetime
 
 from app.ai.embeddings import get_embedding_service
 
+# ── SQLite backup helpers (imported lazily to avoid circular imports) ──
+def _get_db_session():
+    """Return a fresh SQLAlchemy session. Lazy import avoids circular deps."""
+    from app.database import SessionLocal
+    return SessionLocal()
+
+def _save_chunk_to_db(collection_name: str, doc_id: str,
+                      text: str, embedding: List[float],
+                      metadata: Dict) -> None:
+    """
+    Persist one vector chunk to SQLite (knowledge_chunks table).
+    On conflict (same collection_name + doc_id) we upsert silently.
+    Run in a try/except so a DB hiccup never breaks the upload flow.
+    """
+    try:
+        from app.models.knowledge_chunk import KnowledgeChunk
+        db = _get_db_session()
+        try:
+            existing = db.query(KnowledgeChunk).filter_by(
+                collection_name=collection_name,
+                doc_id=doc_id
+            ).first()
+            if existing:
+                existing.text          = text
+                existing.embedding_json = json.dumps(embedding)
+                existing.metadata_json  = json.dumps(metadata)
+            else:
+                db.add(KnowledgeChunk(
+                    collection_name = collection_name,
+                    doc_id          = doc_id,
+                    text            = text,
+                    embedding_json  = json.dumps(embedding),
+                    metadata_json   = json.dumps(metadata),
+                ))
+            db.commit()
+        finally:
+            db.close()
+    except Exception as e:
+        logger.warning(f"[VectorStore] DB chunk backup failed (non-critical): {e}")
+
+def _delete_chunk_from_db(collection_name: str, doc_id: str) -> None:
+    """Remove a chunk from SQLite when it is deleted from the vector store."""
+    try:
+        from app.models.knowledge_chunk import KnowledgeChunk
+        db = _get_db_session()
+        try:
+            db.query(KnowledgeChunk).filter_by(
+                collection_name=collection_name,
+                doc_id=doc_id
+            ).delete(synchronize_session=False)
+            db.commit()
+        finally:
+            db.close()
+    except Exception as e:
+        logger.warning(f"[VectorStore] DB chunk delete failed (non-critical): {e}")
+
+def restore_vector_store_from_db() -> int:
+    """
+    Rebuild all in-memory collections from SQLite knowledge_chunks.
+    Call this once at startup AFTER Base.metadata.create_all().
+    Returns the number of chunks restored.
+    """
+    try:
+        from app.models.knowledge_chunk import KnowledgeChunk
+        db = _get_db_session()
+        restored = 0
+        try:
+            store = get_vector_store()
+            chunks = db.query(KnowledgeChunk).all()
+            for c in chunks:
+                col = store.get_or_create_collection(c.collection_name)
+                embedding = json.loads(c.embedding_json)
+                metadata  = json.loads(c.metadata_json) if c.metadata_json else {}
+                col.add(c.doc_id, c.text, embedding, metadata)
+                restored += 1
+            if restored:
+                # Persist rebuilt collections back to JSON files
+                for cname in store.collections:
+                    store._save_collection(cname)
+                logger.info(f"✅ VectorStore: restored {restored} chunks from SQLite into {len(store.collections)} collections")
+            else:
+                logger.info("ℹ️  VectorStore: no backup chunks found in SQLite (fresh install)")
+        finally:
+            db.close()
+        return restored
+    except Exception as e:
+        logger.error(f"❌ VectorStore restore from DB failed: {e}")
+        return 0
+
 # Configure logging
 logger = logging.getLogger(__name__)
 
@@ -253,12 +342,14 @@ class VectorStore:
                 for i, doc in enumerate(documents)
             ]
         
-        # Add to collection
+        # Add to collection AND back up each chunk to SQLite
         for i, (doc_id, doc, emb) in enumerate(zip(ids, documents, embeddings)):
             meta = metadatas[i] if metadatas and i < len(metadatas) else {}
             collection.add(doc_id, doc, emb, meta)
+            # ── SQLite backup (survives Docker volume wipes) ──
+            _save_chunk_to_db(collection_name, doc_id, doc, emb, meta)
         
-        # Persist
+        # Persist JSON file as well (fast local cache)
         self._save_collection(collection_name)
         
         logger.info(f"[OK] Added {len(documents)} documents to '{collection_name}'")
@@ -321,6 +412,8 @@ class VectorStore:
         collection = self.collections[collection_name]
         for doc_id in ids:
             collection.delete(doc_id)
+            # ── Remove from SQLite backup too ──
+            _delete_chunk_from_db(collection_name, doc_id)
         
         self._save_collection(collection_name)
     
