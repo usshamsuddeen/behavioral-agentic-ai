@@ -1977,9 +1977,11 @@
 .stg-grid-wrap {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 24px;
+  /* breathing room between rows */
   width: 100%;
-  padding-bottom: 40px;
+  padding-top: 4px;
+  padding-bottom: 48px;
 }
 
 /* ── Error state ──────────────────────────────────── */
@@ -2190,8 +2192,8 @@
 .stg-bento-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  /* Cards inside maintain full height */
+  gap: 20px;
+  /* gap between side-by-side cards */
   align-items: stretch;
 }
 
@@ -2200,19 +2202,32 @@
   flex-direction: column;
 }
 
-/* Grow actions to push to the bottom of each card */
+/* Push save buttons to card bottom */
 .stg-bento-row>.stg-card .stg-actions {
   margin-top: auto;
-  padding-top: 18px;
+  padding-top: 20px;
 }
 
-/* Responsive: collapse bento rows to single column */
-@media (max-width: 860px) {
+/* ── Responsive breakpoints ───────────────────────── */
+/* Tablets (≤ 1024px): collapse bento to single column */
+@media (max-width: 1024px) {
   .stg-bento-row {
     grid-template-columns: 1fr;
+    gap: 24px;
   }
 }
 
+/* Mobile (≤ 640px): tighter wrapper padding */
+@media (max-width: 640px) {
+  .stg-grid-wrap {
+    gap: 16px;
+    padding-bottom: 32px;
+  }
+
+  .stg-card {
+    padding: 18px;
+  }
+}
 
 .stg-field {
   display: flex;
