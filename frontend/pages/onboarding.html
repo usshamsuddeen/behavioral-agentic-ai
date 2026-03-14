@@ -1904,6 +1904,60 @@
         let orderUploaded = false;
         let productUploaded = false;
 
+        // ── Pre-populate form fields from signup / existing tenant data ──
+        (async function prefillFromExistingData() {
+            try {
+                const freshToken = Auth.getAccessToken();
+                const resp = await fetch(`${API_BASE}/api/onboarding/status`, {
+                    headers: { 'Authorization': `Bearer ${freshToken}` }
+                });
+                if (!resp.ok) return;
+                const data = await resp.json();
+                const tenant = data.tenant || {};
+                const widget = data.widget_config || {};
+
+                // Step 1: Business Profile
+                if (tenant.name) document.getElementById('bizName').value = tenant.name;
+                if (tenant.industry) document.getElementById('bizIndustry').value = tenant.industry;
+                if (tenant.description) document.getElementById('bizDesc').value = tenant.description;
+                if (tenant.timezone) document.getElementById('bizTimezone').value = tenant.timezone;
+
+                // Step 2: Store
+                if (tenant.store_url) document.getElementById('storeUrl').value = tenant.store_url;
+                if (tenant.store_platform) {
+                    document.getElementById('storePlatform').value = tenant.store_platform;
+                    // Highlight the matching platform card
+                    document.querySelectorAll('.platform-card').forEach(c => {
+                        if (c.getAttribute('onclick')?.includes(tenant.store_platform)) {
+                            c.classList.add('selected');
+                        }
+                    });
+                }
+
+                // Step 3: Widget
+                if (widget.bot_name) document.getElementById('widgetTitle').value = widget.bot_name;
+                if (widget.welcome_message) document.getElementById('widgetGreeting').value = widget.welcome_message;
+                if (widget.theme_color) {
+                    document.getElementById('widgetColor').value = widget.theme_color;
+                    const colorLabel = document.getElementById('colorLabel');
+                    if (colorLabel) colorLabel.textContent = widget.theme_color;
+                }
+
+                // Resume from last completed step
+                if (data.current_step && data.current_step > 0 && !data.onboarding_completed) {
+                    currentStep = Math.min(data.current_step + 1, totalSteps);
+                    updateProgress();
+                }
+            } catch (e) {
+                console.warn('Could not prefill onboarding data:', e);
+                // Fallback: try localStorage user data
+                try {
+                    const user = JSON.parse(localStorage.getItem('user') || '{}');
+                    if (user.company_name) document.getElementById('bizName').value = user.company_name;
+                } catch (_) {}
+            }
+        })();
+
         document.getElementById('widgetColor').addEventListener('input', e => {
             document.getElementById('colorLabel').textContent = e.target.value;
         });
@@ -1950,7 +2004,7 @@
                     await fetch(`${API_BASE}/api/onboarding/business-profile`, {
                         method: 'POST', headers,
                         body: JSON.stringify({
-                            business_name: document.getElementById('bizName').value,
+                            company_name: document.getElementById('bizName').value,
                             industry: document.getElementById('bizIndustry').value,
                             description: document.getElementById('bizDesc').value,
                             timezone: document.getElementById('bizTimezone').value
