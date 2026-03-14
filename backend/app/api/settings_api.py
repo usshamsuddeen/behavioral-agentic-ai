@@ -37,6 +37,8 @@ class UpdateTenantRequest(BaseModel):
     business_type: Optional[str] = None
     store_url: Optional[str] = None
     support_email: Optional[str] = None
+    description: Optional[str] = None
+    timezone: Optional[str] = None
 
 
 class UpdateSettingsRequest(BaseModel):
@@ -120,11 +122,13 @@ async def get_settings(
         "profile": current_user.to_dict(),
         "tenant": {
             "id": tenant.id,
-            "business_name": getattr(tenant, 'business_name', None) or getattr(tenant, 'name', None),
-            "business_type": getattr(tenant, 'business_type', None) or getattr(tenant, 'industry', None),
+            "business_name": tenant.name,
+            "business_type": tenant.industry,
+            "description": tenant.description,
             "store_url": tenant.store_url,
             "store_platform": tenant.store_platform,
             "support_email": tenant.support_email,
+            "timezone": tenant.timezone,
             "status": "active" if getattr(tenant, 'is_active', True) else "suspended",
             "onboarding_completed": tenant.onboarding_completed,
             "created_at": tenant.created_at.isoformat() if tenant.created_at else None
@@ -191,13 +195,17 @@ async def update_tenant(
         raise HTTPException(status_code=404, detail="No tenant found")
     
     if data.business_name is not None:
-        tenant.business_name = data.business_name
+        tenant.name = data.business_name
     if data.business_type is not None:
-        tenant.business_type = data.business_type
+        tenant.industry = data.business_type
     if data.store_url is not None:
         tenant.store_url = data.store_url
     if data.support_email is not None:
         tenant.support_email = data.support_email
+    if data.description is not None:
+        tenant.description = data.description
+    if data.timezone is not None:
+        tenant.timezone = data.timezone
     
     tenant.updated_at = datetime.utcnow()
     db.commit()
