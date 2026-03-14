@@ -11,6 +11,48 @@ let loadedTabs = {};          // track which tabs have been initialised
 let currentConvId = null;     // selected conversation
 let allConversations = [];    // cached conversation list
 
+/* --- Timezone Helpers -------------------------------------- */
+let TENANT_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone; // default: browser tz
+
+/** Format date in tenant's timezone: "March 14, 2026" */
+function tzDate(isoStr) {
+    if (!isoStr) return 'N/A';
+    try {
+        return new Date(isoStr).toLocaleDateString('en-US', {
+            timeZone: TENANT_TZ, year: 'numeric', month: 'long', day: 'numeric'
+        });
+    } catch { return new Date(isoStr).toLocaleDateString(); }
+}
+
+/** Format time in tenant's timezone: "02:30 PM" */
+function tzTime(isoStr) {
+    if (!isoStr) return '';
+    try {
+        return new Date(isoStr).toLocaleTimeString('en-US', {
+            timeZone: TENANT_TZ, hour: '2-digit', minute: '2-digit'
+        });
+    } catch { return new Date(isoStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
+}
+
+/** Format full datetime in tenant's timezone: "Mar 14, 2026, 2:30 PM" */
+function tzDateTime(isoStr) {
+    if (!isoStr) return 'N/A';
+    try {
+        return new Date(isoStr).toLocaleString('en-US', {
+            timeZone: TENANT_TZ, year: 'numeric', month: 'short', day: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+        });
+    } catch { return new Date(isoStr).toLocaleString(); }
+}
+
+/** Format short date in tenant's timezone: "3/14/2026" */
+function tzShortDate(isoStr) {
+    if (!isoStr) return '--';
+    try {
+        return new Date(isoStr).toLocaleDateString('en-US', { timeZone: TENANT_TZ });
+    } catch { return new Date(isoStr).toLocaleDateString(); }
+}
+
 const TAB_META = {
     overview: { title: 'Overview', subtitle: 'Welcome back - here\'s what\'s happening today' },
     conversations: { title: 'Conversations', subtitle: 'Monitor and respond to customer conversations' },
@@ -28,6 +70,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Auth guard
     const token = localStorage.getItem('access_token');
     if (!token) { window.location.href = '/pages/login.html'; return; }
+
+    // Eagerly load tenant timezone for all date formatting
+    (async () => {
+        try {
+            const resp = await API.getSettings();
+            if (resp?.tenant?.timezone) TENANT_TZ = resp.tenant.timezone;
+        } catch (_) {}
+    })();
 
     loadUserInfo();
     setupTabNavigation();
@@ -371,7 +421,7 @@ function renderMessages(messages) {
             }
         }
 
-        const time = m.created_at ? new Date(m.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+        const time = m.created_at ? tzTime(m.created_at) : '';
 
         return `<div class="msg msg--${type}">
             <div class="msg-avatar">${label}</div>
@@ -656,9 +706,9 @@ async function loadSettings() {
     const initials = userName.trim().split(/\s+/).length >= 2
         ? (userName.trim().split(/\s+/)[0][0] + userName.trim().split(/\s+/).slice(-1)[0][0]).toUpperCase()
         : userName.slice(0, 2).toUpperCase();
-    const joinedDate = tenant.created_at
-        ? new Date(tenant.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
-        : 'N/A';
+    // Set tenant timezone globally for all date formatting
+    if (tenant.timezone) TENANT_TZ = tenant.timezone;
+    const joinedDate = tzDate(tenant.created_at);
     const sensitivityVal = prefs.auto_escalation_threshold
         ? (prefs.auto_escalation_threshold / 100).toFixed(2)
         : '0.70';
@@ -1086,7 +1136,7 @@ function renderOrderTable(orders) {
             <td>${esc(o.customer_email || '--')}</td>
             <td><span class="order-status order-status--${(o.status || 'pending').toLowerCase()}">${esc(o.status || 'pending')}</span></td>
             <td>${o.total_amount ? `${o.currency || '$'}${Number(o.total_amount).toFixed(2)}` : '--'}</td>
-            <td>${o.order_date ? new Date(o.order_date).toLocaleDateString() : '--'}</td>
+            <td>${o.order_date ? tzShortDate(o.order_date) : '--'}</td>
             <td style="display:flex;gap:4px">
                 <button class="btn btn-sm btn-secondary" onclick="viewOrder('${esc(o.order_id)}')" title="View Details"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
                 <button class="btn btn-sm btn-ghost" onclick="deleteOrder(${o.id})" title="Delete"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>
@@ -1344,23 +1394,23 @@ async function viewOrder(orderId) {
             { label: 'Customer Email', value: o.customer_email, icon: '@' },
             { label: 'Total Amount', value: o.total_amount ? `${o.currency || 'USD'} ${Number(o.total_amount).toFixed(2)}` : null, icon: '$' },
             { label: 'Currency', value: o.currency, icon: '$' },
-            { label: 'Order Date', value: o.order_date ? new Date(o.order_date).toLocaleString() : null, icon: '>' },
-            { label: 'Estimated Delivery', value: o.estimated_delivery ? new Date(o.estimated_delivery).toLocaleString() : null, icon: '>' },
+            { label: 'Order Date', value: o.order_date ? tzDateTime(o.order_date) : null, icon: '>' },
+            { label: 'Estimated Delivery', value: o.estimated_delivery ? tzDateTime(o.estimated_delivery) : null, icon: '>' },
             { label: 'Tracking Number', value: o.tracking_number, icon: '#' },
             { label: 'Carrier', value: o.carrier, icon: '>' },
             { label: 'Shipping Address', value: o.shipping_address, icon: '>' },
             { label: 'Items', value: itemsHtml, raw: true, icon: '*' },
             { label: 'Notes', value: o.notes, icon: '*' },
             { label: 'Source', value: o.source, icon: '>' },
-            { label: 'Created At', value: o.created_at ? new Date(o.created_at).toLocaleString() : null, icon: '>' },
-            { label: 'Updated At', value: o.updated_at ? new Date(o.updated_at).toLocaleString() : null, icon: '>' },
+            { label: 'Created At', value: o.created_at ? tzDateTime(o.created_at) : null, icon: '>' },
+            { label: 'Updated At', value: o.updated_at ? tzDateTime(o.updated_at) : null, icon: '>' },
         ];
 
         content.innerHTML = `
             <div class="order-detail-header">
                 <div>
                     <h3 class="order-detail-title">Order #${esc(o.order_id)}</h3>
-                    <p class="order-detail-subtitle">${o.customer_name ? esc(o.customer_name) : 'Customer'} ${o.order_date ? '  ' + new Date(o.order_date).toLocaleDateString() : ''}</p>
+                    <p class="order-detail-subtitle">${o.customer_name ? esc(o.customer_name) : 'Customer'} ${o.order_date ? '  ' + tzShortDate(o.order_date) : ''}</p>
                 </div>
                 <button class="order-detail-close" onclick="closeOrderModal()" title="Close">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -1888,7 +1938,7 @@ function kbRenderDocsTable(container, docs, tabId, docType) {
 
     var rows = docs.map(function (d) {
         var size = d.file_size ? (d.file_size / 1024).toFixed(1) + ' KB' : '--';
-        var date = d.created_at ? new Date(d.created_at).toLocaleDateString() : '--';
+        var date = d.created_at ? tzShortDate(d.created_at) : '--';
         var chunks = d.chunk_count || '--';
         var name = esc(d.filename || d.id);
         var catLabel = catMap[d.doc_type] || d.doc_type || '--';
