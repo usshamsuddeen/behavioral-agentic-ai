@@ -218,6 +218,7 @@ async def list_orders(
     limit: int = Query(20, ge=1, le=100),
     search: Optional[str] = None,
     status: Optional[str] = None,
+    source: Optional[str] = Query(None, description="Filter by source: csv, api, widget, sync, simulator"),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -234,6 +235,8 @@ async def list_orders(
         )
     if status:
         query = query.filter(CustomerOrder.status == status)
+    if source:
+        query = query.filter(CustomerOrder.source == source)
 
     total = query.count()
     orders = query.order_by(
@@ -381,6 +384,9 @@ async def push_order(
     db.commit()
     db.refresh(order)
 
+    # ★ V5 FIX: Auto-index to vector store for RAG retrieval
+    _auto_index_order(order, tenant.id)
+
     return {"success": True, "order": order.to_dict()}
 
 
@@ -418,6 +424,14 @@ async def push_orders_batch(
             errors.append(f"Order {i+1}: {str(e)}")
 
     db.commit()
+
+    # ★ V5 FIX: Auto-index all batch-pushed orders to vector store
+    batch_orders = db.query(CustomerOrder).filter(
+        CustomerOrder.tenant_id == tenant.id,
+        CustomerOrder.source == "api"
+    ).order_by(CustomerOrder.created_at.desc()).limit(created).all()
+    for order in batch_orders:
+        _auto_index_order(order, tenant.id)
 
     return {
         "success": True,

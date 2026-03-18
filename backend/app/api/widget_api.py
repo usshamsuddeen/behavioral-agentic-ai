@@ -358,7 +358,7 @@ async def send_chat_message(
     try:
         from app.services.intent_router import (
             classify_intent, INTENT_ORDER_QUERY, INTENT_HUMAN_REQUEST,
-            INTENT_ORDER_VERIFY, INTENT_PRODUCT_INFO
+            INTENT_ORDER_VERIFY, INTENT_PRODUCT_INFO, INTENT_PURCHASE
         )
         widget_config_for_intent = db.query(WidgetConfig).filter(
             WidgetConfig.tenant_id == tenant.id
@@ -397,6 +397,24 @@ async def send_chat_message(
             escalation_info = {"reason": "Customer requested human agent", "triggers": ["human_request"]}
             intent_skipped_agent = True
             logger.info(f"🧑 Human request — forcing escalation (skipped RAG+LLM)")
+
+        elif intent == INTENT_PURCHASE:
+            # ★ V5 NEW: Widget-based ordering
+            try:
+                from app.services.order_placement import place_widget_order
+                order_result = place_widget_order(
+                    tenant_id=tenant.id,
+                    customer_name=conversation.customer_name or "Widget Customer",
+                    customer_email=conversation.customer_email or "",
+                    product_query=intent_result["extracted_data"].get("product_query", data.message),
+                    conversation_id=conversation.id,
+                    db=db
+                )
+                ai_response_text = order_result["response"]
+                intent_skipped_agent = True
+                logger.info(f"🛍️ Purchase intent handled: success={order_result.get('success')}")
+            except Exception as purchase_err:
+                logger.warning(f"Purchase handler failed, falling back to agent: {purchase_err}")
 
     except Exception as intent_err:
         logger.warning(f"Intent router failed (non-blocking): {intent_err}")

@@ -29,11 +29,14 @@ from app.api import settings_api
 from app.api import widget_config_api
 from app.api import orders_api              # ★ V4 NEW — Zone 8: Order Gateway
 from app.api import products_api            # ★ V4 NEW — Zone 3: Product Listings
+from app.api import sync_api                # ★ V5 NEW — Real-Time CSV Sync
 from app.websocket.manager import get_manager
 
 # ── Import KnowledgeChunk so SQLAlchemy registers the table ──
 # This MUST be imported before Base.metadata.create_all() runs.
 from app.models import knowledge_chunk as _kc_model  # noqa: F401
+# ★ V5: Import SyncConfig so SQLAlchemy registers the table on startup
+from app.models import sync_config as _sync_model  # noqa: F401
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -89,7 +92,23 @@ async def lifespan(app: FastAPI):
     #    (e.g. after a Coolify redeploy that recreated the Docker volume)
     from app.ai.vector_store import restore_vector_store_from_db
     restore_vector_store_from_db()
-    logger.info("🚀 Behavioral Agentic AI started")
+    # 4. ★ V5: Start background sync scheduler
+    import asyncio
+    async def _sync_scheduler():
+        """Run scheduled syncs every 5 minutes."""
+        while True:
+            await asyncio.sleep(300)  # 5 minutes
+            try:
+                from app.services.sync_service import run_scheduled_syncs
+                sync_db = SessionLocal()
+                try:
+                    await run_scheduled_syncs(sync_db)
+                finally:
+                    sync_db.close()
+            except Exception as e:
+                logger.warning(f"Scheduled sync error (non-blocking): {e}")
+    asyncio.create_task(_sync_scheduler())
+    logger.info("🚀 Behavioral Agentic AI v5.0 started")
     yield
     logger.info("👋 Behavioral Agentic AI shutdown")
 
@@ -99,7 +118,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="Behavioral Agentic AI",
     description="Sentiment-Aware Escalation System for Multilingual Customer Support",
-    version="4.0.0",
+    version="5.0.0",
     lifespan=lifespan
 )
 
@@ -137,6 +156,7 @@ app.include_router(settings_api.router)     # Zone 3: Settings & Team (FR-3.6)
 app.include_router(widget_config_api.router) # Zone 3: Widget Config (FR-3.5)
 app.include_router(orders_api.router)        # ★ V4 Zone 8: Order Gateway
 app.include_router(products_api.router)      # ★ V4 Zone 3: Product Listings
+app.include_router(sync_api.router)           # ★ V5 Real-Time CSV Sync
 
 
 @app.get("/")
@@ -150,7 +170,7 @@ async def root():
         frontend_index = "/app/frontend/index.html"
     if os.path.exists(frontend_index):
         return FileResponse(frontend_index)
-    return {"name": "Behavioral Agentic AI", "version": "4.0.0", "status": "running"}
+    return {"name": "Behavioral Agentic AI", "version": "5.0.0", "status": "running"}
 
 
 @app.get("/api/info")
@@ -158,7 +178,7 @@ async def api_info():
     """API info endpoint"""
     return {
         "name": "Behavioral Agentic AI",
-        "version": "4.0.0",
+        "version": "5.0.0",
         "status": "running",
         "docs": "/docs",
         "websocket": "/ws/{client_id}"

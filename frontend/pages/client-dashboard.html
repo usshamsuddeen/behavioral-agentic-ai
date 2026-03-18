@@ -434,6 +434,14 @@
                             <option value="delivered">Delivered</option>
                             <option value="cancelled">Cancelled</option>
                         </select>
+                        <select class="config-input" id="orderSourceFilter" style="max-width:160px">
+                            <option value="">All Sources</option>
+                            <option value="csv">📄 CSV Upload</option>
+                            <option value="widget">🛍️ Widget</option>
+                            <option value="api">🔌 API Push</option>
+                            <option value="sync">🔄 Sync</option>
+                            <option value="simulator">🎮 Simulator</option>
+                        </select>
                     </div>
 
                     <!-- Order Table -->
@@ -445,6 +453,7 @@
                                     <th>Customer</th>
                                     <th>Email</th>
                                     <th>Status</th>
+                                    <th>Source</th>
                                     <th>Total</th>
                                     <th>Date</th>
                                     <th></th>
@@ -452,7 +461,7 @@
                             </thead>
                             <tbody id="orderTableBody">
                                 <tr>
-                                    <td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px">No
+                                    <td colspan="8" style="text-align:center;color:var(--text-muted);padding:32px">No
                                         orders loaded yet</td>
                                 </tr>
                             </tbody>

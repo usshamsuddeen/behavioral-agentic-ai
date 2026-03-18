@@ -1602,7 +1602,7 @@
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
-  overflow: hidden;
+  overflow-x: auto;
 }
 
 .order-table {
@@ -1674,6 +1674,18 @@
   background: rgba(139, 92, 246, .12);
   color: var(--secondary-400);
   border: 1px solid rgba(139, 92, 246, .25)
+}
+
+.order-status--confirmed {
+  background: rgba(16, 185, 129, .12);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, .25)
+}
+
+.order-status--refunded {
+  background: rgba(107, 114, 128, .12);
+  color: #9ca3af;
+  border: 1px solid rgba(107, 114, 128, .25)
 }
 
 /* ═══════════════════════════════════════════════════
@@ -4736,5 +4748,37 @@
 
   .kb-input-mode-toggle {
     flex-direction: column;
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   V5: RESPONSIVE RULES FOR NEW SOURCE FILTER + SYNC UI
+   ══════════════════════════════════════════════════════ */
+
+/* Order table needs min-width so horizontal scroll works on mobile */
+.order-table {
+  min-width: 720px;
+}
+
+@media (max-width: 768px) {
+  .orders-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .orders-header .conv-search {
+    max-width: 100%;
+  }
+  .order-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .stg-field[style*="display:flex"] {
+    flex-direction: column !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .order-stats-grid {
+    grid-template-columns: 1fr;
   }
 }

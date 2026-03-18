@@ -242,7 +242,9 @@ class AIAgent:
                 return True
 
         # Negative sentiment + significant keyword evidence (combined signal)
-        if sentiment.get("score", 0.5) < 0.25 and escalation.get("trigger_score", 0.0) >= 0.40:
+        # V5 FIX: Raised thresholds — prevents escalation on normal queries
+        # that happen to contain words like "cancel" or "problem".
+        if sentiment.get("score", 0.5) < 0.20 and escalation.get("trigger_score", 0.0) >= 0.50:
             return True
 
         return False
@@ -311,11 +313,11 @@ class AIAgent:
         action = AgentAction.RESPOND
         requires_human = False
 
-        # Low confidence + negative sentiment — suggest human review
-        # Changed: low confidence alone is NOT enough to flag (prevents
-        # false flags on simple questions where KB has no data)
-        # NOTE: Scores are on [0.0, 1.0] scale (neutral=0.5)
-        if llm_response.confidence < self.escalation_threshold and sentiment.get("score", 0.5) < 0.25:
+        # Low confidence + extremely negative sentiment — suggest human review
+        # V5 FIX: Raised thresholds to prevent false flags when KB is empty.
+        # Empty KB → fallback responses have 0.4 confidence, which previously
+        # triggered requires_human on any mildly negative message.
+        if llm_response.confidence < 0.2 and sentiment.get("score", 0.5) < 0.20:
             requires_human = True
 
         # LLM truly failed (not just using fallback template) — flag for review

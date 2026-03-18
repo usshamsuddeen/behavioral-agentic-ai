@@ -402,23 +402,16 @@ function renderMessages(messages) {
 
         // -- Sentiment Pill Badge (hero section style) --------
         let sentimentBadge = '';
-        if (m.sentiment_label || m.sentiment_score != null) {
+        if ((m.sentiment_label || m.sentiment_score != null) && type !== 'ai') {
             const score = m.sentiment_score != null ? m.sentiment_score : 0.5;
             const pct = Math.round(score * 100);
 
-            if (type === 'ai') {
-                // AI responses -> white/subtle pill
-                const emotionLabel = _getEmotionLabel('positive', score);
-                sentimentBadge = `<span class="msg-sentiment-pill msg-sentiment-pill--ai">` +
-                    `<span class="msg-sentiment-dot"></span>${emotionLabel} | ${pct}%</span>`;
-            } else {
-                // Customer messages -> colorful pill by emotion
-                const sentiment = m.sentiment_label || (score > 0.58 ? 'positive' : score < 0.42 ? 'negative' : 'neutral');
-                const emotionLabel = _getEmotionLabel(sentiment, score);
-                const cssClass = _labelToClass(emotionLabel);
-                sentimentBadge = `<span class="msg-sentiment-pill msg-sentiment-pill--${cssClass}">` +
-                    `<span class="msg-sentiment-dot"></span>${emotionLabel} | ${pct}%</span>`;
-            }
+            // Customer messages only -> colorful pill by emotion
+            const sentiment = m.sentiment_label || (score > 0.58 ? 'positive' : score < 0.42 ? 'negative' : 'neutral');
+            const emotionLabel = _getEmotionLabel(sentiment, score);
+            const cssClass = _labelToClass(emotionLabel);
+            sentimentBadge = `<span class="msg-sentiment-pill msg-sentiment-pill--${cssClass}">` +
+                `<span class="msg-sentiment-dot"></span>${emotionLabel} | ${pct}%</span>`;
         }
 
         const time = m.created_at ? tzTime(m.created_at) : '';
@@ -872,6 +865,66 @@ async function loadSettings() {
         </div>
     </div>
 
+    <!-- ════════ V5 NEW: REAL-TIME SYNC CONFIG ════════ -->
+    <div class="stg-card" style="grid-column:1/-1">
+        <div class="stg-card-header">
+            <div class="stg-card-icon stg-card-icon--green">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+            </div>
+            <div>
+                <h3 class="stg-card-title">Real-Time CSV Sync</h3>
+                <p class="stg-card-desc">Auto-sync Orders &amp; Products from external store CSV feeds</p>
+            </div>
+        </div>
+        <div id="syncConfigsList" style="margin-bottom:16px">
+            <div style="text-align:center;color:var(--text-muted);padding:16px;font-size:.8rem">Loading sync configs…</div>
+        </div>
+        <div style="border-top:1px solid var(--border);padding-top:16px">
+            <h4 style="font-size:.85rem;font-weight:600;margin-bottom:12px;color:var(--text-primary)">Add Sync Config</h4>
+            <div class="stg-form-grid stg-form-grid--single">
+                <div class="stg-field" style="display:flex;gap:8px">
+                    <div style="flex:1">
+                        <label class="stg-label">Type</label>
+                        <select class="stg-input" id="syncType">
+                            <option value="orders">Orders</option>
+                            <option value="products">Products</option>
+                        </select>
+                    </div>
+                    <div style="flex:1">
+                        <label class="stg-label">Interval</label>
+                        <select class="stg-input" id="syncInterval">
+                            <option value="15">Every 15 min</option>
+                            <option value="30">Every 30 min</option>
+                            <option value="60" selected>Every hour</option>
+                            <option value="360">Every 6 hours</option>
+                            <option value="1440">Daily</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="stg-field">
+                    <label class="stg-label">CSV URL</label>
+                    <input type="url" class="stg-input" id="syncCsvUrl" placeholder="https://your-store.com/export/orders.csv">
+                </div>
+                <div class="stg-field" style="display:flex;gap:8px">
+                    <div style="flex:1">
+                        <label class="stg-label">Auth Header Name <small style="opacity:.5">(optional)</small></label>
+                        <input type="text" class="stg-input" id="syncAuthName" placeholder="Authorization">
+                    </div>
+                    <div style="flex:1">
+                        <label class="stg-label">Auth Header Value <small style="opacity:.5">(optional)</small></label>
+                        <input type="text" class="stg-input" id="syncAuthValue" placeholder="Bearer sk-xxx">
+                    </div>
+                </div>
+            </div>
+            <div class="stg-actions">
+                <button class="btn btn-primary btn--glow" id="addSyncConfigBtn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    Add Sync
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- ════════ 6. DANGER ZONE — full width ════════ -->
     <div class="stg-card stg-card--danger">
         <div class="stg-card-header">
@@ -983,6 +1036,92 @@ async function loadSettings() {
             showToast('All conversations cleared', 'success');
         } catch { showToast('Clear failed — endpoint may not exist yet', 'error'); }
     };
+
+    // ★ V5: Sync Config Handlers
+    loadSyncConfigs();
+
+    document.getElementById('addSyncConfigBtn').onclick = async () => {
+        const csvUrl = document.getElementById('syncCsvUrl').value.trim();
+        if (!csvUrl) { showToast('CSV URL is required', 'warning'); return; }
+        const data = {
+            sync_type: document.getElementById('syncType').value,
+            csv_url: csvUrl,
+            sync_interval_minutes: parseInt(document.getElementById('syncInterval').value) || 60,
+            auth_header_name: document.getElementById('syncAuthName').value.trim() || null,
+            auth_header_value: document.getElementById('syncAuthValue').value.trim() || null,
+            is_active: true,
+        };
+        try {
+            await API.createSyncConfig(data);
+            showToast('Sync config added!', 'success');
+            document.getElementById('syncCsvUrl').value = '';
+            document.getElementById('syncAuthName').value = '';
+            document.getElementById('syncAuthValue').value = '';
+            loadSyncConfigs();
+        } catch (e) {
+            showToast('Failed to add: ' + (e.message || e), 'error');
+        }
+    };
+}
+
+async function loadSyncConfigs() {
+    const container = document.getElementById('syncConfigsList');
+    if (!container) return;
+    try {
+        const result = await API.getSyncConfigs();
+        const configs = result.configs || result || [];
+        if (!configs.length) {
+            container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:16px;font-size:.8rem">No sync configs yet — add one below</div>';
+            return;
+        }
+        const statusColors = { success: '#10b981', failed: '#ef4444', running: '#f59e0b', never: '#6b7280' };
+        container.innerHTML = configs.map(c => {
+            const st = c.last_sync_status || 'never';
+            const stColor = statusColors[st] || '#6b7280';
+            return `
+            <div style="display:flex;align-items:center;gap:12px;padding:10px 16px;border-radius:12px;background:var(--bg-tertiary);margin-bottom:8px;border:1px solid var(--border)">
+                <div style="flex:0 0 auto;width:10px;height:10px;border-radius:50%;background:${stColor}"></div>
+                <div style="flex:1;min-width:0">
+                    <div style="font-weight:600;font-size:.8rem;color:var(--text-primary)">${esc(c.sync_type?.toUpperCase())} — ${esc(c.csv_url?.slice(0, 60))}${c.csv_url?.length > 60 ? '…' : ''}</div>
+                    <div style="font-size:.7rem;color:var(--text-muted)">
+                        Every ${c.sync_interval_minutes}m · Status: <span style="color:${stColor};font-weight:600">${st.toUpperCase()}</span>
+                        ${c.last_synced_at ? ' · Last: ' + new Date(c.last_synced_at).toLocaleString() : ''}
+                        ${c.last_sync_message ? ' · ' + esc(c.last_sync_message.slice(0, 80)) : ''}
+                    </div>
+                </div>
+                <button class="btn btn-sm btn-secondary" onclick="triggerSyncConfig(${c.id})" title="Sync Now" style="padding:4px 10px">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+                </button>
+                <button class="btn btn-sm btn-ghost" onclick="deleteSyncConfig(${c.id})" title="Delete" style="padding:4px 8px;color:var(--negative)">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                </button>
+            </div>`;
+        }).join('');
+    } catch (e) {
+        container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:16px;font-size:.8rem">Could not load sync configs</div>';
+    }
+}
+
+async function triggerSyncConfig(id) {
+    try {
+        showToast('Triggering sync…', 'info');
+        const result = await API.triggerSync(id);
+        showToast(result.message || 'Sync triggered!', 'success');
+        setTimeout(loadSyncConfigs, 3000); // refresh after a few seconds
+    } catch (e) {
+        showToast('Sync trigger failed: ' + (e.message || e), 'error');
+    }
+}
+
+async function deleteSyncConfig(id) {
+    if (!confirm('Delete this sync config?')) return;
+    try {
+        await API.deleteSyncConfig(id);
+        showToast('Sync config deleted', 'success');
+        loadSyncConfigs();
+    } catch (e) {
+        showToast('Delete failed', 'error');
+    }
 }
 
 /* ***********************************************************
@@ -1107,7 +1246,8 @@ async function loadOrders(page = 1) {
         // Load table
         const search = document.getElementById('orderSearch')?.value || '';
         const status = document.getElementById('orderStatusFilter')?.value || '';
-        const data = await API.getOrders(page, 20, search, status);
+        const source = document.getElementById('orderSourceFilter')?.value || '';
+        const data = await API.getOrders(page, 20, search, status, source);
         renderOrderTable(data.orders || []);
         renderPagination('orderPagination', data.page || 1, data.total_pages || data.pages || 1, (p) => loadOrders(p));
     } catch (e) {
@@ -1120,21 +1260,29 @@ async function loadOrders(page = 1) {
         loadedTabs._ordersListeners = true;
         document.getElementById('orderSearch')?.addEventListener('input', debounce(() => loadOrders(1), 400));
         document.getElementById('orderStatusFilter')?.addEventListener('change', () => loadOrders(1));
+        document.getElementById('orderSourceFilter')?.addEventListener('change', () => loadOrders(1));
     }
 }
 
 function renderOrderTable(orders) {
     const tbody = document.getElementById('orderTableBody');
     if (!orders.length) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px">No orders found</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:32px">No orders found</td></tr>';
         return;
     }
-    tbody.innerHTML = orders.map(o => `
+    const sourceColors = { csv: '#3b82f6', widget: '#8b5cf6', api: '#f59e0b', sync: '#10b981', simulator: '#6b7280' };
+    const sourceIcons = { csv: '📄', widget: '🛍️', api: '🔌', sync: '🔄', simulator: '🎮' };
+    tbody.innerHTML = orders.map(o => {
+        const src = (o.source || 'csv').toLowerCase();
+        const srcColor = sourceColors[src] || '#6b7280';
+        const srcIcon = sourceIcons[src] || '❓';
+        return `
         <tr>
             <td><strong>${esc(o.order_id)}</strong></td>
             <td>${esc(o.customer_name || '--')}</td>
             <td>${esc(o.customer_email || '--')}</td>
             <td><span class="order-status order-status--${(o.status || 'pending').toLowerCase()}">${esc(o.status || 'pending')}</span></td>
+            <td><span style="display:inline-flex;align-items:center;gap:4px;padding:2px 10px;border-radius:20px;font-size:.7rem;font-weight:600;background:${srcColor}18;color:${srcColor};border:1px solid ${srcColor}30">${srcIcon} ${src.toUpperCase()}</span></td>
             <td>${o.total_amount ? `${o.currency || '$'}${Number(o.total_amount).toFixed(2)}` : '--'}</td>
             <td>${o.order_date ? tzShortDate(o.order_date) : '--'}</td>
             <td style="display:flex;gap:4px">
@@ -1142,7 +1290,7 @@ function renderOrderTable(orders) {
                 <button class="btn btn-sm btn-ghost" onclick="deleteOrder(${o.id})" title="Delete"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>
             </td>
         </tr>
-    `).join('');
+    `}).join('');
 }
 
 async function uploadOrderCSV() {

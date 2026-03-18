@@ -368,10 +368,11 @@ const API = {
     // ORDERS (V4 NEW — Zone 8)
     // ==========================================
 
-    async getOrders(page = 1, limit = 20, search = '', status = '') {
+    async getOrders(page = 1, limit = 20, search = '', status = '', source = '') {
         let url = `/orders?page=${page}&limit=${limit}`;
         if (search) url += `&search=${encodeURIComponent(search)}`;
         if (status) url += `&status=${encodeURIComponent(status)}`;
+        if (source) url += `&source=${encodeURIComponent(source)}`;
         return this.request(url);
     },
 
@@ -490,6 +491,33 @@ const API = {
             method: 'PUT',
             body: JSON.stringify({ restrictions: text })
         });
+    },
+
+    // ==========================================
+    // SYNC API (V5 NEW — Real-Time CSV Sync)
+    // ==========================================
+
+    async getSyncConfigs() {
+        return this.request('/sync/configs');
+    },
+
+    async createSyncConfig(data) {
+        return this.request('/sync/config', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    },
+
+    async deleteSyncConfig(id) {
+        return this.request(`/sync/configs/${id}`, { method: 'DELETE' });
+    },
+
+    async triggerSync(id) {
+        return this.request(`/sync/trigger/${id}`, { method: 'POST' });
+    },
+
+    async getSyncStatus(id) {
+        return this.request(`/sync/status/${id}`);
     }
 };
 

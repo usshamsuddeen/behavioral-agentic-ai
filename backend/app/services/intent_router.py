@@ -1,10 +1,11 @@
 """
-Intent-Based Query Router — V4 NEW (Zone 5)
+Intent-Based Query Router — V5 (Zone 5)
 Classifies user messages and routes to the most efficient handler.
 
 Classification Table:
   ORDER_QUERY   → SQL Lookup (bypasses RAG + LLM)
   ORDER_VERIFY  → Verify Engine (bypasses RAG + LLM)
+  PURCHASE      → Order placement from widget (bypasses LLM) ★ V5 NEW
   PRODUCT_INFO  → RAG filtered to products → LLM
   COMPLAINT     → RAG → LLM + Escalation Check
   HUMAN_REQUEST → Direct Escalation (bypasses LLM)
@@ -22,6 +23,7 @@ logger = logging.getLogger(__name__)
 # ═══════════════════════════════════════════
 INTENT_ORDER_QUERY = "ORDER_QUERY"
 INTENT_ORDER_VERIFY = "ORDER_VERIFY"
+INTENT_PURCHASE = "PURCHASE"          # ★ V5 NEW — Widget ordering
 INTENT_PRODUCT_INFO = "PRODUCT_INFO"
 INTENT_COMPLAINT = "COMPLAINT"
 INTENT_HUMAN_REQUEST = "HUMAN_REQUEST"
@@ -63,10 +65,30 @@ VERIFY_KEYWORDS = {
     "check order", "validate order", "order id",
 }
 
+# ★ V5 NEW: Purchase intent keywords
+PURCHASE_KEYWORDS = {
+    "i want to buy", "i want to order", "place order", "place an order",
+    "add to cart", "i'll take", "i will take", "order this", "buy this",
+    "purchase this", "i'd like to order", "i would like to order",
+    "can i order", "can i buy", "how do i order", "how to order",
+    "i need to order", "want to purchase", "checkout", "book this",
+    "buy it", "get this", "i'll order",
+    # Spanish
+    "quiero comprar", "ordenar", "comprar esto",
+    # French
+    "je veux acheter", "commander", "acheter",
+    # German
+    "ich möchte kaufen", "bestellen", "kaufen",
+    # Urdu
+    "خریدنا", "آرڈر کرنا",
+    # Hindi
+    "खरीदना", "ऑर्डर करना",
+}
+
 PRODUCT_KEYWORDS = {
     "price", "cost", "stock", "available", "product", "how much",
     "in stock", "out of stock", "catalog", "inventory",
-    "buy", "purchase", "item", "pricing",
+    "item", "pricing", "show me", "tell me about",
     # Spanish
     "precio", "producto",
     # French
@@ -93,11 +115,12 @@ HUMAN_KEYWORDS = {
 # Widget Type → Allowed Intents
 # ═══════════════════════════════════════════
 WIDGET_INTENT_MAP = {
-    "full":   {INTENT_ORDER_QUERY, INTENT_ORDER_VERIFY, INTENT_PRODUCT_INFO,
-               INTENT_COMPLAINT, INTENT_HUMAN_REQUEST, INTENT_GENERAL_CHAT},
+    "full":   {INTENT_ORDER_QUERY, INTENT_ORDER_VERIFY, INTENT_PURCHASE,
+               INTENT_PRODUCT_INFO, INTENT_COMPLAINT, INTENT_HUMAN_REQUEST,
+               INTENT_GENERAL_CHAT},
     "info":   {INTENT_GENERAL_CHAT, INTENT_PRODUCT_INFO},
-    "order":  {INTENT_ORDER_QUERY, INTENT_ORDER_VERIFY, INTENT_COMPLAINT,
-               INTENT_HUMAN_REQUEST},
+    "order":  {INTENT_ORDER_QUERY, INTENT_ORDER_VERIFY, INTENT_PURCHASE,
+               INTENT_COMPLAINT, INTENT_HUMAN_REQUEST},
     "verify": {INTENT_ORDER_VERIFY},
 }
 
@@ -162,7 +185,26 @@ def classify_intent(text: str, widget_type: str = "full",
             "reason": f"Verify keywords matched: {verify_matches}"
         }
 
-    # ── Priority 4: Complaint (negative sentiment + keywords) ──
+    # ── Priority 4: Purchase (★ V5 NEW — widget ordering) ──
+    purchase_matches = sum(1 for kw in PURCHASE_KEYWORDS if kw in text_lower)
+    if purchase_matches > 0 and INTENT_PURCHASE in allowed_intents:
+        # Extract product query: remove purchase keywords to get the product part
+        product_query = text_lower
+        for kw in PURCHASE_KEYWORDS:
+            product_query = product_query.replace(kw, "").strip()
+        # Clean up leftover articles/prepositions
+        for filler in ["the ", "a ", "an ", "some ", "this ", "that ", "those "]:
+            if product_query.startswith(filler):
+                product_query = product_query[len(filler):]
+        product_query = product_query.strip(" .,!?")
+        return {
+            "intent": INTENT_PURCHASE,
+            "confidence": min(0.6 + purchase_matches * 0.15, 0.95),
+            "extracted_data": {"product_query": product_query if product_query else text_lower},
+            "reason": f"Purchase keywords: {purchase_matches}"
+        }
+
+    # ── Priority 5: Complaint (negative sentiment + keywords) ──
     complaint_matches = sum(1 for kw in COMPLAINT_KEYWORDS if kw in text_lower)
     if (complaint_matches > 0 or sentiment == "negative") and INTENT_COMPLAINT in allowed_intents:
         if complaint_matches > 0:
@@ -173,7 +215,7 @@ def classify_intent(text: str, widget_type: str = "full",
                 "reason": f"Complaint keywords: {complaint_matches}"
             }
 
-    # ── Priority 5: Product info ──
+    # ── Priority 6: Product info ──
     product_matches = sum(1 for kw in PRODUCT_KEYWORDS if kw in text_lower)
     if product_matches >= 1 and INTENT_PRODUCT_INFO in allowed_intents:
         return {
