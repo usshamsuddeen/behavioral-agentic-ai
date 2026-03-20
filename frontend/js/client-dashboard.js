@@ -1832,7 +1832,7 @@ async function loadCustomDataTab() {
 
         // Text pane
         '<div class="kb-input-pane" id="customPane-text">' +
-        '<textarea class="kb-textarea" id="kbText-kb-custom" rows="7" placeholder="Paste or type your content here...\n\nThis text will be chunked, embedded, and added to your AI\'s knowledge base under the selected category."></textarea>' +
+        '<textarea class="kb-textarea" id="kbText-kb-custom" rows="8" placeholder="Paste or type your custom knowledge here...\\n\\nExamples:\\n• Return Policy: Items can be returned within 30 days of receipt.\\n• Operating Hours: We are open Monday to Friday, 9 AM to 5 PM EST.\\n• Contact Info: Reach our support team at support@example.com\\n• General Rules: Only members can access the premium lounge."></textarea>' +
         '<div class="kb-text-actions">' +
         '<button class="btn btn-primary btn--glow" id="kbSaveText-kb-custom" type="button">' +
         SVG_EDIT + ' Save to Knowledge Base' +
@@ -2117,7 +2117,41 @@ async function kbDeleteDoc(docId, tabId, docType) {
 }
 
 function kbViewDoc(docId, filename) {
-    showToast(filename + ' - ID: ' + docId, 'info');
+    const modal = document.getElementById('docViewModal');
+    const titleEl = document.getElementById('docViewTitle');
+    const loadingEl = document.getElementById('docViewLoading');
+    const textEl = document.getElementById('docViewText');
+
+    if (!modal) {
+        showToast('Document Viewer not initialized.', 'error');
+        return;
+    }
+
+    modal.style.display = 'flex';
+    titleEl.textContent = 'Loading...';
+    loadingEl.style.display = 'flex';
+    textEl.style.display = 'none';
+    textEl.textContent = '';
+
+    API.getKnowledgeDocumentContent(docId).then(result => {
+        if (result && result.error) {
+            titleEl.textContent = 'Error';
+            textEl.textContent = result.error || 'Failed to load document content.';
+        } else if (result) {
+            titleEl.textContent = result.filename || filename || 'Document Content';
+            textEl.textContent = result.content || 'Document is empty.';
+        } else {
+            titleEl.textContent = 'Error';
+            textEl.textContent = 'Unknown error occurred.';
+        }
+    }).catch(err => {
+        console.error('View document error:', err);
+        titleEl.textContent = 'Error';
+        textEl.textContent = 'A network error occurred while loading the document.';
+    }).finally(() => {
+        loadingEl.style.display = 'none';
+        textEl.style.display = 'block';
+    });
 }
 
 // Make KB functions globally accessible
