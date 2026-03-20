@@ -474,6 +474,10 @@ const API = {
         });
     },
 
+    async getKnowledgeDocumentContent(documentId) {
+        return this.request(`/knowledge/document/${documentId}/content`);
+    },
+
     async uploadKnowledgeFile(formData) {
         return this.upload('/knowledge/upload', formData);
     },

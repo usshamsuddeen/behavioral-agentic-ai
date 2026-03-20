@@ -452,6 +452,40 @@ async def delete_document(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.get("/document/{document_id}/content")
+async def get_document_content(
+    document_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Get full text content for a specific document (tenant-scoped).
+    
+    - **document_id**: Document ID to retrieve
+    """
+    client_id = resolve_client_id(current_user, db)
+    
+    try:
+        manager = get_knowledge_manager()
+        result = manager.get_document_content(client_id, document_id)
+        
+        if not result.get("success"):
+            raise HTTPException(status_code=404, detail=result.get("error", "Not found"))
+
+        return {
+            "document_id": result["document_id"],
+            "filename": result["filename"],
+            "content": result["content"]
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"❌ Get document content failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
 @router.delete("")
 async def delete_all_documents(
     confirm: bool = Query(False, description="Confirm deletion"),

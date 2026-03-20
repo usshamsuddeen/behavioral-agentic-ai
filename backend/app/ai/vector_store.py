@@ -400,6 +400,22 @@ class VectorStore:
             for doc, sim in results
         ]
     
+    def get_documents_by_ids(
+        self,
+        ids: List[str],
+        collection_name: str = "default"
+    ) -> List[Dict]:
+        """Fetch raw documents by chunk IDs."""
+        if collection_name not in self.collections:
+            return []
+        
+        collection = self.collections[collection_name]
+        return [
+            {"id": doc_id, "text": collection.documents[doc_id].text}
+            for doc_id in ids if doc_id in collection.documents
+        ]
+
+    
     def delete_documents(
         self,
         ids: List[str],

@@ -350,7 +350,10 @@ async function loadDocuments() {
                 <td><span class="badge badge-positive">Indexed</span></td>
                 <td>
                     <div class="doc-actions">
-                        <button class="btn-icon btn-ghost" onclick="deleteDocument('${doc.id}')">
+                        <button class="btn-icon btn-ghost" onclick="viewDocument('${doc.id}')" title="View Content">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        </button>
+                        <button class="btn-icon btn-ghost" onclick="deleteDocument('${doc.id}')" title="Delete">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <polyline points="3 6 5 6 21 6" />
                                 <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
@@ -363,6 +366,45 @@ async function loadDocuments() {
 
     } catch (err) {
         console.error('Failed to load documents:', err);
+    }
+}
+
+async function viewDocument(documentId) {
+    const modal = document.getElementById('docViewModal');
+    const titleEl = document.getElementById('docViewTitle');
+    const loadingEl = document.getElementById('docViewLoading');
+    const textEl = document.getElementById('docViewText');
+
+    if (!modal) return;
+
+    modal.style.display = 'flex';
+    titleEl.textContent = 'Loading...';
+    loadingEl.style.display = 'flex';
+    textEl.style.display = 'none';
+    textEl.textContent = '';
+
+    try {
+        const result = await API.getKnowledgeDocumentContent(documentId);
+        
+        // request method handles JSON parsing. 
+        // If it throws or has error we handle it.
+        if (result && result.error) {
+            titleEl.textContent = 'Error';
+            textEl.textContent = result.error || 'Failed to load document content.';
+        } else if (result) {
+            titleEl.textContent = result.filename || 'Document Content';
+            textEl.textContent = result.content || 'Document is empty.';
+        } else {
+            titleEl.textContent = 'Error';
+            textEl.textContent = 'Unknown error occurred.';
+        }
+    } catch (err) {
+        console.error('View document error:', err);
+        titleEl.textContent = 'Error';
+        textEl.textContent = 'A network error occurred while loading the document.';
+    } finally {
+        loadingEl.style.display = 'none';
+        textEl.style.display = 'block';
     }
 }
 

@@ -321,8 +321,14 @@
                             </div>
                             <div class="input-group" style="margin-bottom: 0.75rem;">
                                 <label class="input-label">Content</label>
-                                <textarea id="textKbContent" class="input" rows="6" style="resize: vertical;"
-                                    placeholder="Paste your product details, FAQs, policies here..."></textarea>
+                                <textarea id="textKbContent" class="input" rows="8" style="resize: vertical;"
+                                    placeholder="Paste or type your custom knowledge here...
+
+Examples:
+• Return Policy: Items can be returned within 30 days of receipt.
+• Operating Hours: We are open Monday to Friday, 9 AM to 5 PM EST.
+• Contact Info: Reach our support team at support@example.com
+• General Rules: Only members can access the premium lounge."></textarea>
                             </div>
                             <button class="btn btn-primary w-full" id="addTextBtn">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -436,6 +442,25 @@
 
     <!-- Sidebar Overlay (Mobile) -->
     <div class="sidebar-overlay"></div>
+
+    <!-- Document View Modal -->
+    <div class="modal-overlay" id="docViewModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:100; align-items:center; justify-content:center; padding:1rem;" onclick="if(event.target===this) document.getElementById('docViewModal').style.display='none'">
+        <div class="modal-content glass-card" style="max-width: 800px; width: 100%; max-height: 85vh; display: flex; flex-direction: column; padding: 1.5rem; background: var(--bg-primary);">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem; margin-bottom: 1rem;">
+                <h3 id="docViewTitle" style="margin: 0; font-size: 1.25rem; color: var(--text-primary);">Document Content</h3>
+                <button class="btn btn-icon" onclick="document.getElementById('docViewModal').style.display='none'" style="background: none; border: none; cursor: pointer; color: var(--text-muted); padding: 0.5rem; border-radius: 50%;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <div class="modal-body" style="overflow-y: auto; flex: 1; padding-right: 10px;">
+                <div id="docViewLoading" style="display: none; justify-content: center; padding: 2rem;">
+                    <div class="spinner" style="border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--primary-500); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite;"></div>
+                </div>
+                <div id="docViewText" style="white-space: pre-wrap; font-family: monospace; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;"></div>
+            </div>
+            <style>@keyframes spin { to { transform: rotate(360deg); } }</style>
+        </div>
+    </div>
 
     <!-- Toast Container -->
     <div class="toast-container" id="toastContainer"></div>

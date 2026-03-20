@@ -111,6 +111,21 @@ HUMAN_KEYWORDS = {
     "representative", "supervisor", "operator",
 }
 
+# General knowledge base keywords to explicitly route to RAG
+KB_KEYWORDS = {
+    "policy", "rules", "contact", "email", "phone", "address",
+    "hours", "location", "terms", "conditions", "refund policy",
+    "return policy", "shipping policy", "about", "who we are",
+    "company", "support", "help", "guide", "faq", "frequently asked",
+    # Spanish
+    "política", "contacto", "términos",
+    # French
+    "politique", "contact", "conditions",
+    # German
+    "richtlinie", "kontakt",
+}
+
+
 # ═══════════════════════════════════════════
 # Widget Type → Allowed Intents
 # ═══════════════════════════════════════════
@@ -156,27 +171,38 @@ def classify_intent(text: str, widget_type: str = "full",
         }
 
     # ── Priority 2: Order query (regex + keywords) ──
-    order_match = ORDER_ID_PATTERN.search(text)
-    order_kw_matches = sum(1 for kw in ORDER_KEYWORDS if kw in text_lower)
-
-    if order_match and INTENT_ORDER_QUERY in allowed_intents:
-        extracted_order_id = order_match.group().lstrip('#')
+    # 0. Check for explicit Knowledge Base queries first
+    # If a user explicitly asks about policies or general info, 
+    # we MUST use RAG so we route to GENERAL_CHAT / PRODUCT_INFO.
+    kb_matches = sum(1 for kw in KB_KEYWORDS if kw in text_lower)
+    if kb_matches > 0:
         return {
-            "intent": INTENT_ORDER_QUERY,
+            "intent": INTENT_GENERAL_CHAT,
             "confidence": 0.90,
-            "extracted_data": {"order_id": extracted_order_id},
-            "reason": f"Order ID pattern matched: {extracted_order_id}"
+            "extracted_data": {},
+            "reason": f"Matched KB keywords (count: {kb_matches})"
         }
-    elif order_kw_matches >= 2 and INTENT_ORDER_QUERY in allowed_intents:
+
+    # 1. Check for Explicit Order ID (Highest Priority if constraints allow)
+    order_id_match = ORDER_ID_PATTERN.search(text_lower)
+    if order_id_match and INTENT_ORDER_QUERY in allowed_intents:
+        order_id = order_id_match.group(0).upper().lstrip('#')
         return {
             "intent": INTENT_ORDER_QUERY,
-            "confidence": min(0.5 + order_kw_matches * 0.15, 0.85),
-            "extracted_data": {},
-            "reason": f"Order keywords matched: {order_kw_matches}"
+            "confidence": 0.95,
+            "extracted_data": {"order_id": order_id},
+            "reason": f"Found explicit order ID: {order_id}"
         }
+
+    # Count keyword matches for other intents
+    order_matches = sum(1 for kw in ORDER_KEYWORDS if kw in text_lower)
+    verify_matches = sum(1 for kw in VERIFY_KEYWORDS if kw in text_lower)
+    purchase_matches = sum(1 for kw in PURCHASE_KEYWORDS if kw in text_lower)
+    complaint_matches = sum(1 for kw in COMPLAINT_KEYWORDS if kw in text_lower)
+    product_matches = sum(1 for kw in PRODUCT_KEYWORDS if kw in text_lower)
+    # human_matches is already calculated above
 
     # ── Priority 3: Order verification ──
-    verify_matches = sum(1 for kw in VERIFY_KEYWORDS if kw in text_lower)
     if verify_matches > 0 and INTENT_ORDER_VERIFY in allowed_intents:
         return {
             "intent": INTENT_ORDER_VERIFY,

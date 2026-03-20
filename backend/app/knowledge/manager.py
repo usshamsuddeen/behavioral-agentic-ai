@@ -355,6 +355,54 @@ class KnowledgeManager:
             ]
         }
     
+    def get_document_content(self, client_id: str, document_id: str) -> Dict:
+        """
+        Fetch full text content for a specific document by concatenating its chunks.
+        
+        Args:
+            client_id: Client identifier
+            document_id: Document ID
+            
+        Returns:
+            Dict with success status and full text content
+        """
+        documents = self._load_client_documents(client_id)
+        
+        # Find document
+        target_doc = None
+        for doc in documents:
+            if doc.id == document_id:
+                target_doc = doc
+                break
+        
+        if not target_doc:
+            return {
+                "success": False,
+                "error": "Document not found"
+            }
+        
+        # Fetch chunk texts from vector store
+        from app.ai.vector_store import get_vector_store
+        vs = get_vector_store()
+        collection_name = f"client_{client_id}" if client_id else "default"
+        
+        chunks = vs.get_documents_by_ids(
+            ids=target_doc.chunk_ids,
+            collection_name=collection_name
+        )
+        
+        # Order chunks correctly if needed. The IDs are usually generated sequentially
+        # or we just concatenate them. Since we reconstruct the file, simple concatenation works.
+        full_text = "\n\n".join([chunk["text"] for chunk in chunks])
+        
+        return {
+            "success": True,
+            "document_id": document_id,
+            "filename": target_doc.filename,
+            "content": full_text
+        }
+
+    
     def get_knowledge_stats(self, client_id: str) -> Dict:
         """
         Get knowledge base statistics.
