@@ -1832,7 +1832,7 @@ async function loadCustomDataTab() {
 
         // Text pane
         '<div class="kb-input-pane" id="customPane-text">' +
-        '<textarea class="kb-textarea" id="kbText-kb-custom" rows="8" placeholder="Paste or type your custom knowledge here...\\n\\nExamples:\\n• Return Policy: Items can be returned within 30 days of receipt.\\n• Operating Hours: We are open Monday to Friday, 9 AM to 5 PM EST.\\n• Contact Info: Reach our support team at support@example.com\\n• General Rules: Only members can access the premium lounge."></textarea>' +
+        '<textarea class="kb-textarea" id="kbText-kb-custom" rows="8" placeholder="Paste or type your custom knowledge here...&#10;&#10;Examples:&#10;• Return Policy: Items can be returned within 30 days of receipt.&#10;• Operating Hours: We are open Monday to Friday, 9 AM to 5 PM EST.&#10;• Contact Info: Reach our support team at support@example.com&#10;• General Rules: Only members can access the premium lounge."></textarea>' +
         '<div class="kb-text-actions">' +
         '<button class="btn btn-primary btn--glow" id="kbSaveText-kb-custom" type="button">' +
         SVG_EDIT + ' Save to Knowledge Base' +
