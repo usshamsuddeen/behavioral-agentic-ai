@@ -2051,7 +2051,24 @@
             window.location.href = 'client-dashboard.html';
         }
 
-        function skipStep() {
+        async function skipStep() {
+            if (currentStep === 4) {
+                try {
+                    const freshToken = Auth.getAccessToken();
+                    const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${freshToken}` };
+                    
+                    await fetch(`${API_BASE}/api/onboarding/import-orders-complete`, { method: 'POST', headers });
+                    const completeRes = await fetch(`${API_BASE}/api/onboarding/complete`, { method: 'POST', headers });
+                    const completeData = await completeRes.json();
+                    
+                    if (completeData.widget_api_key) {
+                        document.getElementById('embedCode').textContent =
+                            `<script src="https://sentimenta.snick.at/widget/embed.js" data-key="${completeData.widget_api_key}" data-widget-type="${completeData.embed_code?.match(/data-widget-type="([^"]*)"/)?.[1] || 'full'}"><\\/script>`;
+                    }
+                } catch (err) {
+                    console.error('Skip step completion error:', err);
+                }
+            }
             if (currentStep < totalSteps) {
                 currentStep++;
                 updateProgress();
