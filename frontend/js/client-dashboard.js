@@ -502,346 +502,78 @@ function setupChatActions(convId, conv) {
 }
 
 /* ***********************************************************
-   TAB 3: ANALYTICS  (Completely Redesigned)
+   TAB 3: ANALYTICS
    *********************************************************** */
-let anxCurrentDays = 7;
-
 async function loadAnalytics() {
-    // Setup period selector on first load
-    if (!loadedTabs['_anx_pills']) {
-        loadedTabs['_anx_pills'] = true;
-        document.querySelectorAll('.anx-pill').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.anx-pill').forEach(b => b.classList.remove('anx-pill--active'));
-                btn.classList.add('anx-pill--active');
-                anxCurrentDays = parseInt(btn.dataset.days);
-                const label = anxCurrentDays === 1 ? 'Today' : `Last ${anxCurrentDays} days`;
-                document.getElementById('anxPeriodLabel').textContent = label;
-                loadedTabs['analytics'] = false;
-                loadAnalytics();
-            });
-        });
-    }
-
     try {
-        // Fetch all data in parallel
-        const [comp, triggers, langData] = await Promise.all([
-            API.getComprehensiveAnalytics(anxCurrentDays),
-            API.getEscalationTriggers().catch(() => ({ triggers: [] })),
-            API.getSentimentByLanguage().catch(() => ({ breakdown: [] })),
-        ]);
+        const data = await API.getDashboardMetrics();
+        const ov = data.overview || {};
+        document.getElementById('analyticsTotal').textContent = (ov.total_conversations ?? 0).toLocaleString();
+        document.getElementById('analyticsAvgSent').textContent = ov.avg_sentiment_score != null ? (ov.avg_sentiment_score * 100).toFixed(0) + '%' : 'N/A';
+        document.getElementById('analyticsAvgResp').textContent = ov.avg_response_time || '< 2s';
+        document.getElementById('analyticsEscRate').textContent = ov.escalation_rate != null ? ov.escalation_rate.toFixed(1) + '%' : '0%';
+    } catch { }
 
-        const k = comp.kpis || {};
-        const trends = comp.daily_trends || [];
-        const hourly = comp.hourly_distribution || [];
+    // Sentiment trends
+    try {
+        const trends = await API.getSentimentTrends(7);
+        const items = trends.trends || trends || [];
+        renderBarChart('sentimentTrendsChart', items.map(t => ({
+            label: t.date ? t.date.slice(5) : '',
+            value: (t.avg_sentiment || 0) * 100,
+            type: 'primary'
+        })));
+    } catch { document.getElementById('sentimentTrendsChart').innerHTML = '<div class="empty-state"><p>No trend data</p></div>'; }
 
-        // ─── KPI CARDS ───
-        _anxSetKpi('anxKpiConvs', _anxFmt(k.total_conversations), k.conv_change_pct, 'up');
-        _anxSetKpi('anxKpiSat', k.satisfaction_score + '%', k.sentiment_change, 'up');
-        _anxSetKpi('anxKpiMsgs', _anxFmt(k.total_messages), null, null, k.avg_messages_per_conv + '/conv');
-        _anxSetKpi('anxKpiEsc', k.escalation_rate + '%', k.esc_rate_change, 'down');
-        _anxSetKpi('anxKpiOrders', _anxFmt(k.total_orders), k.order_change_pct, 'up');
-        _anxSetKpi('anxKpiRevenue', '$' + _anxFmtMoney(k.total_revenue), k.revenue_change_pct, 'up');
+    // Escalation triggers
+    try {
+        const triggers = await API.getEscalationTriggers();
+        const items = triggers.triggers || triggers || [];
+        const tbody = document.getElementById('triggersBody');
+        if (items.length) {
+            const total = items.reduce((s, t) => s + (t.count || 0), 0) || 1;
+            tbody.innerHTML = items.slice(0, 8).map(t => `<tr>
+                <td>${esc(t.trigger || t.keyword || 'Unknown')}</td>
+                <td>${t.count || 0}</td>
+                <td>${((t.count || 0) / total * 100).toFixed(1)}%</td>
+            </tr>`).join('');
+        } else {
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--text-muted)">No data yet</td></tr>';
+        }
+    } catch { }
 
-        // ─── CONVERSATION VOLUME CHART ───
-        const avgPerDay = trends.length ? Math.round(trends.reduce((s, t) => s + t.conversations, 0) / trends.length) : 0;
-        document.getElementById('anxConvAvg').textContent = `avg ${avgPerDay}/day`;
-        _anxRenderAreaChart('anxConvChart', trends, 'conversations', '#3b82f6', 'rgba(59,130,246,0.15)');
+    // Sentiment by language
+    try {
+        const langData = await API.getSentimentByLanguage();
+        const items = langData.languages || langData || [];
+        const tbody = document.getElementById('langBody');
+        if (items.length) {
+            tbody.innerHTML = items.map(l => `<tr>
+                <td>${esc(l.language || 'Unknown')}</td>
+                <td>${l.avg_sentiment != null ? (l.avg_sentiment * 100).toFixed(0) + '%' : 'N/A'}</td>
+                <td>${l.count || 0}</td>
+            </tr>`).join('');
+        } else {
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--text-muted)">No data yet</td></tr>';
+        }
+    } catch { }
 
-        // ─── SENTIMENT DONUT ───
-        const sd = comp.sentiment_distribution || {};
-        _anxRenderDonut(sd);
-
-        // ─── SENTIMENT TRENDS STACKED BAR ───
-        _anxRenderStackedBars('anxSentTrendsChart', trends);
-
-        // ─── ORDER STATUS ───
-        _anxRenderOrderStatus(comp.order_status || {}, k);
-
-        // ─── MESSAGE BREAKDOWN ───
-        _anxRenderMsgBreakdown(comp.message_breakdown || {});
-
-        // ─── ESCALATION BREAKDOWN ───
-        _anxRenderEscBreakdown(comp.escalation_summary || {}, comp.escalation_priority || {});
-
-        // ─── HEATMAP ───
-        document.getElementById('anxPeakBadge').textContent = `Peak: ${_anxFmtHour(k.peak_hour)}`;
-        _anxRenderHeatmap(hourly);
-
-        // ─── ESCALATION TRIGGERS ───
-        _anxRenderTriggers(triggers.triggers || []);
-
-        // ─── SENTIMENT BY LANGUAGE ───
-        _anxRenderLangBars(langData.breakdown || []);
-
-    } catch (err) {
-        console.error('Analytics load error:', err);
-    }
+    // Hourly activity
+    try {
+        const hourly = await API.getHourlyActivity();
+        const items = hourly.activity || hourly || [];
+        renderBarChart('hourlyActivityChart', items.map(h => ({
+            label: h.hour != null ? h.hour + 'h' : '',
+            value: h.count || 0,
+            type: 'primary'
+        })));
+    } catch { document.getElementById('hourlyActivityChart').innerHTML = '<div class="empty-state"><p>No activity data</p></div>'; }
 }
 
-/* ─── KPI helper ─── */
-function _anxSetKpi(valueId, value, changePct, goodDir, subtitle) {
-    document.getElementById(valueId).textContent = value;
-    const trendEl = document.getElementById(valueId + 'Trend');
-    if (!trendEl) return;
-    if (subtitle) {
-        trendEl.className = 'anx-kpi-trend anx-kpi-trend--neutral';
-        trendEl.textContent = subtitle;
-        return;
-    }
-    if (changePct == null || changePct === 0) {
-        trendEl.className = 'anx-kpi-trend anx-kpi-trend--neutral';
-        trendEl.innerHTML = '— No change';
-        return;
-    }
-    // For escalation, 'down' is good (lower is better)
-    const isGood = goodDir === 'down' ? changePct < 0 : changePct > 0;
-    const arrow = changePct > 0 ? '↑' : '↓';
-    trendEl.className = `anx-kpi-trend anx-kpi-trend--${isGood ? 'up' : 'down'}`;
-    trendEl.innerHTML = `${arrow} ${Math.abs(changePct)}% vs prev period`;
-}
-
-function _anxFmt(n) { return (n || 0).toLocaleString(); }
-function _anxFmtMoney(n) {
-    if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
-    if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
-    return n.toFixed(2);
-}
-function _anxFmtHour(h) {
-    if (h === 0) return '12 AM';
-    if (h < 12) return h + ' AM';
-    if (h === 12) return '12 PM';
-    return (h - 12) + ' PM';
-}
-
-/* ─── Area Chart (SVG) ─── */
-function _anxRenderAreaChart(containerId, data, key, strokeColor, fillColor) {
-    const el = document.getElementById(containerId);
-    if (!data.length) { el.innerHTML = '<div class="anx-empty">No data</div>'; return; }
-
-    const vals = data.map(d => d[key] || 0);
-    const maxVal = Math.max(...vals, 1);
-    const w = 600, h = 160, pad = 2;
-
-    const points = vals.map((v, i) => {
-        const x = pad + (i / Math.max(vals.length - 1, 1)) * (w - pad * 2);
-        const y = h - pad - (v / maxVal) * (h - pad * 2);
-        return { x, y };
-    });
-
-    const pathD = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ');
-    const areaD = pathD + ` L${points[points.length - 1].x},${h} L${points[0].x},${h} Z`;
-
-    // Grid lines
-    let gridLines = '';
-    for (let i = 0; i <= 4; i++) {
-        const y = pad + (i / 4) * (h - pad * 2);
-        gridLines += `<line x1="${pad}" y1="${y}" x2="${w - pad}" y2="${y}" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>`;
-    }
-
-    el.innerHTML = `
-        <svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
-            ${gridLines}
-            <defs>
-                <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stop-color="${fillColor}"/>
-                    <stop offset="100%" stop-color="transparent"/>
-                </linearGradient>
-            </defs>
-            <path d="${areaD}" fill="url(#areaGrad)" opacity="0.6"/>
-            <path d="${pathD}" fill="none" stroke="${strokeColor}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-            ${points.map((p, i) => `<circle cx="${p.x}" cy="${p.y}" r="3" fill="${strokeColor}" opacity="0.8"><title>${data[i].date}: ${vals[i]}</title></circle>`).join('')}
-        </svg>
-        <div class="anx-chart-x-labels">
-            ${data.filter((_, i) => i % Math.max(1, Math.floor(data.length / 7)) === 0 || i === data.length - 1)
-                .map(d => `<span>${d.date.slice(5)}</span>`).join('')}
-        </div>`;
-}
-
-/* ─── Stacked Bar Chart for Sentiment Trends ─── */
-function _anxRenderStackedBars(containerId, data) {
-    const el = document.getElementById(containerId);
-    if (!data.length) { el.innerHTML = '<div class="anx-empty">No data</div>'; return; }
-
-    const maxVal = Math.max(...data.map(d => (d.positive || 0) + (d.neutral || 0) + (d.negative || 0)), 1);
-    const barW = Math.min(28, Math.floor(560 / data.length) - 2);
-    const w = 600, h = 160;
-
-    let bars = '';
-    data.forEach((d, i) => {
-        const total = (d.positive || 0) + (d.neutral || 0) + (d.negative || 0);
-        const x = 10 + (i / Math.max(data.length - 1, 1)) * (w - 20) - barW / 2;
-        const fullH = (total / maxVal) * (h - 24);
-
-        const negH = total ? (d.negative / total) * fullH : 0;
-        const neuH = total ? (d.neutral / total) * fullH : 0;
-        const posH = total ? (d.positive / total) * fullH : 0;
-
-        const baseY = h - 20;
-        bars += `<rect x="${x}" y="${baseY - negH}" width="${barW}" height="${negH}" rx="2" fill="var(--negative)" opacity="0.8"><title>${d.date} Neg: ${d.negative}</title></rect>`;
-        bars += `<rect x="${x}" y="${baseY - negH - neuH}" width="${barW}" height="${neuH}" rx="2" fill="var(--neutral)" opacity="0.8"><title>${d.date} Neu: ${d.neutral}</title></rect>`;
-        bars += `<rect x="${x}" y="${baseY - negH - neuH - posH}" width="${barW}" height="${posH}" rx="2" fill="var(--positive)" opacity="0.8"><title>${d.date} Pos: ${d.positive}</title></rect>`;
-    });
-
-    el.innerHTML = `
-        <svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">${bars}</svg>
-        <div class="anx-chart-x-labels">
-            ${data.filter((_, i) => i % Math.max(1, Math.floor(data.length / 7)) === 0 || i === data.length - 1)
-                .map(d => `<span>${d.day}</span>`).join('')}
-        </div>`;
-}
-
-/* ─── Donut ─── */
-function _anxRenderDonut(sd) {
-    const pos = sd.positive || 0, neu = sd.neutral || 0, neg = sd.negative || 0;
-    const total = pos + neu + neg || 1;
-    const pPct = Math.round(pos / total * 100);
-    const nPct = Math.round(neu / total * 100);
-    const gPct = 100 - pPct - nPct;
-
-    const ring = document.getElementById('anxDonutRing');
-    ring.style.background = `conic-gradient(
-        var(--positive) 0% ${pPct}%,
-        var(--neutral) ${pPct}% ${pPct + nPct}%,
-        var(--negative) ${pPct + nPct}% 100%
-    )`;
-    ring.innerHTML = `<div class="anx-donut-center"><span class="anx-donut-center-value">${total}</span><span class="anx-donut-center-label">Total</span></div>`;
-
-    document.getElementById('anxDonutLegend').innerHTML = `
-        <span class="anx-donut-legend-item"><span class="anx-donut-legend-dot" style="background:var(--positive)"></span>Positive ${pPct}%</span>
-        <span class="anx-donut-legend-item"><span class="anx-donut-legend-dot" style="background:var(--neutral)"></span>Neutral ${nPct}%</span>
-        <span class="anx-donut-legend-item"><span class="anx-donut-legend-dot" style="background:var(--negative)"></span>Negative ${gPct}%</span>`;
-}
-
-/* ─── Order Status ─── */
-function _anxRenderOrderStatus(statusMap, kpis) {
-    const el = document.getElementById('anxOrderStatus');
-    const statuses = ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'];
-    const total = Object.values(statusMap).reduce((s, c) => s + c, 0) || 1;
-
-    const rows = statuses.filter(s => statusMap[s]).map(s => {
-        const count = statusMap[s] || 0;
-        const pct = Math.round(count / total * 100);
-        return `<div class="anx-ostatus-row">
-            <span class="anx-ostatus-label">${s}</span>
-            <div class="anx-ostatus-bar"><div class="anx-ostatus-fill anx-ostatus-fill--${s}" style="width:${pct}%"></div></div>
-            <span class="anx-ostatus-val">${count}</span>
-        </div>`;
-    });
-
-    el.innerHTML = rows.length ? rows.join('') : '<div class="anx-empty">No orders in this period</div>';
-
-    document.getElementById('anxOrderMeta').innerHTML = `
-        <div class="anx-order-meta-item"><div class="anx-order-meta-val">${_anxFmt(kpis.total_orders)}</div><div class="anx-order-meta-lbl">Orders</div></div>
-        <div class="anx-order-meta-item"><div class="anx-order-meta-val">$${_anxFmtMoney(kpis.avg_order_value)}</div><div class="anx-order-meta-lbl">Avg Value</div></div>
-        <div class="anx-order-meta-item"><div class="anx-order-meta-val">$${_anxFmtMoney(kpis.total_revenue)}</div><div class="anx-order-meta-lbl">Revenue</div></div>`;
-}
-
-/* ─── Message Breakdown ─── */
-function _anxRenderMsgBreakdown(mb) {
-    const el = document.getElementById('anxMsgBreakdown');
-    const total = mb.total || 1;
-    const items = [
-        { name: 'AI Responses', count: mb.ai || 0, cls: 'ai', icon: 'AI', fill: '#3b82f6' },
-        { name: 'Customer', count: mb.customer || 0, cls: 'customer', icon: 'CU', fill: '#8b5cf6' },
-        { name: 'Agent', count: mb.agent || 0, cls: 'agent', icon: 'AG', fill: '#10b981' },
-    ];
-
-    el.innerHTML = items.map(it => {
-        const pct = Math.round(it.count / total * 100);
-        return `<div class="anx-msg-row">
-            <div class="anx-msg-icon anx-msg-icon--${it.cls}">${it.icon}</div>
-            <div class="anx-msg-info">
-                <div class="anx-msg-name">${it.name}</div>
-                <div class="anx-msg-count">${_anxFmt(it.count)} messages</div>
-                <div class="anx-msg-bar"><div class="anx-msg-fill" style="width:${pct}%;background:${it.fill}"></div></div>
-            </div>
-            <div class="anx-msg-pct">${pct}%</div>
-        </div>`;
-    }).join('');
-}
-
-/* ─── Escalation Breakdown ─── */
-function _anxRenderEscBreakdown(summary, priority) {
-    const el = document.getElementById('anxEscBreakdown');
-    const priorities = ['urgent', 'high', 'normal', 'low'];
-    const prRows = priorities.filter(p => priority[p]).map(p => `
-        <div class="anx-esc-priority-row">
-            <span class="anx-esc-priority-dot anx-esc-priority-dot--${p}"></span>
-            <span class="anx-esc-priority-name">${p}</span>
-            <span class="anx-esc-priority-val">${priority[p]}</span>
-        </div>`).join('');
-
-    el.innerHTML = `
-        <div class="anx-esc-summary">
-            <div class="anx-esc-chip anx-esc-chip--open"><span class="anx-esc-chip-val">${summary.open || 0}</span><span class="anx-esc-chip-lbl">Open</span></div>
-            <div class="anx-esc-chip anx-esc-chip--resolved"><span class="anx-esc-chip-val">${summary.resolved || 0}</span><span class="anx-esc-chip-lbl">Resolved</span></div>
-        </div>
-        ${prRows || '<div class="anx-empty">No escalations</div>'}`;
-}
-
-/* ─── Heatmap ─── */
-function _anxRenderHeatmap(hourly) {
-    const el = document.getElementById('anxHeatmap');
-    const maxCount = Math.max(...hourly.map(h => h.count), 1);
-
-    const cells = hourly.map(h => {
-        const intensity = h.count / maxCount;
-        const opacity = 0.08 + intensity * 0.92;
-        return `<div class="anx-heatmap-cell" style="opacity:${opacity.toFixed(2)}" title="${_anxFmtHour(h.hour)}: ${h.count} conversations"></div>`;
-    }).join('');
-
-    el.innerHTML = `
-        <div class="anx-heatmap-grid">${cells}</div>
-        <div class="anx-heatmap-labels">
-            <span>12AM</span><span>4AM</span><span>8AM</span><span>12PM</span><span>4PM</span><span>8PM</span><span>11PM</span>
-        </div>`;
-}
-
-/* ─── Escalation Triggers ─── */
-function _anxRenderTriggers(triggers) {
-    const el = document.getElementById('anxTriggers');
-    if (!triggers.length) { el.innerHTML = '<div class="anx-empty">No escalation triggers detected</div>'; return; }
-
-    const maxCount = Math.max(...triggers.map(t => t.count), 1);
-    el.innerHTML = triggers.slice(0, 6).map((t, i) => {
-        const pct = Math.round((t.count / maxCount) * 100);
-        return `<div class="anx-trigger-row">
-            <div class="anx-trigger-rank">${i + 1}</div>
-            <div class="anx-trigger-info">
-                <div class="anx-trigger-name">${esc(t.name || t.trigger || 'Unknown')}</div>
-                <div class="anx-trigger-bar"><div class="anx-trigger-fill" style="width:${pct}%"></div></div>
-            </div>
-            <div class="anx-trigger-pct">${t.count}</div>
-        </div>`;
-    }).join('');
-}
-
-/* ─── Language Bars ─── */
-function _anxRenderLangBars(breakdown) {
-    const el = document.getElementById('anxLangBars');
-    if (!breakdown.length) { el.innerHTML = '<div class="anx-empty">No language data</div>'; return; }
-
-    el.innerHTML = breakdown.slice(0, 8).map(l => {
-        const total = l.total_conversations || 1;
-        return `<div class="anx-lang-row">
-            <span class="anx-lang-flag">${l.flag || '🌐'}</span>
-            <span class="anx-lang-name">${esc(l.code || '?')}</span>
-            <div class="anx-lang-stacked-bar">
-                <div class="anx-lang-seg anx-lang-seg--pos" style="width:${l.positive_pct || 0}%"></div>
-                <div class="anx-lang-seg anx-lang-seg--neu" style="width:${l.neutral_pct || 0}%"></div>
-                <div class="anx-lang-seg anx-lang-seg--neg" style="width:${l.negative_pct || 0}%"></div>
-            </div>
-            <span class="anx-lang-total">${total}</span>
-        </div>`;
-    }).join('');
-}
-
-/** Backwards-compat: keep renderBarChart for any other caller */
 function renderBarChart(containerId, data) {
     const container = document.getElementById(containerId);
-    if (!data || !data.length) {
-        container.innerHTML = '<div class="anx-empty">No data available</div>';
+    if (!data.length) {
+        container.innerHTML = '<div class="empty-state"><p>No data available</p></div>';
         return;
     }
     const maxVal = Math.max(...data.map(d => d.value), 1);
