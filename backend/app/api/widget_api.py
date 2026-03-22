@@ -487,7 +487,6 @@ async def send_chat_message(
             "show me", "list", "available", "price", "how much",
         ]
         is_product_query = any(sig in msg_lower for sig in PRODUCT_SIGNALS)
-
         # Also check if intent router classified as PRODUCT_INFO
         if not is_product_query:
             try:
@@ -495,34 +494,12 @@ async def send_chat_message(
             except NameError:
                 pass
 
-        # Also check if the message mentions a specific product name from DB
-        if not is_product_query:
-            from app.models.product_listing import ProductListing
-            product_names_db = db.query(ProductListing.name).filter(
-                ProductListing.tenant_id == tenant.id
-            ).all()
-            for (pname,) in product_names_db:
-                if pname and pname.lower() in msg_lower:
-                    is_product_query = True
-                    break
-
         if is_product_query:
             from app.models.product_listing import ProductListing
             all_products = db.query(ProductListing).filter(
                 ProductListing.tenant_id == tenant.id
             ).all()
             if all_products:
-                # Determine customer language name for translation tags
-                _LANG_NAMES = {
-                    "en": "English", "de": "German", "fr": "French",
-                    "es": "Spanish", "it": "Italian", "nl": "Dutch",
-                    "ur": "Urdu", "hi": "Hindi", "ar": "Arabic",
-                    "zh-cn": "Chinese", "pt": "Portuguese", "ru": "Russian",
-                    "ja": "Japanese", "ko": "Korean", "tr": "Turkish"
-                }
-                cust_lang = detected_lang  # from Step 2 (line ~271)
-                cust_lang_name = _LANG_NAMES.get(cust_lang, "English")
-
                 product_names = [p.name for p in all_products]
                 lines = [f"PRODUCT CATALOG — {len(all_products)} products total (this is the COMPLETE catalog, list ALL of them):\n"]
                 for p in all_products:
@@ -530,20 +507,7 @@ async def send_chat_message(
                     line += f"  Price: {p.currency or 'USD'} {p.price}\n"
                     line += f"  In Stock: {'Yes' if p.in_stock else 'No'}\n"
                     if p.description:
-                        # Detect if description is in a different language
-                        desc_lang = cust_lang  # default: assume same
-                        try:
-                            from app.services.language import detect_language as _detect_lang
-                            desc_result = _detect_lang(p.description)
-                            desc_lang = desc_result.get("code", cust_lang)
-                        except Exception:
-                            pass
-
-                        if desc_lang != cust_lang:
-                            desc_lang_name = _LANG_NAMES.get(desc_lang, desc_lang.upper())
-                            line += f"  Description [⚠️ THIS IS IN {desc_lang_name.upper()} — TRANSLATE TO {cust_lang_name.upper()}]: {p.description}\n"
-                        else:
-                            line += f"  Description: {p.description}\n"
+                        line += f"  Description: {p.description}\n"
                     if p.category:
                         line += f"  Category: {p.category}\n"
                     images = p.get_images() if hasattr(p, 'get_images') else []

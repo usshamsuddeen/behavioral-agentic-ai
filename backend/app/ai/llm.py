@@ -373,8 +373,13 @@ RULES:
 
 """
 
-        # Language instruction — MUST come BEFORE context so LLM processes it
-        # before seeing any foreign-language product data
+        if has_context:
+            context_str = self._format_context(context_documents)
+            prompt += f"""CONTEXT:
+{context_str}
+"""
+
+        # Language instruction — ALWAYS respond in the customer's language
         LANG_NAMES = {
             "en": "English", "de": "German", "fr": "French",
             "es": "Spanish", "it": "Italian", "nl": "Dutch",
@@ -383,18 +388,11 @@ RULES:
             "ja": "Japanese", "ko": "Korean", "tr": "Turkish"
         }
         lang_name = LANG_NAMES.get(language, "English")
-        prompt += f"""LANGUAGE RULE (CRITICAL — read BEFORE looking at CONTEXT):
-- Your ENTIRE response MUST be in {lang_name}. No exceptions.
-- The CONTEXT below may contain text in other languages (e.g. German, Chinese, etc.). You MUST translate ALL non-{lang_name} text to {lang_name} before including it.
-- Product/brand NAMES stay as-is, but descriptions, features, and explanations MUST be in {lang_name}.
-- Example: if CONTEXT says "Umweltfreundliche Yogamatte aus Naturkautschuk", you MUST write "Eco-friendly yoga mat made of natural rubber" in your response.
-
-"""
-
-        if has_context:
-            context_str = self._format_context(context_documents)
-            prompt += f"""CONTEXT:
-{context_str}
+        prompt += f"""
+LANGUAGE RULE (CRITICAL):
+- ALWAYS respond in {lang_name}, regardless of what language the product data or CONTEXT is written in.
+- If a product description, policy, or any CONTEXT text is in a DIFFERENT language than {lang_name}, you MUST translate it to {lang_name} before including it in your response.
+- Product names should stay in their original form (do NOT translate brand/product names), but descriptions and explanations must be in {lang_name}.
 """
 
         return prompt
