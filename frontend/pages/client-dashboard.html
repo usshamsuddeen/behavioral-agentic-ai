@@ -10,9 +10,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="../css/design-system.css?v=6">
-    <link rel="stylesheet" href="../css/client-dashboard.css?v=6">
-    <link rel="stylesheet" href="../css/analytics.css?v=6">
+    <link rel="stylesheet" href="../css/design-system.css?v=7">
+    <link rel="stylesheet" href="../css/client-dashboard.css?v=7">
+    <link rel="stylesheet" href="../css/analytics.css?v=7">
     <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
 </head>
 
@@ -637,7 +637,7 @@
                         <span class="anx-period-label" id="anxPeriodLabel">Last updated just now</span>
                     </div>
 
-                    <!-- 6 KPI Hero Cards -->
+                    <!-- 8 KPI Hero Cards (4 cols x 2 rows) -->
                     <div class="anx-kpi-grid" id="anxKpiGrid">
                         <div class="anx-kpi">
                             <div class="anx-kpi-icon anx-kpi-icon--blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
@@ -668,7 +668,7 @@
                             </div>
                         </div>
                         <div class="anx-kpi">
-                            <div class="anx-kpi-icon anx-kpi-icon--cyan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div>
+                            <div class="anx-kpi-icon anx-kpi-icon--cyan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/></svg></div>
                             <div class="anx-kpi-body">
                                 <div class="anx-kpi-value" id="anxKpiOrders">&mdash;</div>
                                 <div class="anx-kpi-label">Total Orders</div>
@@ -681,9 +681,23 @@
                                 <div class="anx-kpi-label">Total Revenue</div>
                             </div>
                         </div>
+                        <div class="anx-kpi">
+                            <div class="anx-kpi-icon anx-kpi-icon--purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></div>
+                            <div class="anx-kpi-body">
+                                <div class="anx-kpi-value" id="anxKpiProducts">&mdash;</div>
+                                <div class="anx-kpi-label">Products</div>
+                            </div>
+                        </div>
+                        <div class="anx-kpi">
+                            <div class="anx-kpi-icon anx-kpi-icon--blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+                            <div class="anx-kpi-body">
+                                <div class="anx-kpi-value" id="anxKpiKbDocs">&mdash;</div>
+                                <div class="anx-kpi-label">KB Documents</div>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Row 1: Sentiment Trend + Sentiment Donut -->
+                    <!-- Row 1: Sentiment Trend + Sentiment Distribution (Rich) -->
                     <div class="anx-grid">
                         <div class="anx-card">
                             <div class="anx-card-header">
@@ -701,40 +715,25 @@
                             <div class="anx-card-header">
                                 <span class="anx-card-title">Sentiment Distribution</span>
                             </div>
-                            <div class="anx-donut-row" id="anxDonutSection"></div>
+                            <div class="anx-card-body" id="anxRichSentiment"></div>
                         </div>
                     </div>
 
-                    <!-- Row 2: Conversation Status + Order Pipeline -->
+                    <!-- Row 2: Orders Overview + Language Detection -->
                     <div class="anx-grid">
                         <div class="anx-card">
                             <div class="anx-card-header">
-                                <span class="anx-card-title">Conversation Status</span>
+                                <span class="anx-card-title">Orders Overview</span>
+                                <span class="anx-card-subtitle" id="anxOrderTotal"></span>
                             </div>
-                            <div class="anx-status-bar-wrap" id="anxConvStatus"></div>
+                            <div class="anx-card-body" id="anxOrdersOverview"></div>
                         </div>
                         <div class="anx-card">
                             <div class="anx-card-header">
-                                <span class="anx-card-title">Order Pipeline</span>
+                                <span class="anx-card-title">Language Detection</span>
+                                <span class="anx-card-subtitle" id="anxLangCount"></span>
                             </div>
-                            <div class="anx-pipeline" id="anxOrderPipeline"></div>
-                        </div>
-                    </div>
-
-                    <!-- Row 3: Escalation Triggers + Language Distribution -->
-                    <div class="anx-grid">
-                        <div class="anx-card">
-                            <div class="anx-card-header">
-                                <span class="anx-card-title">Top Escalation Triggers</span>
-                                <span class="anx-card-subtitle" id="anxTriggerCount"></span>
-                            </div>
-                            <div class="anx-hbar-list" id="anxTriggers"></div>
-                        </div>
-                        <div class="anx-card">
-                            <div class="anx-card-header">
-                                <span class="anx-card-title">Language Distribution</span>
-                            </div>
-                            <div class="anx-hbar-list" id="anxLanguages"></div>
+                            <div class="anx-card-body" id="anxLanguages"></div>
                         </div>
                     </div>
                 </div>
@@ -780,10 +779,10 @@
     </div>
 
     <!-- Scripts -->
-    <script src="../js/auth.js?v=6"></script>
-    <script src="../js/api.js?v=6"></script>
-    <script src="../js/app.js?v=6"></script>
-    <script src="../js/client-dashboard.js?v=6"></script>
+    <script src="../js/auth.js?v=7"></script>
+    <script src="../js/api.js?v=7"></script>
+    <script src="../js/app.js?v=7"></script>
+    <script src="../js/client-dashboard.js?v=7"></script>
 </body>
 
 </html>

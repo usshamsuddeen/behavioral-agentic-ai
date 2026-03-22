@@ -502,8 +502,8 @@ function setupChatActions(convId, conv) {
 }
 
 /* ***********************************************************
-   TAB 3: ANALYTICS  (Complete Redesign)
-   Single API call → renders 6 KPIs + 6 chart sections
+   TAB 3: ANALYTICS  (Complete Redesign v2)
+   Single API call → renders 8 KPIs + 4 chart sections
    *********************************************************** */
 let _anxPeriod = '30d';
 let _anxInitialized = false;
@@ -526,37 +526,32 @@ async function loadAnalytics() {
     try {
         const data = await API.getComprehensiveAnalytics(_anxPeriod);
         const k = data.kpis || {};
-        const sd = data.sentiment_distribution || {};
 
-        // ── KPI Cards ──
+        // ── 8 KPI Cards ──
         _anxSetKpi('anxKpiConversations', (k.total_conversations ?? 0).toLocaleString());
         _anxSetKpi('anxKpiMessages', (k.total_messages ?? 0).toLocaleString());
         _anxSetKpi('anxKpiSentiment', k.avg_sentiment != null ? (k.avg_sentiment * 100).toFixed(0) + '%' : 'N/A');
         _anxSetKpi('anxKpiEscalation', k.escalation_rate != null ? k.escalation_rate.toFixed(1) + '%' : '0%');
         _anxSetKpi('anxKpiOrders', (k.total_orders ?? 0).toLocaleString());
         _anxSetKpi('anxKpiRevenue', '$' + (k.total_revenue ?? 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+        _anxSetKpi('anxKpiProducts', (k.products ?? 0).toLocaleString());
+        _anxSetKpi('anxKpiKbDocs', (k.kb_documents ?? 0).toLocaleString());
 
         // ── Period label ──
         const label = document.getElementById('anxPeriodLabel');
         if (label) label.textContent = `Updated just now · ${k.avg_response_time || '< 2s'} avg response`;
 
-        // ── Sentiment Trend SVG Chart ──
+        // ── Sentiment Trend (smooth) ──
         _anxRenderSentimentChart(data.sentiment_trends || []);
 
-        // ── Sentiment Donut ──
-        _anxRenderDonut(sd);
+        // ── Rich Sentiment Distribution ──
+        _anxRenderRichSentiment(data.rich_sentiments || [], k.total_conversations || 0);
 
-        // ── Conversation Status Breakdown ──
-        _anxRenderConvStatus(data.conversation_statuses || {}, k.total_conversations || 0);
+        // ── Orders Overview ──
+        _anxRenderOrders(data.order_sources || {}, data.order_pipeline || {}, k.total_orders || 0);
 
-        // ── Order Pipeline ──
-        _anxRenderOrderPipeline(data.order_pipeline || {});
-
-        // ── Escalation Triggers ──
-        _anxRenderTriggers(data.escalation_triggers || [], k.escalated_count || 0);
-
-        // ── Language Distribution ──
-        _anxRenderLanguages(data.languages || []);
+        // ── Language Detection ──
+        _anxRenderLanguages(data.languages || [], k.total_conversations || 0);
 
     } catch (err) {
         console.error('Analytics load error:', err);
@@ -568,7 +563,7 @@ function _anxSetKpi(id, value) {
     if (el) el.textContent = value;
 }
 
-/* ── SVG Line Chart ── */
+/* ── Smooth SVG Line Chart (Cubic Bezier) ── */
 function _anxRenderSentimentChart(trends) {
     const wrap = document.getElementById('anxSentimentChart');
     const xLabels = document.getElementById('anxChartXLabels');
@@ -584,7 +579,6 @@ function _anxRenderSentimentChart(trends) {
     const chartW = W - 2 * PX, chartH = H - 2 * PY;
     const n = trends.length;
 
-    // Find max for scaling
     const maxVal = Math.max(...trends.map(t => Math.max(t.positive, t.neutral, t.negative)), 1);
 
     function getPoints(key) {
@@ -595,41 +589,59 @@ function _anxRenderSentimentChart(trends) {
         });
     }
 
-    function pointsToPath(pts) {
-        if (!pts.length) return '';
-        return pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+    // Smooth cubic bezier path
+    function pointsToSmoothPath(pts) {
+        if (pts.length < 2) return pts.length ? `M${pts[0].x.toFixed(1)},${pts[0].y.toFixed(1)}` : '';
+        let d = `M${pts[0].x.toFixed(1)},${pts[0].y.toFixed(1)}`;
+        for (let i = 1; i < pts.length; i++) {
+            const prev = pts[i - 1];
+            const curr = pts[i];
+            const tension = 0.3;
+            const dx = (curr.x - (pts[i - 2] ? pts[i - 2].x : prev.x)) * tension;
+            const cp1x = prev.x + dx;
+            const cp1y = prev.y;
+            const dx2 = (curr.x - (pts[i + 1] ? pts[i + 1].x : curr.x)) * tension;
+            const cp2x = curr.x + dx2;
+            const cp2y = curr.y;
+            d += ` C${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${curr.x.toFixed(1)},${curr.y.toFixed(1)}`;
+        }
+        return d;
     }
 
-    function pointsToArea(pts) {
+    function pointsToSmoothArea(pts) {
         if (!pts.length) return '';
         const base = PY + chartH;
-        return pointsToPath(pts) + ` L${pts[pts.length-1].x.toFixed(1)},${base} L${pts[0].x.toFixed(1)},${base} Z`;
+        return pointsToSmoothPath(pts) + ` L${pts[pts.length-1].x.toFixed(1)},${base} L${pts[0].x.toFixed(1)},${base} Z`;
     }
 
     const posP = getPoints('positive');
     const neuP = getPoints('neutral');
     const negP = getPoints('negative');
 
-    // Grid lines
+    // Grid
     let gridLines = '';
     for (let i = 0; i <= 4; i++) {
         const y = PY + (i / 4) * chartH;
         gridLines += `<line x1="${PX}" y1="${y}" x2="${W - PX}" y2="${y}" class="anx-chart-grid-line"/>`;
     }
 
-    // Build SVG
     let svg = `<svg class="anx-chart-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">`;
+    svg += `<defs>
+        <linearGradient id="anxGradPos" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--positive)" stop-opacity="0.25"/><stop offset="100%" stop-color="var(--positive)" stop-opacity="0"/></linearGradient>
+        <linearGradient id="anxGradNeu" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--neutral)" stop-opacity="0.2"/><stop offset="100%" stop-color="var(--neutral)" stop-opacity="0"/></linearGradient>
+        <linearGradient id="anxGradNeg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--negative)" stop-opacity="0.2"/><stop offset="100%" stop-color="var(--negative)" stop-opacity="0"/></linearGradient>
+    </defs>`;
     svg += gridLines;
 
-    // Areas
-    svg += `<path d="${pointsToArea(posP)}" fill="var(--positive)" class="anx-chart-area"/>`;
-    svg += `<path d="${pointsToArea(neuP)}" fill="var(--neutral)" class="anx-chart-area"/>`;
-    svg += `<path d="${pointsToArea(negP)}" fill="var(--negative)" class="anx-chart-area"/>`;
+    // Gradient areas
+    svg += `<path d="${pointsToSmoothArea(posP)}" fill="url(#anxGradPos)"/>`;
+    svg += `<path d="${pointsToSmoothArea(neuP)}" fill="url(#anxGradNeu)"/>`;
+    svg += `<path d="${pointsToSmoothArea(negP)}" fill="url(#anxGradNeg)"/>`;
 
-    // Lines
-    svg += `<path d="${pointsToPath(posP)}" stroke="var(--positive)" class="anx-chart-line"/>`;
-    svg += `<path d="${pointsToPath(neuP)}" stroke="var(--neutral)" class="anx-chart-line"/>`;
-    svg += `<path d="${pointsToPath(negP)}" stroke="var(--negative)" class="anx-chart-line"/>`;
+    // Smooth lines
+    svg += `<path d="${pointsToSmoothPath(posP)}" stroke="var(--positive)" class="anx-chart-line"/>`;
+    svg += `<path d="${pointsToSmoothPath(neuP)}" stroke="var(--neutral)" class="anx-chart-line"/>`;
+    svg += `<path d="${pointsToSmoothPath(negP)}" stroke="var(--negative)" class="anx-chart-line"/>`;
 
     // Dots
     posP.forEach(p => { svg += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" stroke="var(--positive)" class="anx-chart-dot"/>`; });
@@ -639,155 +651,136 @@ function _anxRenderSentimentChart(trends) {
     svg += '</svg>';
     wrap.innerHTML = svg;
 
-    // X-axis labels
     if (xLabels) {
         xLabels.innerHTML = trends.map(t => `<span>${t.label || t.day || ''}</span>`).join('');
     }
 }
 
-/* ── Sentiment Donut ── */
-function _anxRenderDonut(sd) {
-    const el = document.getElementById('anxDonutSection');
+/* ── Rich Sentiment Distribution (5 categories) ── */
+function _anxRenderRichSentiment(sentiments, totalConvs) {
+    const el = document.getElementById('anxRichSentiment');
     if (!el) return;
 
-    const pos = sd.positive || 0, neu = sd.neutral || 0, neg = sd.negative || 0;
-    const total = pos + neu + neg || 1;
-    const pPct = sd.positive_pct ?? Math.round(pos / total * 100);
-    const nPct = sd.neutral_pct ?? Math.round(neu / total * 100);
-    const gPct = sd.negative_pct ?? (100 - pPct - nPct);
-
-    el.innerHTML = `
-        <div class="anx-donut" style="background: conic-gradient(var(--positive) 0% ${pPct}%, var(--neutral) ${pPct}% ${pPct + nPct}%, var(--negative) ${pPct + nPct}% 100%)">
-            <div class="anx-donut-center">
-                <span class="anx-donut-center-value">${total}</span>
-                <span class="anx-donut-center-label">Total</span>
-            </div>
-        </div>
-        <div class="anx-donut-legend">
-            <div class="anx-donut-legend-item"><span class="anx-donut-legend-dot" style="background:var(--positive)"></span>Positive<span class="anx-donut-legend-val">${pPct}%</span></div>
-            <div class="anx-donut-legend-item"><span class="anx-donut-legend-dot" style="background:var(--neutral)"></span>Neutral<span class="anx-donut-legend-val">${nPct}%</span></div>
-            <div class="anx-donut-legend-item"><span class="anx-donut-legend-dot" style="background:var(--negative)"></span>Negative<span class="anx-donut-legend-val">${gPct}%</span></div>
-        </div>`;
-}
-
-/* ── Conversation Status Breakdown ── */
-function _anxRenderConvStatus(statuses, totalConv) {
-    const el = document.getElementById('anxConvStatus');
-    if (!el) return;
-
-    const statusConfig = {
-        active:    { label: 'Active',    color: 'var(--positive)' },
-        pending:   { label: 'Pending',   color: 'var(--urgent)' },
-        escalated: { label: 'Escalated', color: 'var(--negative)' },
-        resolved:  { label: 'Resolved',  color: 'var(--primary-400)' },
-        closed:    { label: 'Closed',    color: 'var(--text-muted)' },
-    };
-
-    const total = Math.max(totalConv, 1);
-    const entries = Object.entries(statuses);
-
-    if (!entries.length) {
-        el.innerHTML = '<div class="anx-empty"><span>No conversations yet</span></div>';
+    if (!sentiments.length || !totalConvs) {
+        el.innerHTML = '<div class="anx-empty"><span>No sentiment data yet</span></div>';
         return;
     }
 
-    // Stacked bar
-    let barHtml = '<div class="anx-stacked-bar">';
-    entries.forEach(([status, count]) => {
-        const pct = (count / total * 100);
-        const cfg = statusConfig[status] || { label: status, color: 'var(--text-muted)' };
-        barHtml += `<div class="anx-stacked-seg" style="width:${pct}%;background:${cfg.color}" title="${cfg.label}: ${count}"></div>`;
-    });
-    barHtml += '</div>';
+    const maxPct = Math.max(...sentiments.map(s => s.percent || 0), 1);
 
-    // Legend
-    let legendHtml = '<div class="anx-status-legend">';
-    entries.forEach(([status, count]) => {
-        const cfg = statusConfig[status] || { label: status, color: 'var(--text-muted)' };
-        legendHtml += `<div class="anx-status-legend-item"><span class="anx-status-legend-dot" style="background:${cfg.color}"></span>${cfg.label}<span class="anx-status-legend-count">${count}</span></div>`;
-    });
-    legendHtml += '</div>';
-
-    el.innerHTML = barHtml + legendHtml;
-}
-
-/* ── Order Pipeline ── */
-function _anxRenderOrderPipeline(pipeline) {
-    const el = document.getElementById('anxOrderPipeline');
-    if (!el) return;
-
-    const steps = [
-        { key: 'pending',    label: 'Pending',   color: 'var(--urgent)' },
-        { key: 'confirmed',  label: 'Confirmed', color: 'var(--primary-400)' },
-        { key: 'processing', label: 'Processing', color: 'var(--neutral)' },
-        { key: 'shipped',    label: 'Shipped',   color: 'var(--secondary-400)' },
-        { key: 'delivered',  label: 'Delivered', color: 'var(--positive)' },
-        { key: 'cancelled',  label: 'Cancelled', color: 'var(--negative)' },
-    ];
-
-    const maxCount = Math.max(...steps.map(s => pipeline[s.key] || 0), 1);
-    const totalOrders = Object.values(pipeline).reduce((a, b) => a + b, 0);
-
-    if (!totalOrders) {
-        el.innerHTML = '<div class="anx-empty" style="width:100%"><span>No orders yet</span></div>';
-        return;
-    }
-
-    el.innerHTML = steps
-        .filter(s => (pipeline[s.key] || 0) > 0)
-        .map(s => {
-            const count = pipeline[s.key] || 0;
-            const h = Math.max((count / maxCount) * 100, 12);
-            return `<div class="anx-pipeline-step">
-                <div class="anx-pipeline-count">${count}</div>
-                <div class="anx-pipeline-bar" style="height:${h}px;background:${s.color}"></div>
-                <div class="anx-pipeline-label">${s.label}</div>
-            </div>`;
-        }).join('');
-}
-
-/* ── Escalation Triggers ── */
-function _anxRenderTriggers(triggers, totalEsc) {
-    const el = document.getElementById('anxTriggers');
-    const countLabel = document.getElementById('anxTriggerCount');
-    if (!el) return;
-    if (countLabel) countLabel.textContent = totalEsc ? `${totalEsc} total` : '';
-
-    if (!triggers.length) {
-        el.innerHTML = '<div class="anx-empty"><span>No escalations recorded</span></div>';
-        return;
-    }
-
-    const maxPct = Math.max(...triggers.map(t => t.percent || 0), 1);
-    el.innerHTML = triggers.map((t, i) => {
-        const barW = Math.max((t.percent / maxPct) * 100, 4);
-        return `<div class="anx-hbar-item">
-            <span class="anx-hbar-rank">${i + 1}</span>
-            <span class="anx-hbar-label" title="${esc(t.name)}">${esc(t.name)}</span>
-            <div class="anx-hbar-track"><div class="anx-hbar-fill anx-hbar-fill--orange" style="width:${barW}%"></div></div>
-            <span class="anx-hbar-value">${t.count}</span>
+    el.innerHTML = sentiments.map(s => {
+        const barW = Math.max((s.percent / maxPct) * 100, 3);
+        return `<div class="anx-hbar-item" style="margin-bottom:6px">
+            <span style="font-size:1.1rem;width:24px;text-align:center;flex-shrink:0">${s.icon || '●'}</span>
+            <span class="anx-hbar-label" style="width:90px;font-weight:500">${esc(s.label)}</span>
+            <div class="anx-hbar-track"><div class="anx-hbar-fill" style="width:${barW}%;background:${s.color}"></div></div>
+            <span class="anx-hbar-value">${s.count} <span style="color:var(--text-muted);font-weight:400">(${s.percent}%)</span></span>
         </div>`;
     }).join('');
 }
 
-/* ── Language Distribution ── */
-function _anxRenderLanguages(languages) {
-    const el = document.getElementById('anxLanguages');
+/* ── Orders Overview (Source + Pipeline) ── */
+function _anxRenderOrders(sources, pipeline, totalOrders) {
+    const el = document.getElementById('anxOrdersOverview');
+    const totalLabel = document.getElementById('anxOrderTotal');
     if (!el) return;
+    if (totalLabel) totalLabel.textContent = totalOrders ? `${totalOrders} total` : '';
 
-    if (!languages.length) {
-        el.innerHTML = '<div class="anx-empty"><span>No language data yet</span></div>';
+    if (!totalOrders) {
+        el.innerHTML = '<div class="anx-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span>No orders yet</span></div>';
         return;
     }
 
+    const sourceIcons = {
+        csv: '📄',
+        api: '🔗',
+        simulator: '🤖',
+        widget: '💬',
+    };
+
+    // Source breakdown
+    let html = '<div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">';
+    const entries = Object.entries(sources);
+    entries.forEach(([src, info]) => {
+        const icon = sourceIcons[src] || '📦';
+        const label = src === 'csv' ? 'CSV Import' : src === 'api' ? 'API Sync' : src === 'simulator' ? 'Simulator' : src.charAt(0).toUpperCase() + src.slice(1);
+        html += `<div style="flex:1;min-width:120px;background:var(--bg-tertiary);border-radius:var(--radius-md);padding:12px 14px;border:1px solid var(--border-subtle)">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+                <span style="font-size:1.1rem">${icon}</span>
+                <span style="font-size:.75rem;color:var(--text-muted);font-weight:500">${esc(label)}</span>
+            </div>
+            <div style="font-size:1.25rem;font-weight:700;color:var(--text-primary)">${info.count}</div>
+            <div style="font-size:.6875rem;color:var(--text-muted)">$${info.revenue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+        </div>`;
+    });
+    html += '</div>';
+
+    // Status pipeline row
+    const steps = [
+        { key: 'pending',    label: 'Pending',   color: 'var(--urgent)' },
+        { key: 'confirmed',  label: 'Confirmed', color: 'var(--primary-400)' },
+        { key: 'shipped',    label: 'Shipped',   color: 'var(--secondary-400)' },
+        { key: 'delivered',  label: 'Delivered', color: 'var(--positive)' },
+        { key: 'cancelled',  label: 'Cancelled', color: 'var(--negative)' },
+    ];
+    const activeSteps = steps.filter(s => (pipeline[s.key] || 0) > 0);
+    if (activeSteps.length) {
+        html += '<div style="display:flex;gap:6px;flex-wrap:wrap">';
+        activeSteps.forEach(s => {
+            const count = pipeline[s.key] || 0;
+            html += `<div style="display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:var(--radius-full);background:var(--bg-tertiary);border:1px solid var(--border-subtle);font-size:.75rem">
+                <span style="width:7px;height:7px;border-radius:50%;background:${s.color};flex-shrink:0"></span>
+                <span style="color:var(--text-secondary)">${s.label}</span>
+                <span style="font-weight:600;color:var(--text-primary)">${count}</span>
+            </div>`;
+        });
+        html += '</div>';
+    }
+
+    el.innerHTML = html;
+}
+
+/* ── Language Detection with Sentiment ── */
+function _anxRenderLanguages(languages, totalConvs) {
+    const el = document.getElementById('anxLanguages');
+    const countLabel = document.getElementById('anxLangCount');
+    if (!el) return;
+    if (countLabel) countLabel.textContent = languages.length ? `${languages.length} detected` : '';
+
+    if (!languages.length) {
+        el.innerHTML = '<div class="anx-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg><span>No language data yet</span></div>';
+        return;
+    }
+
+    // Sentiment to color mapping
+    function sentimentColor(score) {
+        if (score >= 0.75) return '#10b981'; // green
+        if (score >= 0.55) return '#22d3ee'; // cyan
+        if (score >= 0.40) return '#8b5cf6'; // purple
+        if (score >= 0.25) return '#f59e0b'; // orange
+        return '#ef4444'; // red
+    }
+    function sentimentLabel(score) {
+        if (score >= 0.75) return 'Happy';
+        if (score >= 0.55) return 'Satisfied';
+        if (score >= 0.40) return 'Neutral';
+        if (score >= 0.25) return 'Frustrated';
+        return 'Angry';
+    }
+
     const maxPct = Math.max(...languages.map(l => l.percent || 0), 1);
-    el.innerHTML = languages.map((l, i) => {
+
+    el.innerHTML = languages.map(l => {
         const barW = Math.max((l.percent / maxPct) * 100, 4);
-        return `<div class="anx-hbar-item anx-lang-item">
-            <span class="anx-lang-flag">${l.flag || '🌐'}</span>
-            <span class="anx-lang-name">${esc(l.name || 'Unknown')}</span>
-            <div class="anx-hbar-track"><div class="anx-hbar-fill anx-hbar-fill--blue" style="width:${barW}%"></div></div>
-            <span class="anx-hbar-value">${l.percent}%</span>
+        const sColor = sentimentColor(l.avg_sentiment || 0.5);
+        const sLabel = sentimentLabel(l.avg_sentiment || 0.5);
+        return `<div class="anx-hbar-item" style="margin-bottom:6px">
+            <span style="font-size:1.1rem;width:26px;text-align:center;flex-shrink:0">${l.flag || '🌐'}</span>
+            <span class="anx-hbar-label" style="width:80px">${esc(l.name || 'Unknown')}</span>
+            <div class="anx-hbar-track"><div class="anx-hbar-fill" style="width:${barW}%;background:${sColor}"></div></div>
+            <span class="anx-hbar-value" style="min-width:70px">${l.percent}%
+                <span style="font-size:.6rem;color:${sColor};font-weight:400">${sLabel}</span>
+            </span>
         </div>`;
     }).join('');
 }

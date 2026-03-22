@@ -569,21 +569,19 @@ async def get_comprehensive_analytics(
         })
 
     # ════════════════════════════════════════
-    # SECTION 3: CONVERSATION STATUS BREAKDOWN
+    # SECTION 3: ORDER SOURCE BREAKDOWN
     # ════════════════════════════════════════
 
-    status_rows = db.query(
-        Conversation.status,
-        func.count(Conversation.id).label("count")
-    ).filter(conv_tf, conv_pf).group_by(Conversation.status).all()
+    order_source_rows = db.query(
+        CustomerOrder.source,
+        func.count(CustomerOrder.id).label("count"),
+        func.coalesce(func.sum(CustomerOrder.total_amount), 0).label("revenue")
+    ).filter(order_tf, order_pf).group_by(CustomerOrder.source).all()
 
-    conversation_statuses = {}
-    for row in status_rows:
-        conversation_statuses[row.status or "unknown"] = row.count
-
-    # ════════════════════════════════════════
-    # SECTION 4: ORDER PIPELINE
-    # ════════════════════════════════════════
+    order_sources = {}
+    for row in order_source_rows:
+        src = row.source or "other"
+        order_sources[src] = {"count": row.count, "revenue": round(float(row.revenue), 2)}
 
     order_status_rows = db.query(
         CustomerOrder.status,
@@ -595,37 +593,45 @@ async def get_comprehensive_analytics(
         order_pipeline[row.status or "unknown"] = row.count
 
     # ════════════════════════════════════════
-    # SECTION 5: TOP ESCALATION TRIGGERS
+    # SECTION 4: RICHER SENTIMENT BREAKDOWN
     # ════════════════════════════════════════
+    # Derive 5 categories from sentiment_score:
+    #   Happy (>0.75), Satisfied (0.55-0.75), Neutral (0.40-0.55),
+    #   Frustrated (0.25-0.40), Angry (<0.25)
 
-    escalated_convs = db.query(Conversation).filter(
-        conv_tf, Conversation.is_escalated == True, conv_pf
-    ).all()
+    sentiment_buckets = {
+        "Happy": {"min": 0.75, "max": 1.01, "color": "#10b981", "icon": "😊"},
+        "Satisfied": {"min": 0.55, "max": 0.75, "color": "#22d3ee", "icon": "🙂"},
+        "Neutral": {"min": 0.40, "max": 0.55, "color": "#8b5cf6", "icon": "😐"},
+        "Frustrated": {"min": 0.25, "max": 0.40, "color": "#f59e0b", "icon": "😤"},
+        "Angry": {"min": -0.01, "max": 0.25, "color": "#ef4444", "icon": "😡"},
+    }
 
-    trigger_counts = {}
-    for conv in escalated_convs:
-        if conv.escalation_reason:
-            reasons = conv.escalation_reason.split(",")
-            for reason in reasons:
-                reason = reason.strip()
-                if reason:
-                    trigger_counts[reason] = trigger_counts.get(reason, 0) + 1
-
-    sorted_triggers = sorted(trigger_counts.items(), key=lambda x: x[1], reverse=True)[:8]
-    escalation_triggers = [
-        {"name": name, "count": count, "percent": round((count / max(escalated_count, 1)) * 100)}
-        for name, count in sorted_triggers
-    ]
+    rich_sentiments = []
+    for label, cfg in sentiment_buckets.items():
+        count = db.query(func.count(Conversation.id)).filter(
+            conv_tf, conv_pf,
+            Conversation.sentiment_score >= cfg["min"],
+            Conversation.sentiment_score < cfg["max"]
+        ).scalar() or 0
+        rich_sentiments.append({
+            "label": label,
+            "count": count,
+            "percent": round((count / max(total_conversations, 1)) * 100),
+            "color": cfg["color"],
+            "icon": cfg["icon"]
+        })
 
     # ════════════════════════════════════════
-    # SECTION 6: LANGUAGE DISTRIBUTION
+    # SECTION 5: LANGUAGE DISTRIBUTION + SENTIMENT
     # ════════════════════════════════════════
 
     lang_rows = db.query(
         Conversation.detected_language,
         Conversation.language_name,
         Conversation.language_flag,
-        func.count(Conversation.id).label("count")
+        func.count(Conversation.id).label("count"),
+        func.avg(Conversation.sentiment_score).label("avg_sent")
     ).filter(conv_tf, conv_pf).group_by(
         Conversation.detected_language,
         Conversation.language_name,
@@ -638,26 +644,30 @@ async def get_comprehensive_analytics(
             "name": row.language_name or "Unknown",
             "flag": row.language_flag or "🌐",
             "count": row.count,
-            "percent": round((row.count / max(total_conversations, 1)) * 100, 1)
+            "percent": round((row.count / max(total_conversations, 1)) * 100, 1),
+            "avg_sentiment": round(float(row.avg_sent), 3) if row.avg_sent else 0.5
         }
         for row in lang_rows
     ]
 
     # ════════════════════════════════════════
-    # SECTION 7: KB & PRODUCT COUNTS
+    # SECTION 6: KB & PRODUCT COUNTS
     # ════════════════════════════════════════
 
-    kb_doc_count = 0
-    product_count = 0
     if tenant_id:
         kb_doc_count = db.query(func.count(KnowledgeDocument.id)).filter(
             KnowledgeDocument.tenant_id == tenant_id,
             KnowledgeDocument.status == "indexed"
         ).scalar() or 0
-
         product_count = db.query(func.count(ProductListing.id)).filter(
             ProductListing.tenant_id == tenant_id
         ).scalar() or 0
+    else:
+        # Super admin: count all
+        kb_doc_count = db.query(func.count(KnowledgeDocument.id)).filter(
+            KnowledgeDocument.status == "indexed"
+        ).scalar() or 0
+        product_count = db.query(func.count(ProductListing.id)).scalar() or 0
 
     # ════════════════════════════════════════
     # ASSEMBLE RESPONSE
@@ -689,9 +699,10 @@ async def get_comprehensive_analytics(
             "neutral_pct": round((neutral_count / max(total_sentiment, 1)) * 100),
             "negative_pct": round((negative_count / max(total_sentiment, 1)) * 100),
         },
+        "rich_sentiments": rich_sentiments,
         "sentiment_trends": sentiment_trends,
-        "conversation_statuses": conversation_statuses,
+        "order_sources": order_sources,
         "order_pipeline": order_pipeline,
-        "escalation_triggers": escalation_triggers,
         "languages": languages,
     }
+
