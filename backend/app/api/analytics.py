@@ -625,24 +625,23 @@ async def get_comprehensive_analytics(
     # ════════════════════════════════════════
     # SECTION 5: LANGUAGE DISTRIBUTION + SENTIMENT
     # ════════════════════════════════════════
+    # Group by language CODE only — avoids duplicates when flag strings differ
 
     lang_rows = db.query(
         Conversation.detected_language,
-        Conversation.language_name,
-        Conversation.language_flag,
+        func.min(Conversation.language_name).label("lang_name"),
+        func.min(Conversation.language_flag).label("lang_flag"),
         func.count(Conversation.id).label("count"),
         func.avg(Conversation.sentiment_score).label("avg_sent")
     ).filter(conv_tf, conv_pf).group_by(
-        Conversation.detected_language,
-        Conversation.language_name,
-        Conversation.language_flag
+        Conversation.detected_language
     ).order_by(func.count(Conversation.id).desc()).all()
 
     languages = [
         {
             "code": row.detected_language or "unknown",
-            "name": row.language_name or "Unknown",
-            "flag": row.language_flag or "🌐",
+            "name": row.lang_name or "Unknown",
+            "flag": row.lang_flag or "🌐",
             "count": row.count,
             "percent": round((row.count / max(total_conversations, 1)) * 100, 1),
             "avg_sentiment": round(float(row.avg_sent), 3) if row.avg_sent else 0.5
