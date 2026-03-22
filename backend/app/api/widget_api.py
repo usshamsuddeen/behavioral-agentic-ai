@@ -500,7 +500,8 @@ async def send_chat_message(
                 ProductListing.tenant_id == tenant.id
             ).all()
             if all_products:
-                lines = ["PRODUCT CATALOG (complete list of all available products):\n"]
+                product_names = [p.name for p in all_products]
+                lines = [f"PRODUCT CATALOG — {len(all_products)} products total (this is the COMPLETE catalog, list ALL of them):\n"]
                 for p in all_products:
                     line = f"Product: {p.name}\n"
                     line += f"  Price: {p.currency or 'USD'} {p.price}\n"
@@ -514,7 +515,7 @@ async def send_chat_message(
                         line += f"  [IMAGE:{images[0]}]\n"
                     lines.append(line)
                 product_context_override = "\n".join(lines)
-                logger.info(f"📦 Injected full product catalog ({len(all_products)} products) into context")
+                logger.info(f"📦 Injected full product catalog ({len(all_products)} products: {product_names}) into context")
     except Exception as pc_err:
         logger.warning(f"Product catalog injection failed (non-blocking): {pc_err}")
 

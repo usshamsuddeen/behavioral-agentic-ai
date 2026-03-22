@@ -135,10 +135,11 @@ class AIAgent:
         )
         
         # Step 4b: Inject pre-built product catalog if available
-        # This ensures ALL products appear in context, not just RAG matches
+        # DB catalog is the SOLE source of truth for products — replaces RAG
+        # to avoid conflicting/incomplete product lists confusing the LLM
         if context.product_context:
-            context_docs = [context.product_context] + context_docs
-            logger.info("📦 Product catalog injected into context docs")
+            context_docs = [context.product_context]
+            logger.info("📦 Product catalog from DB replaces RAG context (single source of truth)")
         
         # Step 5: Generate response using LLM
         llm_response = self._generate_response(
