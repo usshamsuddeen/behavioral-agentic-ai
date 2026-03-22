@@ -289,11 +289,22 @@ class AIAgent:
                                 logger.info(f"🔄 Short reply '{query}' → re-using previous query: '{effective_query[:50]}'")
                                 break
             
+            # Detect "show ALL products" queries — need more results
+            PRODUCT_LIST_SIGNALS = [
+                "all product", "show product", "list product", "your product",
+                "what product", "show me product", "menu", "catalog", "catalogue",
+                "what do you sell", "what do you have", "what do you offer",
+                "show everything", "all items", "list everything",
+            ]
+            is_product_listing = any(sig in effective_query.lower() for sig in PRODUCT_LIST_SIGNALS)
+            top_k = 20 if is_product_listing else 5
+            max_tokens = 4000 if is_product_listing else 2000
+            
             context_str, results = self.retrieval.retrieve_context(
                 client_id=client_id,
                 query=effective_query,
-                max_tokens=2000,
-                top_k=5
+                max_tokens=max_tokens,
+                top_k=top_k
             )
             
             # Convert to list of document strings

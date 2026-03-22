@@ -589,10 +589,11 @@ async def send_chat_message(
             logger.error(f"❌ AI agent failed: {type(e).__name__}: {e}", exc_info=True)
 
     # ══════════════════════════════════════════════════════════════
-    # Step 6b: Chat-Confirmed Order Detection (NEW)
+    # Step 6b: Chat-Confirmed Order Detection
     # When the LLM guides a customer through ordering via conversation
     # (not keyword-triggered INTENT_PURCHASE), detect if the AI response
     # contains order confirmation details and persist to DB + vector store.
+    # Also extracts customer name/email from conversation history.
     # ══════════════════════════════════════════════════════════════
     if ai_response_text and not intent_skipped_agent:
         try:
@@ -602,20 +603,64 @@ async def send_chat_message(
             has_order_confirmation = any(marker in response_lower for marker in [
                 "order placed successfully",
                 "order confirmed",
+                "order has been confirmed",
+                "order is confirmed",
                 "order has been placed",
+                "confirmed your order",
+                "proceeding with your order",
+                "processing your order",
                 "your order #",
                 "your order id",
                 "order id:",
                 "✅ **order",
+                "confirmation email",
+                "order is being processed",
             ])
 
             if has_order_confirmation:
-                # Extract product name from AI response
-                product_match = _re.search(
-                    r'(?:\*\*product:\*\*|product:)\s*(.+?)(?:\n|$)',
-                    ai_response_text, _re.IGNORECASE
-                )
-                product_query = product_match.group(1).strip().strip('*') if product_match else None
+                # ── Extract product name (multi-strategy) ──
+                product_query = None
+
+                # Strategy 1: from AI confirmation response text
+                for pattern in [
+                    r'\*\*(?:Product|Item)[:\s]*\*\*\s*(.+?)(?:\n|$)',
+                    r'order for (?:the\s+)?(.+?)(?:\s*\(|\s*[\-,\n]|\s*!|\s*\.)',
+                    r'ordered?\s+(?:the\s+)?(.+?)(?:\s*\(|\s*[\-,\n]|\s*!|\s*\.)',
+                ]:
+                    p_match = _re.search(pattern, ai_response_text, _re.IGNORECASE)
+                    if p_match:
+                        candidate = p_match.group(1).strip().strip('*').strip()
+                        # Filter out common non-product words
+                        if len(candidate) > 2 and candidate.lower() not in ("this", "that", "it", "your", "the"):
+                            product_query = candidate
+                            break
+
+                # Strategy 2: from conversation history (find last product discussed)
+                if not product_query:
+                    for msg in reversed(conversation_history or []):
+                        if msg.get("role") != "assistant":
+                            continue
+                        content = msg.get("content", "")
+                        # "Aero-Flow Running Tee (USD 45)" pattern
+                        p_match = _re.search(r'(?:^|\n)\s*[-•]\s*(.+?)\s*\((?:USD|EUR|GBP|\$)?\s*[\d,.]+\)', content)
+                        if p_match:
+                            product_query = p_match.group(1).strip().strip('*')
+                            break
+                        # "**Product:** Name" pattern
+                        p_match = _re.search(r'\*\*(?:Product|Item)[:\s]*\*\*\s*(.+?)(?:\n|$)', content, _re.IGNORECASE)
+                        if p_match:
+                            product_query = p_match.group(1).strip().strip('*')
+                            break
+                        # "Our/The Product Name (price)" pattern
+                        p_match = _re.search(r'(?:Our|The)\s+(.+?)\s+\((?:USD|EUR|GBP|\$)?\s*[\d,.]+', content, _re.IGNORECASE)
+                        if p_match:
+                            product_query = p_match.group(1).strip().strip('*')
+                            break
+                        # "Aero-Flow Running Tee (1 piece)" from confirmation summary
+                        p_match = _re.search(r'[-•]\s*(.+?)\s*\(\d+\s*(?:piece|qty|quantity|x)\)', content, _re.IGNORECASE)
+                        if p_match:
+                            product_query = p_match.group(1).strip().strip('*')
+                            break
 
                 # Check if order was already created by INTENT_PURCHASE handler
                 order_id_match = _re.search(
@@ -624,23 +669,64 @@ async def send_chat_message(
                 )
                 existing_order_id = order_id_match.group(1) if order_id_match else None
 
-                # Only create order if it wasn't already created (no WO- prefix = LLM-generated text)
+                # ── Extract customer details from conversation history ──
+                extracted_name = conversation.customer_name
+                extracted_email = conversation.customer_email or ""
+
+                all_messages = (conversation_history or []) + [{"role": "user", "content": data.message}]
+                for msg in all_messages:
+                    content = msg.get("content", "")
+                    # Find email in any message
+                    email_match = _re.search(r'[\w.+-]+@[\w-]+\.[\w.]+', content)
+                    if email_match:
+                        extracted_email = email_match.group(0)
+                    # Find name patterns — look for user messages with name-like content
+                    if msg.get("role") == "user":
+                        # Pattern: "my name is John Doe" or "I'm John Doe"
+                        name_match = _re.search(r'(?:(?:my\s+)?name\s+is\s+|i\'?m\s+)([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)', content, _re.IGNORECASE)
+                        if name_match:
+                            extracted_name = name_match.group(1).strip()
+                        # Pattern: comma-separated "Name, email, address"
+                        elif "," in content and "@" in content:
+                            parts = content.split(",")
+                            potential_name = parts[0].strip()
+                            if 2 <= len(potential_name.split()) <= 4 and "@" not in potential_name:
+                                extracted_name = potential_name
+                    # Also check AI's confirmation summary for name
+                    if msg.get("role") == "assistant":
+                        name_from_ai = _re.search(r'(?:Name|Customer)[:\s]*\*?\*?\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)', msg.get("content", ""))
+                        if name_from_ai:
+                            extracted_name = name_from_ai.group(1).strip()
+
+                # Update conversation record with extracted details
+                if extracted_name and extracted_name != conversation.customer_name:
+                    conversation.customer_name = extracted_name
+                if extracted_email and extracted_email != conversation.customer_email:
+                    conversation.customer_email = extracted_email
+                db.commit()
+
+                # Only create order if it wasn't already created by INTENT_PURCHASE
                 if product_query and (not existing_order_id or not existing_order_id.startswith("WO-")):
                     from app.services.order_placement import place_widget_order
                     order_result = place_widget_order(
                         tenant_id=tenant.id,
-                        customer_name=conversation.customer_name or "Widget Customer",
-                        customer_email=conversation.customer_email or "",
+                        customer_name=extracted_name or "Widget Customer",
+                        customer_email=extracted_email or "",
                         product_query=product_query,
                         conversation_id=conversation.id,
                         db=db
                     )
                     if order_result.get("success"):
-                        # Replace AI text with actual order confirmation (with real order ID)
+                        # Replace generic LLM confirmation with detailed order receipt
                         ai_response_text = order_result["response"]
-                        logger.info(f"🛒 Chat-confirmed order saved: {order_result.get('order', {}).get('order_id')}")
+                        logger.info(f"🛒 Chat-confirmed order saved: {order_result.get('order', {}).get('order_id')} "
+                                    f"(customer: {extracted_name}, email: {extracted_email}, product: {product_query})")
                     else:
                         logger.info(f"ℹ️ Chat order detection skipped: {order_result.get('response', 'no match')}")
+                elif product_query:
+                    logger.info(f"ℹ️ Order already placed via intent (ID: {existing_order_id})")
+                else:
+                    logger.warning(f"⚠️ Order confirmation detected but no product could be extracted from conversation")
         except Exception as chat_order_err:
             logger.warning(f"Chat order detection failed (non-blocking): {chat_order_err}")
 
