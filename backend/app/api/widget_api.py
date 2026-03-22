@@ -472,6 +472,53 @@ async def send_chat_message(
         logger.warning(f"Intent router failed (non-blocking): {intent_err}")
 
     # ══════════════════════════════════════════════════════════════
+    # Step 4.6: Product Catalog Injection
+    # When the message is product-related, query ALL products from DB
+    # and inject as pre-built context. RAG semantic search often misses
+    # products because "show all products" doesn't semantically match
+    # individual product descriptions.
+    # ══════════════════════════════════════════════════════════════
+    product_context_override = None
+    try:
+        msg_lower = data.message.lower()
+        PRODUCT_SIGNALS = [
+            "product", "catalog", "catalogue", "menu", "item",
+            "what do you sell", "what do you have", "what do you offer",
+            "show me", "list", "available", "price", "how much",
+        ]
+        is_product_query = any(sig in msg_lower for sig in PRODUCT_SIGNALS)
+        # Also check if intent router classified as PRODUCT_INFO
+        if not is_product_query:
+            try:
+                is_product_query = (intent == INTENT_PRODUCT_INFO)
+            except NameError:
+                pass
+
+        if is_product_query:
+            from app.models.product_listing import ProductListing
+            all_products = db.query(ProductListing).filter(
+                ProductListing.tenant_id == tenant.id
+            ).all()
+            if all_products:
+                lines = ["PRODUCT CATALOG (complete list of all available products):\n"]
+                for p in all_products:
+                    line = f"Product: {p.name}\n"
+                    line += f"  Price: {p.currency or 'USD'} {p.price}\n"
+                    line += f"  In Stock: {'Yes' if p.in_stock else 'No'}\n"
+                    if p.description:
+                        line += f"  Description: {p.description}\n"
+                    if p.category:
+                        line += f"  Category: {p.category}\n"
+                    images = p.get_images() if hasattr(p, 'get_images') else []
+                    if images and images[0]:
+                        line += f"  [IMAGE:{images[0]}]\n"
+                    lines.append(line)
+                product_context_override = "\n".join(lines)
+                logger.info(f"📦 Injected full product catalog ({len(all_products)} products) into context")
+    except Exception as pc_err:
+        logger.warning(f"Product catalog injection failed (non-blocking): {pc_err}")
+
+    # ══════════════════════════════════════════════════════════════
     # Step 5: Generate AI Response via Agent (FR-5.2 + FR-5.3)
     # The AI agent internally handles:
     #   - RAG retrieval (knowledge base context)
@@ -511,6 +558,7 @@ async def send_chat_message(
                     "label": sentiment_result.get("label", "neutral"),
                     "is_urgent": sentiment_result.get("is_urgent", False),
                 },
+                product_context=product_context_override,
             )
             result = agent.process_message(agent_context)
             ai_response_text = result.response

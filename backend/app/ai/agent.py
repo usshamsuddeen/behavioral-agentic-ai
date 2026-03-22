@@ -48,6 +48,7 @@ class AgentContext:
     current_frustration: float = 0.0
     detected_language: str = "en"  # ISO code from language detection
     pre_sentiment: Optional[Dict] = None  # Reuse sentiment from widget_api
+    product_context: Optional[str] = None  # Full product catalog from DB, injected into LLM context alongside RAG
 
 
 @dataclass
@@ -132,6 +133,12 @@ class AIAgent:
             query=context.user_message,
             conversation_history=context.conversation_history
         )
+        
+        # Step 4b: Inject pre-built product catalog if available
+        # This ensures ALL products appear in context, not just RAG matches
+        if context.product_context:
+            context_docs = [context.product_context] + context_docs
+            logger.info("📦 Product catalog injected into context docs")
         
         # Step 5: Generate response using LLM
         llm_response = self._generate_response(
