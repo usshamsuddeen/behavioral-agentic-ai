@@ -563,7 +563,7 @@ function _anxSetKpi(id, value) {
     if (el) el.textContent = value;
 }
 
-/* ── Smooth SVG Line Chart (Cubic Bezier) ── */
+/* ── Smooth SVG Line Chart (Cubic Bezier - 5 categories) ── */
 function _anxRenderSentimentChart(trends) {
     const wrap = document.getElementById('anxSentimentChart');
     const xLabels = document.getElementById('anxChartXLabels');
@@ -579,12 +579,14 @@ function _anxRenderSentimentChart(trends) {
     const chartW = W - 2 * PX, chartH = H - 2 * PY;
     const n = trends.length;
 
-    const maxVal = Math.max(...trends.map(t => Math.max(t.positive, t.neutral, t.negative)), 1);
+    // The 5 sentiment data points
+    const maxVal = Math.max(...trends.map(t => Math.max(t.happy||0, t.satisfied||0, t.neutral||0, t.frustrated||0, t.angry||0)), 1);
 
     function getPoints(key) {
         return trends.map((t, i) => {
+            const val = t[key] || 0;
             const x = PX + (i / Math.max(n - 1, 1)) * chartW;
-            const y = PY + chartH - (t[key] / maxVal) * chartH;
+            const y = PY + chartH - (val / maxVal) * chartH;
             return { x, y };
         });
     }
@@ -614,9 +616,11 @@ function _anxRenderSentimentChart(trends) {
         return pointsToSmoothPath(pts) + ` L${pts[pts.length-1].x.toFixed(1)},${base} L${pts[0].x.toFixed(1)},${base} Z`;
     }
 
-    const posP = getPoints('positive');
+    const hapP = getPoints('happy');
+    const satP = getPoints('satisfied');
     const neuP = getPoints('neutral');
-    const negP = getPoints('negative');
+    const fruP = getPoints('frustrated');
+    const angP = getPoints('angry');
 
     // Grid
     let gridLines = '';
@@ -625,28 +629,44 @@ function _anxRenderSentimentChart(trends) {
         gridLines += `<line x1="${PX}" y1="${y}" x2="${W - PX}" y2="${y}" class="anx-chart-grid-line"/>`;
     }
 
+    // Colors matching sentimentMeta in rich sentiment
+    const cHappy = '#10b981';
+    const cSatisfied = '#22d3ee';
+    const cNeutral = '#8b5cf6';
+    const cFrustrated = '#f59e0b';
+    const cAngry = '#ef4444';
+
     let svg = `<svg class="anx-chart-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">`;
     svg += `<defs>
-        <linearGradient id="anxGradPos" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--positive)" stop-opacity="0.25"/><stop offset="100%" stop-color="var(--positive)" stop-opacity="0"/></linearGradient>
-        <linearGradient id="anxGradNeu" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--neutral)" stop-opacity="0.2"/><stop offset="100%" stop-color="var(--neutral)" stop-opacity="0"/></linearGradient>
-        <linearGradient id="anxGradNeg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--negative)" stop-opacity="0.2"/><stop offset="100%" stop-color="var(--negative)" stop-opacity="0"/></linearGradient>
+        <linearGradient id="gHap" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${cHappy}" stop-opacity="0.25"/><stop offset="100%" stop-color="${cHappy}" stop-opacity="0"/></linearGradient>
+        <linearGradient id="gSat" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${cSatisfied}" stop-opacity="0.25"/><stop offset="100%" stop-color="${cSatisfied}" stop-opacity="0"/></linearGradient>
+        <linearGradient id="gNeu" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${cNeutral}" stop-opacity="0.2"/><stop offset="100%" stop-color="${cNeutral}" stop-opacity="0"/></linearGradient>
+        <linearGradient id="gFru" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${cFrustrated}" stop-opacity="0.2"/><stop offset="100%" stop-color="${cFrustrated}" stop-opacity="0"/></linearGradient>
+        <linearGradient id="gAng" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${cAngry}" stop-opacity="0.25"/><stop offset="100%" stop-color="${cAngry}" stop-opacity="0"/></linearGradient>
     </defs>`;
     svg += gridLines;
 
     // Gradient areas
-    svg += `<path d="${pointsToSmoothArea(posP)}" fill="url(#anxGradPos)"/>`;
-    svg += `<path d="${pointsToSmoothArea(neuP)}" fill="url(#anxGradNeu)"/>`;
-    svg += `<path d="${pointsToSmoothArea(negP)}" fill="url(#anxGradNeg)"/>`;
+    svg += `<path d="${pointsToSmoothArea(hapP)}" fill="url(#gHap)"/>`;
+    svg += `<path d="${pointsToSmoothArea(satP)}" fill="url(#gSat)"/>`;
+    svg += `<path d="${pointsToSmoothArea(neuP)}" fill="url(#gNeu)"/>`;
+    svg += `<path d="${pointsToSmoothArea(fruP)}" fill="url(#gFru)"/>`;
+    svg += `<path d="${pointsToSmoothArea(angP)}" fill="url(#gAng)"/>`;
 
     // Smooth lines
-    svg += `<path d="${pointsToSmoothPath(posP)}" stroke="var(--positive)" class="anx-chart-line"/>`;
-    svg += `<path d="${pointsToSmoothPath(neuP)}" stroke="var(--neutral)" class="anx-chart-line"/>`;
-    svg += `<path d="${pointsToSmoothPath(negP)}" stroke="var(--negative)" class="anx-chart-line"/>`;
+    svg += `<path d="${pointsToSmoothPath(hapP)}" stroke="${cHappy}" class="anx-chart-line"/>`;
+    svg += `<path d="${pointsToSmoothPath(satP)}" stroke="${cSatisfied}" class="anx-chart-line"/>`;
+    svg += `<path d="${pointsToSmoothPath(neuP)}" stroke="${cNeutral}" class="anx-chart-line"/>`;
+    svg += `<path d="${pointsToSmoothPath(fruP)}" stroke="${cFrustrated}" class="anx-chart-line"/>`;
+    svg += `<path d="${pointsToSmoothPath(angP)}" stroke="${cAngry}" class="anx-chart-line"/>`;
 
     // Dots
-    posP.forEach(p => { svg += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" stroke="var(--positive)" class="anx-chart-dot"/>`; });
-    neuP.forEach(p => { svg += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" stroke="var(--neutral)" class="anx-chart-dot"/>`; });
-    negP.forEach(p => { svg += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" stroke="var(--negative)" class="anx-chart-dot"/>`; });
+    const allP = [{p: hapP, c: cHappy}, {p: satP, c: cSatisfied}, {p: neuP, c: cNeutral}, {p: fruP, c: cFrustrated}, {p: angP, c: cAngry}];
+    allP.forEach(group => {
+        group.p.forEach(pt => {
+            svg += `<circle cx="${pt.x.toFixed(1)}" cy="${pt.y.toFixed(1)}" stroke="${group.c}" class="anx-chart-dot"/>`;
+        });
+    });
 
     svg += '</svg>';
     wrap.innerHTML = svg;

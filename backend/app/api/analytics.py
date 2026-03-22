@@ -543,14 +543,32 @@ async def get_comprehensive_analytics(
             Conversation.created_at < day_end
         )
 
-        pos = db.query(func.count(Conversation.id)).filter(
-            conv_tf, day_filter, Conversation.current_sentiment == "positive"
+        
+        # Calculate daily counts by 5-tier sentiment score boundaries
+        happy = db.query(func.count(Conversation.id)).filter(
+            conv_tf, day_filter, Conversation.sentiment_score >= 0.75
         ).scalar() or 0
-        neu = db.query(func.count(Conversation.id)).filter(
-            conv_tf, day_filter, Conversation.current_sentiment == "neutral"
+        
+        satisfied = db.query(func.count(Conversation.id)).filter(
+            conv_tf, day_filter, 
+            Conversation.sentiment_score >= 0.55,
+            Conversation.sentiment_score < 0.75
         ).scalar() or 0
-        neg = db.query(func.count(Conversation.id)).filter(
-            conv_tf, day_filter, Conversation.current_sentiment == "negative"
+        
+        neutral = db.query(func.count(Conversation.id)).filter(
+            conv_tf, day_filter, 
+            Conversation.sentiment_score >= 0.40,
+            Conversation.sentiment_score < 0.55
+        ).scalar() or 0
+        
+        frustrated = db.query(func.count(Conversation.id)).filter(
+            conv_tf, day_filter, 
+            Conversation.sentiment_score >= 0.25,
+            Conversation.sentiment_score < 0.40
+        ).scalar() or 0
+        
+        angry = db.query(func.count(Conversation.id)).filter(
+            conv_tf, day_filter, Conversation.sentiment_score < 0.25
         ).scalar() or 0
 
         avg_s = db.query(func.avg(Conversation.sentiment_score)).filter(
@@ -561,10 +579,12 @@ async def get_comprehensive_analytics(
             "date": date.strftime("%Y-%m-%d"),
             "label": date.strftime("%b %d"),
             "day": date.strftime("%a"),
-            "positive": pos,
-            "neutral": neu,
-            "negative": neg,
-            "total": pos + neu + neg,
+            "happy": happy,
+            "satisfied": satisfied,
+            "neutral": neutral,
+            "frustrated": frustrated,
+            "angry": angry,
+            "total": happy + satisfied + neutral + frustrated + angry,
             "avg_score": round(float(avg_s), 3) if avg_s else 0.5
         })
 

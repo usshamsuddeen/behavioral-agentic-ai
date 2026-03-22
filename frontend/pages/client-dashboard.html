@@ -10,9 +10,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="../css/design-system.css?v=10">
-    <link rel="stylesheet" href="../css/client-dashboard.css?v=10">
-    <link rel="stylesheet" href="../css/analytics.css?v=10">
+    <link rel="stylesheet" href="../css/design-system.css?v=11">
+    <link rel="stylesheet" href="../css/client-dashboard.css?v=11">
+    <link rel="stylesheet" href="../css/analytics.css?v=11">
     <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
 </head>
 
@@ -705,10 +705,23 @@
                             </div>
                             <div class="anx-chart-wrap" id="anxSentimentChart"></div>
                             <div class="anx-chart-x-labels" id="anxChartXLabels"></div>
+                            <!-- Sentiment Map Legend -->
                             <div class="anx-chart-legend">
-                                <span class="anx-chart-legend-item"><span class="anx-chart-legend-dot" style="background:var(--positive)"></span>Positive</span>
-                                <span class="anx-chart-legend-item"><span class="anx-chart-legend-dot" style="background:var(--neutral)"></span>Neutral</span>
-                                <span class="anx-chart-legend-item"><span class="anx-chart-legend-dot" style="background:var(--negative)"></span>Negative</span>
+                                <div class="anx-chart-legend-item">
+                                    <span style="font-size:12px;color:#10b981;margin-right:2px">😊</span> Happy
+                                </div>
+                                <div class="anx-chart-legend-item">
+                                    <span style="font-size:12px;color:#22d3ee;margin-right:2px">🙂</span> Satisfied
+                                </div>
+                                <div class="anx-chart-legend-item">
+                                    <span style="font-size:12px;color:#8b5cf6;margin-right:2px">😐</span> Neutral
+                                </div>
+                                <div class="anx-chart-legend-item">
+                                    <span style="font-size:12px;color:#f59e0b;margin-right:2px">😤</span> Frustrated
+                                </div>
+                                <div class="anx-chart-legend-item">
+                                    <span style="font-size:12px;color:#ef4444;margin-right:2px">😡</span> Angry
+                                </div>
                             </div>
                         </div>
                         <div class="anx-card">
