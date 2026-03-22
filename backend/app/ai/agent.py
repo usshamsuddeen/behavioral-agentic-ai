@@ -333,6 +333,17 @@ class AIAgent:
         """Generate LLM response with debug logging."""
         logger.info(f"🔄 Generating LLM response — docs: {len(context_docs)}, sentiment: {sentiment.get('sentiment', 'unknown')}")
 
+        # Filter out false urgency for short polite messages
+        # "no thanks", "no that's all", "I'm good" are NOT urgent
+        POLITE_CLOSURES = {
+            "no", "no thanks", "no thank you", "nope", "nah",
+            "that's all", "thats all", "nothing else", "no that's it",
+            "i'm good", "im good", "all good", "nothing", "bye",
+            "goodbye", "have a good day", "thanks", "thank you",
+        }
+        msg_clean = context.user_message.lower().strip(" .,!?")
+        actual_urgent = sentiment.get("is_urgent", False) and msg_clean not in POLITE_CLOSURES and len(msg_clean) > 10
+
         result = self.llm.generate_response(
             user_message=context.user_message,
             context_documents=context_docs,
@@ -341,7 +352,7 @@ class AIAgent:
             guidelines=context.company_guidelines,
             support_email=context.support_email,
             sentiment=sentiment.get("sentiment"),
-            is_urgent=sentiment.get("is_urgent", False),
+            is_urgent=actual_urgent,
             language=context.detected_language
         )
 
