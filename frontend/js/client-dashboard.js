@@ -747,19 +747,21 @@ function _anxRenderOrders(sources, pipeline, totalOrders) {
     el.innerHTML = html;
 }
 
-/* ── Language Detection with Sentiment (styled like emotion bars) ── */
+/* ── Language Detection with Sentiment (all 6 langs, dimmed if undetected) ── */
 function _anxRenderLanguages(languages, totalConvs) {
     const el = document.getElementById('anxLanguages');
     const countLabel = document.getElementById('anxLangCount');
     if (!el) return;
-    if (countLabel) countLabel.textContent = languages.length ? `${languages.length} detected` : '';
+
+    const activeCount = languages.filter(l => l.active).length;
+    if (countLabel) countLabel.textContent = activeCount ? `${activeCount} detected` : '';
 
     if (!languages.length) {
         el.innerHTML = '<div class="anx-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg><span>No language data yet</span></div>';
         return;
     }
 
-    // Sentiment to color + emoji mapping (same as rich sentiment card)
+    // Sentiment to color + emoji mapping
     function sentimentMeta(score) {
         if (score >= 0.75) return { color: '#10b981', icon: '😊', label: 'Happy' };
         if (score >= 0.55) return { color: '#22d3ee', icon: '🙂', label: 'Satisfied' };
@@ -768,24 +770,37 @@ function _anxRenderLanguages(languages, totalConvs) {
         return { color: '#ef4444', icon: '😡', label: 'Angry' };
     }
 
-    const maxPct = Math.max(...languages.map(l => l.percent || 0), 1);
+    const maxCount = Math.max(...languages.filter(l => l.active).map(l => l.count || 0), 1);
 
     el.innerHTML = languages.map(l => {
-        const barW = Math.max((l.percent / maxPct) * 100, 4);
+        const isActive = l.active;
+        const opacity = isActive ? '1' : '0.35';
         const sm = sentimentMeta(l.avg_sentiment || 0.5);
-        return `<div class="anx-hbar-item" style="margin-bottom:8px">
-            <span style="font-size:1.15rem;width:26px;text-align:center;flex-shrink:0">${l.flag || '🌐'}</span>
-            <span class="anx-hbar-label" style="width:80px;font-weight:500">${esc(l.name || 'Unknown')}</span>
-            <div class="anx-hbar-track"><div class="anx-hbar-fill" style="width:${barW}%;background:${sm.color}"></div></div>
-            <span class="anx-hbar-value" style="min-width:90px;display:flex;align-items:center;gap:4px">
-                ${l.count} <span style="color:var(--text-muted);font-weight:400">(${l.percent}%)</span>
-            </span>
-        </div>
-        <div style="display:flex;align-items:center;gap:5px;margin-left:26px;margin-bottom:8px">
-            <span style="font-size:.85rem">${sm.icon}</span>
-            <span style="font-size:.6875rem;color:${sm.color};font-weight:500">${sm.label}</span>
-            <span style="font-size:.6rem;color:var(--text-muted)">· avg ${((l.avg_sentiment || 0.5) * 100).toFixed(0)}%</span>
-        </div>`;
+        const barW = isActive ? Math.max((l.count / maxCount) * 100, 4) : 3;
+        const barColor = isActive ? sm.color : 'var(--text-muted)';
+        const countText = isActive ? `${l.count} <span style="color:var(--text-muted);font-weight:400">(${l.percent}%)</span>` : '<span style="color:var(--text-muted)">—</span>';
+
+        let html = `<div style="opacity:${opacity};margin-bottom:${isActive ? '2px' : '8px'}">
+            <div class="anx-hbar-item" style="margin-bottom:2px">
+                <span style="font-size:1.15rem;width:26px;text-align:center;flex-shrink:0">${l.flag || '🌐'}</span>
+                <span class="anx-hbar-label" style="width:80px;font-weight:500">${esc(l.name || 'Unknown')}</span>
+                <div class="anx-hbar-track"><div class="anx-hbar-fill" style="width:${barW}%;background:${barColor}"></div></div>
+                <span class="anx-hbar-value" style="min-width:90px;display:flex;align-items:center;gap:4px">
+                    ${countText}
+                </span>
+            </div>`;
+
+        // Show sentiment row only for active languages
+        if (isActive) {
+            html += `<div style="display:flex;align-items:center;gap:5px;margin-left:26px;margin-bottom:6px">
+                <span style="font-size:.85rem">${sm.icon}</span>
+                <span style="font-size:.6875rem;color:${sm.color};font-weight:500">${sm.label}</span>
+                <span style="font-size:.6rem;color:var(--text-muted)">· avg ${((l.avg_sentiment || 0.5) * 100).toFixed(0)}%</span>
+            </div>`;
+        }
+
+        html += '</div>';
+        return html;
     }).join('');
 }
 

@@ -625,29 +625,66 @@ async def get_comprehensive_analytics(
     # ════════════════════════════════════════
     # SECTION 5: LANGUAGE DISTRIBUTION + SENTIMENT
     # ════════════════════════════════════════
-    # Group by language CODE only — avoids duplicates when flag strings differ
+    # Show ALL key supported languages; detected ones are "active", rest are "dimmed".
 
+    from app.services.language import LANGUAGE_MAP
+
+    # Key languages to always show (subset of LANGUAGE_MAP)
+    KEY_LANGS = ['en','es','fr','de','it','nl']
+
+    # Query detected language counts
     lang_rows = db.query(
         Conversation.detected_language,
-        func.min(Conversation.language_name).label("lang_name"),
-        func.min(Conversation.language_flag).label("lang_flag"),
         func.count(Conversation.id).label("count"),
         func.avg(Conversation.sentiment_score).label("avg_sent")
     ).filter(conv_tf, conv_pf).group_by(
         Conversation.detected_language
-    ).order_by(func.count(Conversation.id).desc()).all()
+    ).all()
 
-    languages = [
-        {
-            "code": row.detected_language or "unknown",
-            "name": row.lang_name or "Unknown",
-            "flag": row.lang_flag or "🌐",
-            "count": row.count,
-            "percent": round((row.count / max(total_conversations, 1)) * 100, 1),
-            "avg_sentiment": round(float(row.avg_sent), 3) if row.avg_sent else 0.5
-        }
-        for row in lang_rows
-    ]
+    # Build lookup: code -> {count, avg_sent}
+    detected = {}
+    for row in lang_rows:
+        code = (row.detected_language or "").lower().strip()
+        if code:
+            if code in detected:
+                detected[code]["count"] += row.count
+                # weighted avg would be better but simple merge is fine
+            else:
+                detected[code] = {
+                    "count": row.count,
+                    "avg_sent": float(row.avg_sent) if row.avg_sent else 0.5
+                }
+
+    # Build final list: key languages first, then any additional detected ones
+    languages = []
+    seen = set()
+    for code in KEY_LANGS:
+        info = LANGUAGE_MAP.get(code, {"name": code.upper(), "flag": "🌐"})
+        det = detected.get(code)
+        languages.append({
+            "code": code,
+            "name": info["name"],
+            "flag": info["flag"],
+            "count": det["count"] if det else 0,
+            "percent": round((det["count"] / max(total_conversations, 1)) * 100, 1) if det else 0,
+            "avg_sentiment": round(det["avg_sent"], 3) if det else 0.5,
+            "active": det is not None
+        })
+        seen.add(code)
+
+    # Add any additionally detected languages not in KEY_LANGS
+    for code, det in detected.items():
+        if code not in seen:
+            info = LANGUAGE_MAP.get(code, {"name": code.upper(), "flag": "🌐"})
+            languages.append({
+                "code": code,
+                "name": info["name"],
+                "flag": info["flag"],
+                "count": det["count"],
+                "percent": round((det["count"] / max(total_conversations, 1)) * 100, 1),
+                "avg_sentiment": round(det["avg_sent"], 3),
+                "active": True
+            })
 
     # ════════════════════════════════════════
     # SECTION 6: KB & PRODUCT COUNTS
