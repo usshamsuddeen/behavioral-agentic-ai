@@ -379,7 +379,7 @@ RULES:
 {context_str}
 """
 
-        # Language instruction
+        # Language instruction — ALWAYS respond in the customer's language
         LANG_NAMES = {
             "en": "English", "de": "German", "fr": "French",
             "es": "Spanish", "it": "Italian", "nl": "Dutch",
@@ -387,8 +387,13 @@ RULES:
             "zh-cn": "Chinese", "pt": "Portuguese", "ru": "Russian",
             "ja": "Japanese", "ko": "Korean", "tr": "Turkish"
         }
-        if language != "en" and language in LANG_NAMES:
-            prompt += f"\nRespond in {LANG_NAMES[language]}.\n"
+        lang_name = LANG_NAMES.get(language, "English")
+        prompt += f"""
+LANGUAGE RULE (CRITICAL):
+- ALWAYS respond in {lang_name}, regardless of what language the product data or CONTEXT is written in.
+- If a product description, policy, or any CONTEXT text is in a DIFFERENT language than {lang_name}, you MUST translate it to {lang_name} before including it in your response.
+- Product names should stay in their original form (do NOT translate brand/product names), but descriptions and explanations must be in {lang_name}.
+"""
 
         return prompt
     
