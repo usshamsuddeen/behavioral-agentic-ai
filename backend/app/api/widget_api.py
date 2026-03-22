@@ -512,6 +512,17 @@ async def send_chat_message(
                 ProductListing.tenant_id == tenant.id
             ).all()
             if all_products:
+                # Determine customer language name for translation tags
+                _LANG_NAMES = {
+                    "en": "English", "de": "German", "fr": "French",
+                    "es": "Spanish", "it": "Italian", "nl": "Dutch",
+                    "ur": "Urdu", "hi": "Hindi", "ar": "Arabic",
+                    "zh-cn": "Chinese", "pt": "Portuguese", "ru": "Russian",
+                    "ja": "Japanese", "ko": "Korean", "tr": "Turkish"
+                }
+                cust_lang = detected_lang  # from Step 2 (line ~271)
+                cust_lang_name = _LANG_NAMES.get(cust_lang, "English")
+
                 product_names = [p.name for p in all_products]
                 lines = [f"PRODUCT CATALOG — {len(all_products)} products total (this is the COMPLETE catalog, list ALL of them):\n"]
                 for p in all_products:
@@ -519,7 +530,20 @@ async def send_chat_message(
                     line += f"  Price: {p.currency or 'USD'} {p.price}\n"
                     line += f"  In Stock: {'Yes' if p.in_stock else 'No'}\n"
                     if p.description:
-                        line += f"  Description: {p.description}\n"
+                        # Detect if description is in a different language
+                        desc_lang = cust_lang  # default: assume same
+                        try:
+                            from app.services.language import detect_language as _detect_lang
+                            desc_result = _detect_lang(p.description)
+                            desc_lang = desc_result.get("code", cust_lang)
+                        except Exception:
+                            pass
+
+                        if desc_lang != cust_lang:
+                            desc_lang_name = _LANG_NAMES.get(desc_lang, desc_lang.upper())
+                            line += f"  Description [⚠️ THIS IS IN {desc_lang_name.upper()} — TRANSLATE TO {cust_lang_name.upper()}]: {p.description}\n"
+                        else:
+                            line += f"  Description: {p.description}\n"
                     if p.category:
                         line += f"  Category: {p.category}\n"
                     images = p.get_images() if hasattr(p, 'get_images') else []
