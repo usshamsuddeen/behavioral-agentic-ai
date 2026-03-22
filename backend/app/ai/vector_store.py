@@ -5,7 +5,7 @@ Simple, robust vector storage with NumPy backend
 Features:
 - In-memory vector storage with persistence
 - Cosine similarity search
-- No external dependencies (ChromaDB optional)
+- No external dependencies required
 - JSON-based persistence
 
 Author: Behavioral Agentic AI Team
@@ -229,7 +229,6 @@ class VectorStore:
     Simple vector store with NumPy-based similarity search.
     
     Uses in-memory storage with optional JSON persistence.
-    Falls back gracefully if ChromaDB is unavailable.
     """
     
     def __init__(self, persist_directory: Optional[str] = None):

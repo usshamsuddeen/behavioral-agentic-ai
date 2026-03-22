@@ -19,6 +19,7 @@ import csv
 import io
 import json
 import logging
+from difflib import SequenceMatcher
 
 from app.database import get_db
 from app.models.user import User
@@ -111,33 +112,82 @@ async def create_product(
 
 # ═══════════════════════════════════════════════════════════════
 # FUZZY COLUMN MATCHING — Maps any CSV header to our schema
+# Supports: exact match → substring containment → SequenceMatcher
 # ═══════════════════════════════════════════════════════════════
 
 PRODUCT_COLUMN_ALIASES = {
-    "name": ["name", "product name", "title", "product title", "product_name",
-             "item name", "item", "product"],
-    "description": ["description", "desc", "product description", "details",
-                     "body html", "body", "summary", "product details"],
-    "price": ["price", "unit price", "cost", "amount", "sale price",
-              "regular price", "variant price", "retail price", "msrp"],
-    "currency": ["currency", "currency code"],
-    "category": ["category", "product category", "type", "product type",
-                  "collection", "department", "group"],
-    "sku": ["sku", "product sku", "variant sku", "item number",
-            "article number", "part number", "barcode", "upc", "ean"],
-    "in_stock": ["in stock", "in_stock", "available", "availability",
-                  "stock status", "is available"],
-    "stock_quantity": ["stock quantity", "stock_quantity", "quantity",
-                       "qty", "inventory", "stock", "units", "inventory qty"],
-    "image_url": ["image", "image url", "image_url", "images", "image src",
-                   "photo", "picture", "thumbnail", "product image", "variant image"],
+    "name": [
+        "name", "product name", "title", "product title", "product_name",
+        "item name", "item", "product", "product label", "listing name",
+        "listing title", "item title", "goods name", "merchandise",
+        "display name", "headline", "handle",
+    ],
+    "description": [
+        "description", "desc", "product description", "details",
+        "body html", "body", "summary", "product details",
+        "long description", "short description", "overview", "about",
+        "info", "product info", "item description", "features",
+        "specification", "specs", "product summary", "content",
+        "body text", "detail",
+    ],
+    "price": [
+        "price", "unit price", "cost", "amount", "sale price",
+        "regular price", "variant price", "retail price", "msrp",
+        "selling price", "list price", "item price", "product price",
+        "base price", "net price", "gross price", "mrp", "rate",
+        "unit cost", "buy price", "wholesale price", "discount price",
+        "offer price", "special price",
+    ],
+    "currency": [
+        "currency", "currency code", "currency type", "price currency",
+        "money code", "curr", "iso currency",
+    ],
+    "category": [
+        "category", "product category", "type", "product type",
+        "collection", "department", "group", "subcategory", "sub category",
+        "product group", "product class", "classification", "class",
+        "genre", "segment", "product line", "family", "catalog",
+        "section", "division",
+    ],
+    "sku": [
+        "sku", "product sku", "variant sku", "item number",
+        "article number", "part number", "barcode", "upc", "ean",
+        "model number", "product id", "product code", "item code",
+        "reference", "ref", "product ref", "catalog number",
+        "stock code", "material number", "asin", "isbn", "gtin",
+        "mpn", "manufacturer part",
+    ],
+    "in_stock": [
+        "in stock", "in_stock", "available", "availability",
+        "stock status", "is available", "stocked", "in inventory",
+        "on hand", "available stock", "is in stock", "stock available",
+        "can purchase", "purchasable", "sellable", "active",
+    ],
+    "stock_quantity": [
+        "stock quantity", "stock_quantity", "quantity", "qty",
+        "inventory", "stock", "units", "inventory qty",
+        "quantity on hand", "qty on hand", "available qty",
+        "stock count", "stock level", "inventory count", "unit count",
+        "available units", "warehouse qty", "on hand qty",
+        "remaining stock", "remaining qty", "quantity available",
+    ],
+    "image_url": [
+        "image", "image url", "image_url", "images", "image src",
+        "photo", "picture", "thumbnail", "product image", "variant image",
+        "img", "img url", "main image", "primary image", "featured image",
+        "image link", "photo url", "pic", "cover image", "gallery",
+        "media", "media url", "image path", "img src", "product photo",
+        "product pic",
+    ],
 }
 
 
 def _fuzzy_match_product_column(header: str):
     """Match a CSV header to our product schema column using fuzzy matching."""
-    header_lower = header.strip().lower().replace("_", " ").replace("-", " ")
+    # Normalize: lowercase, strip, replace _/- with spaces, collapse whitespace
+    header_lower = " ".join(header.strip().lower().replace("_", " ").replace("-", " ").split())
 
+    # 1. Exact match against field names and aliases
     for field, aliases in PRODUCT_COLUMN_ALIASES.items():
         if header_lower == field:
             return field
@@ -145,13 +195,23 @@ def _fuzzy_match_product_column(header: str):
             if header_lower == alias:
                 return field
 
-    # Partial match fallback
+    # 2. Substring containment match
     for field, aliases in PRODUCT_COLUMN_ALIASES.items():
         for alias in aliases:
             if alias in header_lower or header_lower in alias:
                 return field
 
-    return None
+    # 3. SequenceMatcher fuzzy scoring (threshold 0.7)
+    best_match = None
+    best_score = 0.0
+    for field, aliases in PRODUCT_COLUMN_ALIASES.items():
+        for alias in aliases:
+            score = SequenceMatcher(None, header_lower, alias).ratio()
+            if score > best_score and score > 0.7:
+                best_score = score
+                best_match = field
+
+    return best_match
 
 
 @router.post("/upload-csv")

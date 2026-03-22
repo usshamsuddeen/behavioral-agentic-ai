@@ -57,7 +57,7 @@ class UpdateSettingsRequest(BaseModel):
 
 
 class UpdateRestrictionsRequest(BaseModel):
-    """AI Restrictions / Rules — stored in tenant.description, injected into LLM system prompt"""
+    """AI Restrictions / Rules — stored in tenant.ai_restrictions, injected into LLM system prompt"""
     restrictions: str = ""
 
 
@@ -248,7 +248,7 @@ async def update_settings(
 
 
 # ═══════════════════════════════════════════════════════════════════
-# AI Restrictions / Rules — stored in tenant.description
+# AI Restrictions / Rules — stored in tenant.ai_restrictions
 # Automatically injected into LLM system prompt via company_guidelines
 # ═══════════════════════════════════════════════════════════════════
 
@@ -263,7 +263,7 @@ async def get_restrictions(
         raise HTTPException(status_code=404, detail="No tenant found")
     
     return {
-        "restrictions": tenant.description or "",
+        "restrictions": tenant.ai_restrictions or "",
         "tenant_id": tenant.id
     }
 
@@ -276,19 +276,19 @@ async def update_restrictions(
 ):
     """
     Save AI restrictions/rules for this tenant.
-    Stored in tenant.description → piped to LLM as GUIDELINES in system prompt.
+    Stored in tenant.ai_restrictions → piped to LLM as GUIDELINES in system prompt.
     """
     tenant = get_tenant_for_user(current_user, db)
     if not tenant:
         raise HTTPException(status_code=404, detail="No tenant found")
     
-    tenant.description = data.restrictions.strip()
+    tenant.ai_restrictions = data.restrictions.strip()
     tenant.updated_at = datetime.utcnow()
     db.commit()
     
     return {
         "message": "Restrictions saved successfully",
-        "restrictions": tenant.description,
+        "restrictions": tenant.ai_restrictions,
         "tenant_id": tenant.id
     }
 

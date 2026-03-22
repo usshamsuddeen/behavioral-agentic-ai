@@ -3,7 +3,7 @@ Knowledge Base API for Behavioral Agentic AI
 FRD v3.0 — Tenant-scoped Knowledge Management
 
 All endpoints require JWT authentication.
-Tenant isolation is enforced via tenant_id as the ChromaDB collection key (FR-7.3).
+Tenant isolation is enforced via tenant_id as the vector store collection key (FR-7.3).
 
 Endpoints:
 - POST /knowledge/upload: Upload and index document
@@ -98,7 +98,7 @@ class StatsResponse(BaseModel):
 
 def resolve_client_id(current_user: User, db: Session) -> str:
     """
-    Get the ChromaDB collection key for this user's tenant.
+    Get the vector store collection key for this user's tenant.
     Uses str(tenant.id) for tenant-isolated collections — FR-7.3.
     
     Admin/super_admin users who also own a tenant get their tenant's ID.

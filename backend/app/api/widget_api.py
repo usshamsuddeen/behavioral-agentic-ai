@@ -448,7 +448,8 @@ async def send_chat_message(
                 user_message=data.message,
                 conversation_history=conversation_history,
                 company_name=tenant.name or "Our Store",
-                company_guidelines=tenant.description,
+                company_guidelines=tenant.ai_restrictions,
+                support_email=tenant.support_email,
                 current_frustration=conversation.frustration_level or 0.0,
                 detected_language=detected_lang,
                 pre_sentiment={
@@ -534,6 +535,62 @@ async def send_chat_message(
                 )
         except Exception as e:
             logger.error(f"❌ AI agent failed: {type(e).__name__}: {e}", exc_info=True)
+
+    # ══════════════════════════════════════════════════════════════
+    # Step 6b: Chat-Confirmed Order Detection (NEW)
+    # When the LLM guides a customer through ordering via conversation
+    # (not keyword-triggered INTENT_PURCHASE), detect if the AI response
+    # contains order confirmation details and persist to DB + vector store.
+    # ══════════════════════════════════════════════════════════════
+    if ai_response_text and not intent_skipped_agent:
+        try:
+            import re as _re
+            # Detect if the AI response looks like an order confirmation
+            response_lower = ai_response_text.lower()
+            has_order_confirmation = any(marker in response_lower for marker in [
+                "order placed successfully",
+                "order confirmed",
+                "order has been placed",
+                "your order #",
+                "your order id",
+                "order id:",
+                "✅ **order",
+            ])
+
+            if has_order_confirmation:
+                # Extract product name from AI response
+                product_match = _re.search(
+                    r'(?:\*\*product:\*\*|product:)\s*(.+?)(?:\n|$)',
+                    ai_response_text, _re.IGNORECASE
+                )
+                product_query = product_match.group(1).strip().strip('*') if product_match else None
+
+                # Check if order was already created by INTENT_PURCHASE handler
+                order_id_match = _re.search(
+                    r'(?:order\s*(?:id|#|number)[:\s]*#?\s*)([A-Z0-9\-]+)',
+                    ai_response_text, _re.IGNORECASE
+                )
+                existing_order_id = order_id_match.group(1) if order_id_match else None
+
+                # Only create order if it wasn't already created (no WO- prefix = LLM-generated text)
+                if product_query and (not existing_order_id or not existing_order_id.startswith("WO-")):
+                    from app.services.order_placement import place_widget_order
+                    order_result = place_widget_order(
+                        tenant_id=tenant.id,
+                        customer_name=conversation.customer_name or "Widget Customer",
+                        customer_email=conversation.customer_email or "",
+                        product_query=product_query,
+                        conversation_id=conversation.id,
+                        db=db
+                    )
+                    if order_result.get("success"):
+                        # Replace AI text with actual order confirmation (with real order ID)
+                        ai_response_text = order_result["response"]
+                        logger.info(f"🛒 Chat-confirmed order saved: {order_result.get('order', {}).get('order_id')}")
+                    else:
+                        logger.info(f"ℹ️ Chat order detection skipped: {order_result.get('response', 'no match')}")
+        except Exception as chat_order_err:
+            logger.warning(f"Chat order detection failed (non-blocking): {chat_order_err}")
 
     # ══════════════════════════════════════════════════════════════
     # Step 7: Behavioral Prediction (FR-5.4 — background)

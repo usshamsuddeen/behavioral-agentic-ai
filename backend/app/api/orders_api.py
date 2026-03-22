@@ -41,40 +41,111 @@ MAX_ROWS = 10000
 # ═══════════════════════════════════════════════════════════════
 
 COLUMN_ALIASES = {
-    "order_id": ["order id", "order number", "order #", "order_number", "ordernumber",
-                 "id", "reference", "order ref", "invoice", "invoice number"],
-    "customer_name": ["name", "customer name", "customer", "buyer", "ship to name",
-                      "billing name", "full name", "recipient"],
-    "customer_email": ["email", "e-mail", "customer email", "buyer email",
-                       "contact email", "email address"],
-    "status": ["status", "order status", "fulfillment", "fulfillment status",
-               "delivery status", "state"],
-    "total_amount": ["total", "amount", "order total", "grand total", "price",
-                     "subtotal", "order value"],
-    "currency": ["currency", "currency code"],
-    "tracking_number": ["tracking", "tracking number", "tracking #", "tracking_number",
-                        "awb", "consignment"],
-    "carrier": ["carrier", "shipping carrier", "courier", "shipping method",
-                "delivery service"],
-    "shipping_address": ["address", "shipping address", "delivery address",
-                         "ship to address"],
-    "order_date": ["date", "order date", "created", "created at", "placed on",
-                   "purchase date"],
-    "items": ["items", "products", "line items", "order items"],
-    "notes": ["notes", "comments", "internal notes"],
+    "order_id": [
+        "order id", "order number", "order #", "order_number", "ordernumber",
+        "id", "reference", "order ref", "invoice", "invoice number",
+        "order no", "po number", "purchase order", "confirmation number",
+        "transaction id", "transaction number", "receipt number",
+        "order code", "ref no", "reference number", "order reference",
+        "booking id", "booking number", "po", "po#",
+    ],
+    "customer_name": [
+        "name", "customer name", "customer", "buyer", "ship to name",
+        "billing name", "full name", "recipient", "client name", "client",
+        "purchaser", "consumer", "contact name", "ordered by", "shopper",
+        "account name", "bill to name", "ship to", "bill to", "deliver to",
+        "first name", "last name", "customer full name", "contact",
+    ],
+    "customer_email": [
+        "email", "e-mail", "customer email", "buyer email",
+        "contact email", "email address", "mail", "customer e-mail",
+        "buyer e-mail", "user email", "account email",
+        "notification email", "billing email", "shipping email",
+        "contact e-mail", "email id",
+    ],
+    "status": [
+        "status", "order status", "fulfillment", "fulfillment status",
+        "delivery status", "state", "payment status", "shipment status",
+        "processing status", "current status", "stage", "progress",
+        "condition", "order state", "workflow status", "order stage",
+    ],
+    "total_amount": [
+        "total", "amount", "order total", "grand total", "price",
+        "subtotal", "order value", "total price", "net total",
+        "gross total", "total cost", "final amount", "payment amount",
+        "invoice total", "bill amount", "order amount", "charged amount",
+        "paid amount", "total due", "sum", "total sum", "net amount",
+        "gross amount", "revenue",
+    ],
+    "currency": [
+        "currency", "currency code", "currency type", "price currency",
+        "money code", "curr", "iso currency", "payment currency",
+    ],
+    "tracking_number": [
+        "tracking", "tracking number", "tracking #", "tracking_number",
+        "awb", "consignment", "tracking id", "tracking code",
+        "tracking no", "shipment tracking", "consignment number",
+        "waybill", "airway bill", "shipping number", "parcel tracking",
+        "track id", "tracking ref", "shipment number", "consignment no",
+    ],
+    "carrier": [
+        "carrier", "shipping carrier", "courier", "shipping method",
+        "delivery service", "logistics", "shipping provider",
+        "delivery company", "delivery partner", "freight", "shipper",
+        "transport", "postal service", "express service",
+        "shipping service", "logistics provider", "delivery method",
+        "ship via", "ship method",
+    ],
+    "shipping_address": [
+        "address", "shipping address", "delivery address",
+        "ship to address", "ship address", "mailing address",
+        "postal address", "street address", "destination",
+        "delivery location", "customer address", "billing address",
+        "full address", "street", "address line",
+        "deliver to address", "shipment address",
+    ],
+    "order_date": [
+        "date", "order date", "created", "created at", "placed on",
+        "purchase date", "order created", "transaction date",
+        "sale date", "invoice date", "placed date", "ordered on",
+        "created date", "date ordered", "date placed",
+        "submission date", "booking date", "ordered at",
+        "timestamp", "order timestamp", "payment date",
+    ],
+    "items": [
+        "items", "products", "line items", "order items",
+        "ordered items", "purchased items", "product list",
+        "item list", "cart items", "basket items", "order details",
+        "order lines", "sku list", "item details",
+        "purchased products", "bought items", "goods",
+    ],
+    "notes": [
+        "notes", "comments", "internal notes", "remarks", "memo",
+        "order notes", "customer notes", "special instructions",
+        "instructions", "message", "additional info",
+        "order comments", "delivery notes", "shipping notes",
+        "gift message", "order memo", "annotation",
+    ],
 }
 
 
 def fuzzy_match_column(header: str) -> Optional[str]:
     """Match a CSV header to our schema column using fuzzy matching."""
-    header_lower = header.lower().strip()
+    # Normalize: lowercase, strip, replace _/- with spaces, collapse whitespace
+    header_lower = " ".join(header.lower().strip().replace("_", " ").replace("-", " ").split())
 
-    # Exact match first
+    # 1. Exact match first
     for column, aliases in COLUMN_ALIASES.items():
         if header_lower in aliases or header_lower == column:
             return column
 
-    # Fuzzy match
+    # 2. Substring containment match
+    for column, aliases in COLUMN_ALIASES.items():
+        for alias in aliases:
+            if alias in header_lower or header_lower in alias:
+                return column
+
+    # 3. SequenceMatcher fuzzy scoring (threshold 0.7)
     best_match = None
     best_score = 0.0
 

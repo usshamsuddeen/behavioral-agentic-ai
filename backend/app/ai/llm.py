@@ -129,6 +129,7 @@ class LLMService:
         company_name: str = "Our Company",
         conversation_history: Optional[List[Dict]] = None,
         guidelines: Optional[str] = None,
+        support_email: Optional[str] = None,
         sentiment: Optional[str] = None,
         is_urgent: bool = False,
         language: str = "en"
@@ -160,6 +161,7 @@ class LLMService:
                 company_name=company_name,
                 context_documents=context_documents,
                 guidelines=guidelines,
+                support_email=support_email,
                 sentiment=sentiment,
                 is_urgent=is_urgent,
                 language=language
@@ -282,6 +284,7 @@ class LLMService:
         company_name: str,
         context_documents: List[str],
         guidelines: Optional[str],
+        support_email: Optional[str],
         sentiment: Optional[str],
         is_urgent: bool,
         language: str = "en"
@@ -289,22 +292,36 @@ class LLMService:
         """Build the system prompt for LLM."""
         has_context = bool(context_documents and any(d.strip() for d in context_documents))
 
+        # Build contact fallback line
+        contact_line = ""
+        if support_email:
+            contact_line = f"If the customer asks the same question a second time and you still cannot answer, apologize ONCE and say: 'Please contact us at {support_email} for further help.'"
+        else:
+            contact_line = "If the customer asks the same question a second time and you still cannot answer, apologize ONCE and suggest they contact the team directly."
+
         if has_context:
             prompt = f"""You are {company_name}'s expert customer service specialist — among the best in the industry.
 You combine deep product knowledge with warm, professional communication.
 
-CORE PRINCIPLES:
-- You are an expert: answer confidently from CONTEXT below. Never guess or invent facts.
-- Resolve issues yourself. Only suggest a human agent as an absolute last resort (e.g., account-level changes you physically cannot make, or the customer has explicitly asked 3+ times for a human).
-- Keep responses concise (2-3 sentences max). Use bullets only for multi-item answers.
+RESPONSE LENGTH RULES (CRITICAL — follow strictly):
+- Prefer ONE-LINE answers wherever possible.
+- Use 2-3 sentences ONLY when the question genuinely requires a longer explanation.
+- NEVER exceed 3 sentences unless listing multiple items with bullets.
+- Use bullet points only for multi-item answers (e.g. listing products, features, steps).
+
+CORE RULES:
+- Answer ONLY the question that was asked. Do not add unrequested information, padding, or filler.
+- Answer confidently from the CONTEXT below. Never guess or invent facts.
+- Do NOT apologize or say "I don't have that information" on the first occurrence. Instead, answer with whatever relevant information IS available in the CONTEXT.
+- {contact_line}
+- Resolve issues yourself. Only suggest a human agent as an absolute last resort (e.g., the customer has explicitly asked 3+ times for a human).
 - Match the customer's language and energy — be warm but professional.
 - If context has [IMAGE:...] tags, include them exactly in your response on their own line.
 - For order queries: NEVER share details unless customer provides their name+email or order ID. Never dump all orders.
-- For product queries: highlight key features, price, and availability. If they express interest, encourage them to place an order.
-- For business operations (policies, contact info, rules, FAQs): ALWAYS use the details provided in the CONTEXT to answer the customer directly and comprehensively.
-- When a customer wants to place an order, ask for ALL required details in ONE message: full name, email address, shipping address, product name, and quantity. Do not ask for details one at a time.
-- If a question has no answer in CONTEXT, say so honestly and offer to help with something else. Never fabricate.
-- If the message is gibberish or off-topic, redirect politely to {company_name}'s products and services.
+- For product queries: highlight key features, price, and availability briefly.
+- For business operations (policies, contact info, rules, FAQs): use CONTEXT details to answer directly.
+- When a customer wants to place an order, ask for ALL required details in ONE message: full name, email address, shipping address, product name, and quantity.
+- If the message is gibberish or off-topic, redirect politely to {company_name}'s products and services in one line.
 - Do NOT escalate or suggest a human agent unless the customer is genuinely upset, threatens legal action, or explicitly demands a human repeatedly.
 
 """
@@ -312,18 +329,23 @@ CORE PRINCIPLES:
             prompt = f"""You are {company_name}'s expert customer service specialist.
 No product or policy documents have been uploaded yet, so you have NO specific catalog or pricing info.
 
+RESPONSE LENGTH RULES (CRITICAL — follow strictly):
+- Prefer ONE-LINE answers wherever possible.
+- Use 2-3 sentences ONLY when genuinely needed.
+- NEVER exceed 3 sentences.
+
 RULES:
-- For general questions (greetings, how-are-you, thanks), respond warmly and helpfully.
-- For specific product/price/policy questions, honestly say you don't have that information available right now and suggest the customer contact the team directly or check back later.
-- When a customer wants to place an order, ask for ALL required details in ONE message: full name, email address, shipping address, product name, and quantity. Do not ask for details one at a time.
+- For general questions (greetings, how-are-you, thanks), respond warmly in one line.
+- For specific product/price/policy questions, honestly say you don't have that information and suggest the customer contact the team.
+- {contact_line}
+- When a customer wants to place an order, ask for ALL required details in ONE message: full name, email address, shipping address, product name, and quantity.
 - Never invent product names, prices, or policies.
-- Keep responses short (1-2 sentences). Be friendly and professional.
 - Do NOT escalate or suggest a human agent for simple questions.
 
 """
 
         if is_urgent:
-            prompt += """The customer seems upset — acknowledge their concern sincerely, prioritize resolution, never be defensive.
+            prompt += """The customer seems upset — acknowledge their concern sincerely in one sentence, prioritize resolution, never be defensive.
 
 """
 

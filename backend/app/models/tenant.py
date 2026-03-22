@@ -25,7 +25,8 @@ class Tenant(Base):
     # Business Info (FR-2.1)
     name = Column(String(200), nullable=False)  # Company/Store name
     industry = Column(String(100), nullable=True)  # Fashion, Electronics, etc.
-    description = Column(Text, nullable=True)  # Used to personalize AI responses
+    description = Column(Text, nullable=True)  # Company description (displayed in settings)
+    ai_restrictions = Column(Text, nullable=True)  # AI behavioral rules (injected into LLM system prompt)
     support_email = Column(String(255), nullable=True)  # Escalation notifications
     timezone = Column(String(50), default="UTC")
 

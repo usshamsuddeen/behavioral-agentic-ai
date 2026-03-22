@@ -44,6 +44,7 @@ class AgentContext:
     conversation_history: List[Dict] = field(default_factory=list)
     company_name: str = "Our Company"
     company_guidelines: Optional[str] = None
+    support_email: Optional[str] = None
     current_frustration: float = 0.0
     detected_language: str = "en"  # ISO code from language detection
     pre_sentiment: Optional[Dict] = None  # Reuse sentiment from widget_api
@@ -287,6 +288,7 @@ class AIAgent:
             company_name=context.company_name,
             conversation_history=context.conversation_history,
             guidelines=context.company_guidelines,
+            support_email=context.support_email,
             sentiment=sentiment.get("sentiment"),
             is_urgent=sentiment.get("is_urgent", False),
             language=context.detected_language

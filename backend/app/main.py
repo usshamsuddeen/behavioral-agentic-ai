@@ -86,6 +86,24 @@ async def lifespan(app: FastAPI):
     """Application lifespan - create tables on startup"""
     # 1. Create / migrate all SQL tables (including knowledge_chunks)
     Base.metadata.create_all(bind=engine, checkfirst=True)
+
+    # 1b. Auto-migrate: add ai_restrictions column if missing (idempotent)
+    #     Runs on every startup — safe because ALTER TABLE fails silently if column exists.
+    #     Needed because create_all() cannot add columns to existing tables.
+    try:
+        from sqlalchemy import text as _text
+        _mig_db = SessionLocal()
+        try:
+            _mig_db.execute(_text("ALTER TABLE tenants ADD COLUMN ai_restrictions TEXT"))
+            _mig_db.commit()
+            logger.info("✅ Auto-migration: added 'ai_restrictions' column to tenants")
+        except Exception:
+            _mig_db.rollback()  # Column already exists — expected, no action needed
+        finally:
+            _mig_db.close()
+    except Exception as mig_err:
+        logger.debug(f"Migration check skipped: {mig_err}")
+
     # 2. Seed super admin on first boot
     ensure_super_admin()
     # 3. Restore vector store from SQLite if JSON files were wiped

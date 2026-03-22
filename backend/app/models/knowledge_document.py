@@ -3,9 +3,9 @@ Knowledge Document Model — KB Upload Metadata Tracking
 FRD v3.0 §12: knowledge_documents table
 Fields: id, tenant_id, filename, doc_type, category, chunk_count, file_size, status
 
-Provides SQL-backed metadata for documents indexed into ChromaDB.
+Provides SQL-backed metadata for documents indexed into the NumPy Vector Store.
 Enables the dashboard (FR-3.4) to list, filter, and delete documents
-without querying ChromaDB directly.
+without querying the vector store directly.
 """
 
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text, Boolean
@@ -18,7 +18,7 @@ from app.database import Base
 class KnowledgeDocument(Base):
     """
     Tracks uploaded KB documents in SQL.
-    Each document maps to chunks in ChromaDB (collection: tenant_{tenant_id}).
+    Each document maps to chunks in the NumPy Vector Store (collection: client_{tenant_id}).
     """
     __tablename__ = "knowledge_documents"
 
@@ -39,8 +39,8 @@ class KnowledgeDocument(Base):
     status = Column(String(20), default="processing")  # processing, indexed, failed, deleted
     chunk_count = Column(Integer, default=0)
 
-    # ChromaDB Reference
-    chromadb_doc_id = Column(String(200), nullable=True)  # ID used in ChromaDB metadata
+    # Vector Store Reference
+    chromadb_doc_id = Column(String(200), nullable=True)  # ID used in vector store metadata
 
     # Upload Context
     uploaded_by = Column(Integer, ForeignKey("users.id"), nullable=True)

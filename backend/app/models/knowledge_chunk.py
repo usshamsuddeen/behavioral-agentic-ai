@@ -26,7 +26,7 @@ class KnowledgeChunk(Base):
 
     id            = Column(Integer, primary_key=True, index=True)
 
-    # Tenant isolation — same key used as ChromaDB/VectorStore collection name
+    # Tenant isolation — same key used as VectorStore collection name
     collection_name = Column(String(100), nullable=False, index=True)   # = str(tenant.id)
     doc_id          = Column(String(200), nullable=False, index=True)   # vector store doc id
 

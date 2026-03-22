@@ -483,7 +483,7 @@ const API = {
     },
 
     // ==========================================
-    // AI RESTRICTIONS (stored in tenant.description → LLM system prompt)
+    // AI RESTRICTIONS (stored in tenant.ai_restrictions → LLM system prompt)
     // ==========================================
 
     async getRestrictions() {
