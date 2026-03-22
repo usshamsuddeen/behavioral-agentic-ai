@@ -402,17 +402,59 @@ async def send_chat_message(
             # ★ V5 NEW: Widget-based ordering
             try:
                 from app.services.order_placement import place_widget_order
-                order_result = place_widget_order(
-                    tenant_id=tenant.id,
-                    customer_name=conversation.customer_name or "Widget Customer",
-                    customer_email=conversation.customer_email or "",
-                    product_query=intent_result["extracted_data"].get("product_query", data.message),
-                    conversation_id=conversation.id,
-                    db=db
-                )
-                ai_response_text = order_result["response"]
-                intent_skipped_agent = True
-                logger.info(f"🛍️ Purchase intent handled: success={order_result.get('success')}")
+                import re as _re
+
+                product_query = intent_result["extracted_data"].get("product_query", "").strip()
+
+                # ── Resolve contextual references ("this", "that", "it", empty) ──
+                # When customer says "can I order this?" after discussing a product,
+                # scan recent messages for the product name the AI just mentioned.
+                PRONOUNS = {"this", "that", "it", "one", "these", "those", "them", ""}
+                if product_query.lower().strip(".,!? ") in PRONOUNS:
+                    resolved_product = None
+                    # Look at last 10 messages for product name in AI responses
+                    recent = (conversation_history or [])[-10:]
+                    for msg in reversed(recent):
+                        if msg.get("role") != "assistant":
+                            continue
+                        content = msg.get("content", "")
+                        # Pattern 1: **Product:** Name or 🛍️ **Product:** Name
+                        p_match = _re.search(r'\*\*(?:Product|Item)[:\s]*\*\*\s*(.+?)(?:\n|$)', content, _re.IGNORECASE)
+                        if p_match:
+                            resolved_product = p_match.group(1).strip().strip('*')
+                            break
+                        # Pattern 2: "Product Name ($45)" or "Product Name (USD 45)"
+                        p_match = _re.search(r'[•\-]\s*(.+?)\s*\(\$?\s*[\d,.]+\)', content)
+                        if p_match:
+                            resolved_product = p_match.group(1).strip().strip('*')
+                            break
+                        # Pattern 3: "Our Product Name is..." or "The Product Name ($45) is..."
+                        p_match = _re.search(r'(?:Our|The)\s+(.+?)\s+\(\$?\s*[\d,.]+\)', content, _re.IGNORECASE)
+                        if p_match:
+                            resolved_product = p_match.group(1).strip().strip('*')
+                            break
+
+                    if resolved_product:
+                        product_query = resolved_product
+                        logger.info(f"🔗 Resolved pronoun to product: '{product_query}'")
+                    else:
+                        # Cannot resolve — let LLM handle it naturally
+                        logger.info("🔗 Could not resolve product reference, falling through to LLM")
+                        product_query = None
+
+                if product_query:
+                    order_result = place_widget_order(
+                        tenant_id=tenant.id,
+                        customer_name=conversation.customer_name or "Widget Customer",
+                        customer_email=conversation.customer_email or "",
+                        product_query=product_query,
+                        conversation_id=conversation.id,
+                        db=db
+                    )
+                    ai_response_text = order_result["response"]
+                    intent_skipped_agent = True
+                    logger.info(f"🛍️ Purchase intent handled: success={order_result.get('success')}")
+                # else: product_query is None → fall through to LLM agent
             except Exception as purchase_err:
                 logger.warning(f"Purchase handler failed, falling back to agent: {purchase_err}")
 
