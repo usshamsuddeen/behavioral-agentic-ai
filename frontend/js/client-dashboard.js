@@ -563,7 +563,7 @@ function _anxSetKpi(id, value) {
     if (el) el.textContent = value;
 }
 
-/* ── Smooth SVG Line Chart (Cubic Bezier - 5 categories) ── */
+/* ── Smooth SVG Line Chart (Cubic Bezier) ── */
 function _anxRenderSentimentChart(trends) {
     const wrap = document.getElementById('anxSentimentChart');
     const xLabels = document.getElementById('anxChartXLabels');
@@ -579,14 +579,12 @@ function _anxRenderSentimentChart(trends) {
     const chartW = W - 2 * PX, chartH = H - 2 * PY;
     const n = trends.length;
 
-    // The 5 sentiment data points
-    const maxVal = Math.max(...trends.map(t => Math.max(t.happy||0, t.satisfied||0, t.neutral||0, t.frustrated||0, t.angry||0)), 1);
+    const maxVal = Math.max(...trends.map(t => Math.max(t.positive, t.neutral, t.negative)), 1);
 
     function getPoints(key) {
         return trends.map((t, i) => {
-            const val = t[key] || 0;
             const x = PX + (i / Math.max(n - 1, 1)) * chartW;
-            const y = PY + chartH - (val / maxVal) * chartH;
+            const y = PY + chartH - (t[key] / maxVal) * chartH;
             return { x, y };
         });
     }
@@ -616,11 +614,9 @@ function _anxRenderSentimentChart(trends) {
         return pointsToSmoothPath(pts) + ` L${pts[pts.length-1].x.toFixed(1)},${base} L${pts[0].x.toFixed(1)},${base} Z`;
     }
 
-    const hapP = getPoints('happy');
-    const satP = getPoints('satisfied');
+    const posP = getPoints('positive');
     const neuP = getPoints('neutral');
-    const fruP = getPoints('frustrated');
-    const angP = getPoints('angry');
+    const negP = getPoints('negative');
 
     // Grid
     let gridLines = '';
@@ -629,44 +625,28 @@ function _anxRenderSentimentChart(trends) {
         gridLines += `<line x1="${PX}" y1="${y}" x2="${W - PX}" y2="${y}" class="anx-chart-grid-line"/>`;
     }
 
-    // Colors matching sentimentMeta in rich sentiment
-    const cHappy = '#10b981';
-    const cSatisfied = '#22d3ee';
-    const cNeutral = '#8b5cf6';
-    const cFrustrated = '#f59e0b';
-    const cAngry = '#ef4444';
-
     let svg = `<svg class="anx-chart-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">`;
     svg += `<defs>
-        <linearGradient id="gHap" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${cHappy}" stop-opacity="0.25"/><stop offset="100%" stop-color="${cHappy}" stop-opacity="0"/></linearGradient>
-        <linearGradient id="gSat" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${cSatisfied}" stop-opacity="0.25"/><stop offset="100%" stop-color="${cSatisfied}" stop-opacity="0"/></linearGradient>
-        <linearGradient id="gNeu" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${cNeutral}" stop-opacity="0.2"/><stop offset="100%" stop-color="${cNeutral}" stop-opacity="0"/></linearGradient>
-        <linearGradient id="gFru" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${cFrustrated}" stop-opacity="0.2"/><stop offset="100%" stop-color="${cFrustrated}" stop-opacity="0"/></linearGradient>
-        <linearGradient id="gAng" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${cAngry}" stop-opacity="0.25"/><stop offset="100%" stop-color="${cAngry}" stop-opacity="0"/></linearGradient>
+        <linearGradient id="anxGradPos" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--positive)" stop-opacity="0.25"/><stop offset="100%" stop-color="var(--positive)" stop-opacity="0"/></linearGradient>
+        <linearGradient id="anxGradNeu" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--neutral)" stop-opacity="0.2"/><stop offset="100%" stop-color="var(--neutral)" stop-opacity="0"/></linearGradient>
+        <linearGradient id="anxGradNeg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--negative)" stop-opacity="0.2"/><stop offset="100%" stop-color="var(--negative)" stop-opacity="0"/></linearGradient>
     </defs>`;
     svg += gridLines;
 
     // Gradient areas
-    svg += `<path d="${pointsToSmoothArea(hapP)}" fill="url(#gHap)"/>`;
-    svg += `<path d="${pointsToSmoothArea(satP)}" fill="url(#gSat)"/>`;
-    svg += `<path d="${pointsToSmoothArea(neuP)}" fill="url(#gNeu)"/>`;
-    svg += `<path d="${pointsToSmoothArea(fruP)}" fill="url(#gFru)"/>`;
-    svg += `<path d="${pointsToSmoothArea(angP)}" fill="url(#gAng)"/>`;
+    svg += `<path d="${pointsToSmoothArea(posP)}" fill="url(#anxGradPos)"/>`;
+    svg += `<path d="${pointsToSmoothArea(neuP)}" fill="url(#anxGradNeu)"/>`;
+    svg += `<path d="${pointsToSmoothArea(negP)}" fill="url(#anxGradNeg)"/>`;
 
     // Smooth lines
-    svg += `<path d="${pointsToSmoothPath(hapP)}" stroke="${cHappy}" class="anx-chart-line"/>`;
-    svg += `<path d="${pointsToSmoothPath(satP)}" stroke="${cSatisfied}" class="anx-chart-line"/>`;
-    svg += `<path d="${pointsToSmoothPath(neuP)}" stroke="${cNeutral}" class="anx-chart-line"/>`;
-    svg += `<path d="${pointsToSmoothPath(fruP)}" stroke="${cFrustrated}" class="anx-chart-line"/>`;
-    svg += `<path d="${pointsToSmoothPath(angP)}" stroke="${cAngry}" class="anx-chart-line"/>`;
+    svg += `<path d="${pointsToSmoothPath(posP)}" stroke="var(--positive)" class="anx-chart-line"/>`;
+    svg += `<path d="${pointsToSmoothPath(neuP)}" stroke="var(--neutral)" class="anx-chart-line"/>`;
+    svg += `<path d="${pointsToSmoothPath(negP)}" stroke="var(--negative)" class="anx-chart-line"/>`;
 
     // Dots
-    const allP = [{p: hapP, c: cHappy}, {p: satP, c: cSatisfied}, {p: neuP, c: cNeutral}, {p: fruP, c: cFrustrated}, {p: angP, c: cAngry}];
-    allP.forEach(group => {
-        group.p.forEach(pt => {
-            svg += `<circle cx="${pt.x.toFixed(1)}" cy="${pt.y.toFixed(1)}" stroke="${group.c}" class="anx-chart-dot"/>`;
-        });
-    });
+    posP.forEach(p => { svg += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" stroke="var(--positive)" class="anx-chart-dot"/>`; });
+    neuP.forEach(p => { svg += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" stroke="var(--neutral)" class="anx-chart-dot"/>`; });
+    negP.forEach(p => { svg += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" stroke="var(--negative)" class="anx-chart-dot"/>`; });
 
     svg += '</svg>';
     wrap.innerHTML = svg;
@@ -711,12 +691,12 @@ function _anxRenderOrders(sources, pipeline, totalOrders) {
         return;
     }
 
-    // SVG icons for each source (slightly larger for balance)
+    // SVG icons for each source
     const sourceIcons = {
-        csv: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary-400)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
-        api: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--secondary-400)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>',
-        simulator: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>',
-        widget: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--positive)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/><path d="M9 10l2 2 4-4"/></svg>',
+        csv: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary-400)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
+        api: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--secondary-400)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>',
+        simulator: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>',
+        widget: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--positive)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/><path d="M9 10l2 2 4-4"/></svg>',
     };
     const sourceLabels = {
         csv: 'CSV Import',
@@ -725,21 +705,19 @@ function _anxRenderOrders(sources, pipeline, totalOrders) {
         widget: 'Confirmed through Widget',
     };
 
-    // Source breakdown (bigger fonts, more padding)
-    let html = '<div style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap;height:120px">';
+    // Source breakdown
+    let html = '<div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">';
     const entries = Object.entries(sources);
     entries.forEach(([src, info]) => {
-        const icon = sourceIcons[src] || '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M12 12h.01"/></svg>';
+        const icon = sourceIcons[src] || '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M12 12h.01"/></svg>';
         const label = sourceLabels[src] || (src.charAt(0).toUpperCase() + src.slice(1));
-        html += `<div style="flex:1;min-width:160px;background:var(--bg-tertiary);border-radius:var(--radius-md);padding:16px 20px;border:1px solid var(--border-subtle);display:flex;flex-direction:column;justify-content:center">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        html += `<div style="flex:1;min-width:130px;background:var(--bg-tertiary);border-radius:var(--radius-md);padding:12px 14px;border:1px solid var(--border-subtle)">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
                 ${icon}
-                <span style="font-size:.85rem;color:var(--text-secondary);font-weight:500;letter-spacing:0.02em">${esc(label)}</span>
+                <span style="font-size:.75rem;color:var(--text-muted);font-weight:500">${esc(label)}</span>
             </div>
-            <div style="display:flex;align-items:baseline;gap:8px;margin-top:auto">
-                <span style="font-size:2.25rem;font-weight:700;color:var(--text-primary);line-height:1">${info.count}</span>
-                <span style="font-size:.85rem;color:var(--text-muted);font-weight:500;transform:translateY(-2px)">$${info.revenue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
-            </div>
+            <div style="font-size:1.25rem;font-weight:700;color:var(--text-primary)">${info.count}</div>
+            <div style="font-size:.6875rem;color:var(--text-muted)">$${info.revenue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
         </div>`;
     });
     html += '</div>';
@@ -754,13 +732,13 @@ function _anxRenderOrders(sources, pipeline, totalOrders) {
     ];
     const activeSteps = steps.filter(s => (pipeline[s.key] || 0) > 0);
     if (activeSteps.length) {
-        html += '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:auto">';
+        html += '<div style="display:flex;gap:6px;flex-wrap:wrap">';
         activeSteps.forEach(s => {
             const count = pipeline[s.key] || 0;
-            html += `<div style="display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:var(--radius-full);background:var(--bg-tertiary);border:1px solid var(--border-subtle);font-size:.85rem">
-                <span style="width:8px;height:8px;border-radius:50%;background:${s.color};flex-shrink:0"></span>
+            html += `<div style="display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:var(--radius-full);background:var(--bg-tertiary);border:1px solid var(--border-subtle);font-size:.75rem">
+                <span style="width:7px;height:7px;border-radius:50%;background:${s.color};flex-shrink:0"></span>
                 <span style="color:var(--text-secondary)">${s.label}</span>
-                <span style="font-weight:700;color:var(--text-primary);margin-left:2px">${count}</span>
+                <span style="font-weight:600;color:var(--text-primary)">${count}</span>
             </div>`;
         });
         html += '</div>';
