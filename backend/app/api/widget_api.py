@@ -487,12 +487,24 @@ async def send_chat_message(
             "show me", "list", "available", "price", "how much",
         ]
         is_product_query = any(sig in msg_lower for sig in PRODUCT_SIGNALS)
+
         # Also check if intent router classified as PRODUCT_INFO
         if not is_product_query:
             try:
                 is_product_query = (intent == INTENT_PRODUCT_INFO)
             except NameError:
                 pass
+
+        # Also check if the message mentions a specific product name from DB
+        if not is_product_query:
+            from app.models.product_listing import ProductListing
+            product_names_db = db.query(ProductListing.name).filter(
+                ProductListing.tenant_id == tenant.id
+            ).all()
+            for (pname,) in product_names_db:
+                if pname and pname.lower() in msg_lower:
+                    is_product_query = True
+                    break
 
         if is_product_query:
             from app.models.product_listing import ProductListing
