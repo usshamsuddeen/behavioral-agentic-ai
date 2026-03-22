@@ -222,11 +222,10 @@ class EmbeddingService:
     
     def _init_providers(self):
         """Initialize available providers in priority order."""
-        # 1. Try Gemini embeddings
+        # 1. Try Gemini embeddings (only if API key is configured)
         api_key = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
         if api_key:
             gemini = GeminiEmbeddings(api_key)
-            # Test if it works (quick test)
             try:
                 test_result = gemini.embed_text("test")
                 if test_result and len(test_result) > 100:
@@ -237,22 +236,31 @@ class EmbeddingService:
             except Exception as e:
                 logger.warning(f"[WARN] Gemini embed test failed: {e}")
         
-        # 2. Try sentence-transformers
-        st_embeddings = SentenceTransformerEmbeddings(self.model_name)
-        try:
-            test_result = st_embeddings.embed_text("test")
-            if test_result and len(test_result) > 100:
-                self._active_provider = st_embeddings
-                self._dimension = st_embeddings.dimension
-                logger.info("[OK] Using SentenceTransformer embeddings")
-                return
-        except Exception as e:
-            logger.warning(f"[WARN] SentenceTransformer test failed: {e}")
+        # 2. Try SentenceTransformer (PREFERRED for no-API-key setups)
+        #    This is the recommended provider — retry up to 3 times to handle
+        #    model download hiccups on Coolify redeploys.
+        import time
+        for attempt in range(1, 4):
+            try:
+                st_embeddings = SentenceTransformerEmbeddings(self.model_name)
+                test_result = st_embeddings.embed_text("test")
+                if test_result and len(test_result) > 100:
+                    self._active_provider = st_embeddings
+                    self._dimension = st_embeddings.dimension
+                    logger.info(f"[OK] Using SentenceTransformer embeddings ({self.model_name}, dim={st_embeddings.dimension})")
+                    return
+            except Exception as e:
+                logger.warning(f"[WARN] SentenceTransformer attempt {attempt}/3 failed: {e}")
+                if attempt < 3:
+                    time.sleep(5)  # Wait before retry (model download may need time)
         
-        # 3. Fallback to TF-IDF (always works)
+        # 3. Fallback to TF-IDF (LAST RESORT — warns loudly)
         self._active_provider = TFIDFEmbeddings(dimension=384)
         self._dimension = 384
-        logger.info("[OK] Using TF-IDF embeddings (fallback)")
+        logger.warning(
+            "⚠️  USING TF-IDF EMBEDDINGS (FALLBACK) — semantic search quality will be POOR. "
+            "Install sentence-transformers and ensure the model downloads correctly for good RAG results."
+        )
     
     @property
     def dimension(self) -> int:

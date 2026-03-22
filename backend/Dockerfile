@@ -42,6 +42,11 @@ COPY backend/ /app/
 # ── Frontend (served as static files by FastAPI) ─────────────────
 COPY frontend/ /app/frontend/
 
+# ── Pre-download SentenceTransformer model (baked into image) ────
+# This avoids runtime download failures on Coolify redeploys.
+RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('paraphrase-multilingual-MiniLM-L12-v2')" \
+    || echo "WARNING: Model pre-download failed, will retry at runtime"
+
 # ── Data Directories ────────────────────────────────────────────
 RUN mkdir -p /app/data /app/data/vector_store /app/data/kb_uploads /app/logs
 

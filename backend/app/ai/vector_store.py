@@ -84,28 +84,64 @@ def restore_vector_store_from_db() -> int:
     """
     Rebuild all in-memory collections from SQLite knowledge_chunks.
     Call this once at startup AFTER Base.metadata.create_all().
+    
+    If stored embeddings have a different dimension than the current
+    embedding provider, re-embeds the text to match (so search works).
     Returns the number of chunks restored.
     """
     try:
         from app.models.knowledge_chunk import KnowledgeChunk
+        from app.ai.embeddings import get_embedding_service
         db = _get_db_session()
         restored = 0
+        re_embedded = 0
         try:
             store = get_vector_store()
+            emb_service = get_embedding_service()
+            current_dim = emb_service.dimension
+            
             chunks = db.query(KnowledgeChunk).all()
+            if not chunks:
+                logger.info("ℹ️  VectorStore: no backup chunks in SQLite (fresh install)")
+                return 0
+            
+            logger.info(f"🔄 VectorStore: restoring {len(chunks)} chunks from SQLite (provider dim: {current_dim})")
+            
             for c in chunks:
                 col = store.get_or_create_collection(c.collection_name)
-                embedding = json.loads(c.embedding_json)
-                metadata  = json.loads(c.metadata_json) if c.metadata_json else {}
-                col.add(c.doc_id, c.text, embedding, metadata)
+                stored_embedding = json.loads(c.embedding_json)
+                metadata = json.loads(c.metadata_json) if c.metadata_json else {}
+                
+                # Check dimension mismatch — re-embed if needed
+                if len(stored_embedding) != current_dim and c.text:
+                    try:
+                        new_embedding = emb_service.embed_text(c.text)
+                        if new_embedding and len(new_embedding) > 0:
+                            col.add(c.doc_id, c.text, new_embedding, metadata)
+                            # Update SQLite backup with new embedding
+                            c.embedding_json = json.dumps(new_embedding)
+                            re_embedded += 1
+                            restored += 1
+                            continue
+                    except Exception:
+                        pass  # Fall through to use stored embedding
+                
+                col.add(c.doc_id, c.text, stored_embedding, metadata)
                 restored += 1
-            if restored:
-                # Persist rebuilt collections back to JSON files
-                for cname in store.collections:
-                    store._save_collection(cname)
-                logger.info(f"✅ VectorStore: restored {restored} chunks from SQLite into {len(store.collections)} collections")
-            else:
-                logger.info("ℹ️  VectorStore: no backup chunks found in SQLite (fresh install)")
+            
+            # Commit any re-embedded chunks back to SQLite
+            if re_embedded:
+                db.commit()
+            
+            # Persist rebuilt collections back to JSON files
+            for cname in store.collections:
+                store._save_collection(cname)
+            
+            logger.info(
+                f"✅ VectorStore: restored {restored} chunks into "
+                f"{len(store.collections)} collections"
+                f"{f' (re-embedded {re_embedded} for dim mismatch)' if re_embedded else ''}"
+            )
         finally:
             db.close()
         return restored
@@ -169,11 +205,12 @@ class Collection:
         n_results: int = 5,
         min_similarity: float = 0.0
     ) -> List[Tuple[Document, float]]:
-        """Search for similar documents."""
+        """Search for similar documents (handles dimension mismatches)."""
         if not self.documents:
             return []
         
-        query_vec = np.array(query_embedding)
+        query_vec = np.array(query_embedding, dtype=np.float64)
+        q_dim = len(query_vec)
         query_norm = np.linalg.norm(query_vec)
         
         if query_norm == 0:
@@ -181,14 +218,37 @@ class Collection:
         
         results = []
         for doc in self.documents.values():
-            doc_vec = np.array(doc.embedding)
+            doc_vec = np.array(doc.embedding, dtype=np.float64)
+            d_dim = len(doc_vec)
             doc_norm = np.linalg.norm(doc_vec)
             
             if doc_norm == 0:
                 continue
             
-            # Cosine similarity
-            similarity = float(np.dot(query_vec, doc_vec) / (query_norm * doc_norm))
+            # Handle dimension mismatch (e.g. Gemini 768-dim vs TF-IDF 384-dim)
+            # Pad shorter vector with zeros so np.dot works correctly
+            if q_dim != d_dim:
+                max_dim = max(q_dim, d_dim)
+                if q_dim < max_dim:
+                    query_vec_padded = np.zeros(max_dim, dtype=np.float64)
+                    query_vec_padded[:q_dim] = query_vec
+                    q_norm = np.linalg.norm(query_vec_padded)
+                else:
+                    query_vec_padded = query_vec
+                    q_norm = query_norm
+                if d_dim < max_dim:
+                    doc_vec_padded = np.zeros(max_dim, dtype=np.float64)
+                    doc_vec_padded[:d_dim] = doc_vec
+                    d_norm = np.linalg.norm(doc_vec_padded)
+                else:
+                    doc_vec_padded = doc_vec
+                    d_norm = doc_norm
+                if q_norm == 0 or d_norm == 0:
+                    continue
+                similarity = float(np.dot(query_vec_padded, doc_vec_padded) / (q_norm * d_norm))
+            else:
+                # Same dimension — fast path
+                similarity = float(np.dot(query_vec, doc_vec) / (query_norm * doc_norm))
             
             if similarity >= min_similarity:
                 results.append((doc, similarity))
