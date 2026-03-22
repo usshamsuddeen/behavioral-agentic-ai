@@ -691,12 +691,12 @@ function _anxRenderOrders(sources, pipeline, totalOrders) {
         return;
     }
 
-    // SVG icons for each source
+    // SVG icons for each source (slightly larger for balance)
     const sourceIcons = {
-        csv: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary-400)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
-        api: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--secondary-400)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>',
-        simulator: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>',
-        widget: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--positive)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/><path d="M9 10l2 2 4-4"/></svg>',
+        csv: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary-400)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
+        api: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--secondary-400)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>',
+        simulator: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>',
+        widget: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--positive)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/><path d="M9 10l2 2 4-4"/></svg>',
     };
     const sourceLabels = {
         csv: 'CSV Import',
@@ -705,19 +705,21 @@ function _anxRenderOrders(sources, pipeline, totalOrders) {
         widget: 'Confirmed through Widget',
     };
 
-    // Source breakdown
-    let html = '<div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">';
+    // Source breakdown (bigger fonts, more padding)
+    let html = '<div style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap;height:120px">';
     const entries = Object.entries(sources);
     entries.forEach(([src, info]) => {
-        const icon = sourceIcons[src] || '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M12 12h.01"/></svg>';
+        const icon = sourceIcons[src] || '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M12 12h.01"/></svg>';
         const label = sourceLabels[src] || (src.charAt(0).toUpperCase() + src.slice(1));
-        html += `<div style="flex:1;min-width:130px;background:var(--bg-tertiary);border-radius:var(--radius-md);padding:12px 14px;border:1px solid var(--border-subtle)">
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+        html += `<div style="flex:1;min-width:160px;background:var(--bg-tertiary);border-radius:var(--radius-md);padding:16px 20px;border:1px solid var(--border-subtle);display:flex;flex-direction:column;justify-content:center">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
                 ${icon}
-                <span style="font-size:.75rem;color:var(--text-muted);font-weight:500">${esc(label)}</span>
+                <span style="font-size:.85rem;color:var(--text-secondary);font-weight:500;letter-spacing:0.02em">${esc(label)}</span>
             </div>
-            <div style="font-size:1.25rem;font-weight:700;color:var(--text-primary)">${info.count}</div>
-            <div style="font-size:.6875rem;color:var(--text-muted)">$${info.revenue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+            <div style="display:flex;align-items:baseline;gap:8px;margin-top:auto">
+                <span style="font-size:2.25rem;font-weight:700;color:var(--text-primary);line-height:1">${info.count}</span>
+                <span style="font-size:.85rem;color:var(--text-muted);font-weight:500;transform:translateY(-2px)">$${info.revenue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
+            </div>
         </div>`;
     });
     html += '</div>';
@@ -732,13 +734,13 @@ function _anxRenderOrders(sources, pipeline, totalOrders) {
     ];
     const activeSteps = steps.filter(s => (pipeline[s.key] || 0) > 0);
     if (activeSteps.length) {
-        html += '<div style="display:flex;gap:6px;flex-wrap:wrap">';
+        html += '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:auto">';
         activeSteps.forEach(s => {
             const count = pipeline[s.key] || 0;
-            html += `<div style="display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:var(--radius-full);background:var(--bg-tertiary);border:1px solid var(--border-subtle);font-size:.75rem">
-                <span style="width:7px;height:7px;border-radius:50%;background:${s.color};flex-shrink:0"></span>
+            html += `<div style="display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:var(--radius-full);background:var(--bg-tertiary);border:1px solid var(--border-subtle);font-size:.85rem">
+                <span style="width:8px;height:8px;border-radius:50%;background:${s.color};flex-shrink:0"></span>
                 <span style="color:var(--text-secondary)">${s.label}</span>
-                <span style="font-weight:600;color:var(--text-primary)">${count}</span>
+                <span style="font-weight:700;color:var(--text-primary);margin-left:2px">${count}</span>
             </div>`;
         });
         html += '</div>';
