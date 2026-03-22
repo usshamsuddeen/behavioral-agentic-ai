@@ -129,7 +129,8 @@ class AIAgent:
         # Step 4: Retrieve relevant context from knowledge base
         context_docs, raw_results = self._retrieve_context(
             client_id=context.client_id,
-            query=context.user_message
+            query=context.user_message,
+            conversation_history=context.conversation_history
         )
         
         # Step 5: Generate response using LLM
@@ -253,13 +254,44 @@ class AIAgent:
     def _retrieve_context(
         self,
         client_id: str,
-        query: str
+        query: str,
+        conversation_history: list = None
     ) -> tuple:
-        """Retrieve relevant knowledge base context."""
+        """
+        Retrieve relevant knowledge base context.
+        
+        For short conversational replies (yes, ok, sure, etc.), uses the
+        PREVIOUS user message as the search query so RAG context stays
+        consistent and the system prompt doesn't flip to no-context mode.
+        """
         try:
+            effective_query = query
+            
+            # Detect short/conversational messages that won't match anything in RAG
+            SHORT_REPLIES = {
+                "yes", "yeah", "yep", "yea", "sure", "ok", "okay", "please",
+                "no", "nope", "nah", "thanks", "thank you", "ty", "thx",
+                "go ahead", "do it", "proceed", "confirm", "alright", "fine",
+                "great", "cool", "nice", "perfect", "awesome", "good",
+                "hmm", "hm", "ah", "oh", "wow",
+            }
+            query_clean = query.lower().strip(" .,!?")
+            
+            if query_clean in SHORT_REPLIES or len(query_clean) <= 4:
+                # Find the last substantive user message from history
+                if conversation_history:
+                    for msg in reversed(conversation_history):
+                        if msg.get("role") == "user":
+                            prev = msg.get("content", "").strip()
+                            prev_clean = prev.lower().strip(" .,!?")
+                            if prev_clean not in SHORT_REPLIES and len(prev_clean) > 4:
+                                effective_query = prev
+                                logger.info(f"🔄 Short reply '{query}' → re-using previous query: '{effective_query[:50]}'")
+                                break
+            
             context_str, results = self.retrieval.retrieve_context(
                 client_id=client_id,
-                query=query,
+                query=effective_query,
                 max_tokens=2000,
                 top_k=5
             )

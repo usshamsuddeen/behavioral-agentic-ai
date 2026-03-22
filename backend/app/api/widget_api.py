@@ -399,7 +399,9 @@ async def send_chat_message(
             logger.info(f"🧑 Human request — forcing escalation (skipped RAG+LLM)")
 
         elif intent == INTENT_PURCHASE:
-            # ★ V5 NEW: Widget-based ordering
+            # ★ V5: Widget-based ordering
+            # Only place order immediately if we have REAL customer details.
+            # Otherwise, let the LLM ask the customer for name, email, address.
             try:
                 from app.services.order_placement import place_widget_order
                 import re as _re
@@ -407,28 +409,25 @@ async def send_chat_message(
                 product_query = intent_result["extracted_data"].get("product_query", "").strip()
 
                 # ── Resolve contextual references ("this", "that", "it", empty) ──
-                # When customer says "can I order this?" after discussing a product,
-                # scan recent messages for the product name the AI just mentioned.
                 PRONOUNS = {"this", "that", "it", "one", "these", "those", "them", ""}
                 if product_query.lower().strip(".,!? ") in PRONOUNS:
                     resolved_product = None
-                    # Look at last 10 messages for product name in AI responses
                     recent = (conversation_history or [])[-10:]
                     for msg in reversed(recent):
                         if msg.get("role") != "assistant":
                             continue
                         content = msg.get("content", "")
-                        # Pattern 1: **Product:** Name or 🛍️ **Product:** Name
+                        # Pattern 1: **Product:** Name
                         p_match = _re.search(r'\*\*(?:Product|Item)[:\s]*\*\*\s*(.+?)(?:\n|$)', content, _re.IGNORECASE)
                         if p_match:
                             resolved_product = p_match.group(1).strip().strip('*')
                             break
-                        # Pattern 2: "Product Name ($45)" or "Product Name (USD 45)"
+                        # Pattern 2: "Product Name ($45)"
                         p_match = _re.search(r'[•\-]\s*(.+?)\s*\(\$?\s*[\d,.]+\)', content)
                         if p_match:
                             resolved_product = p_match.group(1).strip().strip('*')
                             break
-                        # Pattern 3: "Our Product Name is..." or "The Product Name ($45) is..."
+                        # Pattern 3: "Our/The Product Name ($45)"
                         p_match = _re.search(r'(?:Our|The)\s+(.+?)\s+\(\$?\s*[\d,.]+\)', content, _re.IGNORECASE)
                         if p_match:
                             resolved_product = p_match.group(1).strip().strip('*')
@@ -438,15 +437,19 @@ async def send_chat_message(
                         product_query = resolved_product
                         logger.info(f"🔗 Resolved pronoun to product: '{product_query}'")
                     else:
-                        # Cannot resolve — let LLM handle it naturally
                         logger.info("🔗 Could not resolve product reference, falling through to LLM")
                         product_query = None
 
-                if product_query:
+                # ── Check if customer details are available ──
+                has_name = conversation.customer_name and conversation.customer_name.strip() and conversation.customer_name.strip().lower() not in ("widget customer", "guest", "customer", "unknown", "")
+                has_email = conversation.customer_email and conversation.customer_email.strip() and "@" in (conversation.customer_email or "")
+
+                if product_query and has_name and has_email:
+                    # ✅ Have customer details AND product — place order now
                     order_result = place_widget_order(
                         tenant_id=tenant.id,
-                        customer_name=conversation.customer_name or "Widget Customer",
-                        customer_email=conversation.customer_email or "",
+                        customer_name=conversation.customer_name.strip(),
+                        customer_email=conversation.customer_email.strip(),
                         product_query=product_query,
                         conversation_id=conversation.id,
                         db=db
@@ -454,7 +457,14 @@ async def send_chat_message(
                     ai_response_text = order_result["response"]
                     intent_skipped_agent = True
                     logger.info(f"🛍️ Purchase intent handled: success={order_result.get('success')}")
-                # else: product_query is None → fall through to LLM agent
+                else:
+                    # ❌ Missing customer details — let LLM ask for them
+                    logger.info(
+                        f"🛍️ Purchase intent detected but missing details "
+                        f"(name={has_name}, email={has_email}, product={'✓' if product_query else '✗'}) "
+                        f"— falling through to LLM to collect info"
+                    )
+                    # Fall through to LLM agent (intent_skipped_agent stays False)
             except Exception as purchase_err:
                 logger.warning(f"Purchase handler failed, falling back to agent: {purchase_err}")
 
