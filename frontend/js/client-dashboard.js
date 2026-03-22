@@ -502,89 +502,295 @@ function setupChatActions(convId, conv) {
 }
 
 /* ***********************************************************
-   TAB 3: ANALYTICS
+   TAB 3: ANALYTICS  (Complete Redesign)
+   Single API call → renders 6 KPIs + 6 chart sections
    *********************************************************** */
+let _anxPeriod = '30d';
+let _anxInitialized = false;
+
 async function loadAnalytics() {
-    try {
-        const data = await API.getDashboardMetrics();
-        const ov = data.overview || {};
-        document.getElementById('analyticsTotal').textContent = (ov.total_conversations ?? 0).toLocaleString();
-        document.getElementById('analyticsAvgSent').textContent = ov.avg_sentiment_score != null ? (ov.avg_sentiment_score * 100).toFixed(0) + '%' : 'N/A';
-        document.getElementById('analyticsAvgResp').textContent = ov.avg_response_time || '< 2s';
-        document.getElementById('analyticsEscRate').textContent = ov.escalation_rate != null ? ov.escalation_rate.toFixed(1) + '%' : '0%';
-    } catch { }
+    // Setup period pills once
+    if (!_anxInitialized) {
+        _anxInitialized = true;
+        document.querySelectorAll('.anx-period-pill').forEach(pill => {
+            pill.addEventListener('click', () => {
+                document.querySelectorAll('.anx-period-pill').forEach(p => p.classList.remove('active'));
+                pill.classList.add('active');
+                _anxPeriod = pill.dataset.period;
+                loadedTabs['analytics'] = false;
+                loadAnalytics();
+            });
+        });
+    }
 
-    // Sentiment trends
     try {
-        const trends = await API.getSentimentTrends(7);
-        const items = trends.trends || trends || [];
-        renderBarChart('sentimentTrendsChart', items.map(t => ({
-            label: t.date ? t.date.slice(5) : '',
-            value: (t.avg_sentiment || 0) * 100,
-            type: 'primary'
-        })));
-    } catch { document.getElementById('sentimentTrendsChart').innerHTML = '<div class="empty-state"><p>No trend data</p></div>'; }
+        const data = await API.getComprehensiveAnalytics(_anxPeriod);
+        const k = data.kpis || {};
+        const sd = data.sentiment_distribution || {};
 
-    // Escalation triggers
-    try {
-        const triggers = await API.getEscalationTriggers();
-        const items = triggers.triggers || triggers || [];
-        const tbody = document.getElementById('triggersBody');
-        if (items.length) {
-            const total = items.reduce((s, t) => s + (t.count || 0), 0) || 1;
-            tbody.innerHTML = items.slice(0, 8).map(t => `<tr>
-                <td>${esc(t.trigger || t.keyword || 'Unknown')}</td>
-                <td>${t.count || 0}</td>
-                <td>${((t.count || 0) / total * 100).toFixed(1)}%</td>
-            </tr>`).join('');
-        } else {
-            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--text-muted)">No data yet</td></tr>';
-        }
-    } catch { }
+        // ── KPI Cards ──
+        _anxSetKpi('anxKpiConversations', (k.total_conversations ?? 0).toLocaleString());
+        _anxSetKpi('anxKpiMessages', (k.total_messages ?? 0).toLocaleString());
+        _anxSetKpi('anxKpiSentiment', k.avg_sentiment != null ? (k.avg_sentiment * 100).toFixed(0) + '%' : 'N/A');
+        _anxSetKpi('anxKpiEscalation', k.escalation_rate != null ? k.escalation_rate.toFixed(1) + '%' : '0%');
+        _anxSetKpi('anxKpiOrders', (k.total_orders ?? 0).toLocaleString());
+        _anxSetKpi('anxKpiRevenue', '$' + (k.total_revenue ?? 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}));
 
-    // Sentiment by language
-    try {
-        const langData = await API.getSentimentByLanguage();
-        const items = langData.languages || langData || [];
-        const tbody = document.getElementById('langBody');
-        if (items.length) {
-            tbody.innerHTML = items.map(l => `<tr>
-                <td>${esc(l.language || 'Unknown')}</td>
-                <td>${l.avg_sentiment != null ? (l.avg_sentiment * 100).toFixed(0) + '%' : 'N/A'}</td>
-                <td>${l.count || 0}</td>
-            </tr>`).join('');
-        } else {
-            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--text-muted)">No data yet</td></tr>';
-        }
-    } catch { }
+        // ── Period label ──
+        const label = document.getElementById('anxPeriodLabel');
+        if (label) label.textContent = `Updated just now · ${k.avg_response_time || '< 2s'} avg response`;
 
-    // Hourly activity
-    try {
-        const hourly = await API.getHourlyActivity();
-        const items = hourly.activity || hourly || [];
-        renderBarChart('hourlyActivityChart', items.map(h => ({
-            label: h.hour != null ? h.hour + 'h' : '',
-            value: h.count || 0,
-            type: 'primary'
-        })));
-    } catch { document.getElementById('hourlyActivityChart').innerHTML = '<div class="empty-state"><p>No activity data</p></div>'; }
+        // ── Sentiment Trend SVG Chart ──
+        _anxRenderSentimentChart(data.sentiment_trends || []);
+
+        // ── Sentiment Donut ──
+        _anxRenderDonut(sd);
+
+        // ── Conversation Status Breakdown ──
+        _anxRenderConvStatus(data.conversation_statuses || {}, k.total_conversations || 0);
+
+        // ── Order Pipeline ──
+        _anxRenderOrderPipeline(data.order_pipeline || {});
+
+        // ── Escalation Triggers ──
+        _anxRenderTriggers(data.escalation_triggers || [], k.escalated_count || 0);
+
+        // ── Language Distribution ──
+        _anxRenderLanguages(data.languages || []);
+
+    } catch (err) {
+        console.error('Analytics load error:', err);
+    }
 }
 
-function renderBarChart(containerId, data) {
-    const container = document.getElementById(containerId);
-    if (!data.length) {
-        container.innerHTML = '<div class="empty-state"><p>No data available</p></div>';
+function _anxSetKpi(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+}
+
+/* ── SVG Line Chart ── */
+function _anxRenderSentimentChart(trends) {
+    const wrap = document.getElementById('anxSentimentChart');
+    const xLabels = document.getElementById('anxChartXLabels');
+    if (!wrap) return;
+
+    if (!trends.length) {
+        wrap.innerHTML = '<div class="anx-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg><span>No trend data yet</span></div>';
+        if (xLabels) xLabels.innerHTML = '';
         return;
     }
-    const maxVal = Math.max(...data.map(d => d.value), 1);
-    container.innerHTML = data.map(d => {
-        const h = Math.max((d.value / maxVal) * 100, 3);
-        return `<div class="bar-chart-bar bar-chart-bar--${d.type || 'primary'}" style="height:${h}%">
-            <span class="bar-chart-label">${d.label}</span>
+
+    const W = 560, H = 190, PX = 30, PY = 20;
+    const chartW = W - 2 * PX, chartH = H - 2 * PY;
+    const n = trends.length;
+
+    // Find max for scaling
+    const maxVal = Math.max(...trends.map(t => Math.max(t.positive, t.neutral, t.negative)), 1);
+
+    function getPoints(key) {
+        return trends.map((t, i) => {
+            const x = PX + (i / Math.max(n - 1, 1)) * chartW;
+            const y = PY + chartH - (t[key] / maxVal) * chartH;
+            return { x, y };
+        });
+    }
+
+    function pointsToPath(pts) {
+        if (!pts.length) return '';
+        return pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+    }
+
+    function pointsToArea(pts) {
+        if (!pts.length) return '';
+        const base = PY + chartH;
+        return pointsToPath(pts) + ` L${pts[pts.length-1].x.toFixed(1)},${base} L${pts[0].x.toFixed(1)},${base} Z`;
+    }
+
+    const posP = getPoints('positive');
+    const neuP = getPoints('neutral');
+    const negP = getPoints('negative');
+
+    // Grid lines
+    let gridLines = '';
+    for (let i = 0; i <= 4; i++) {
+        const y = PY + (i / 4) * chartH;
+        gridLines += `<line x1="${PX}" y1="${y}" x2="${W - PX}" y2="${y}" class="anx-chart-grid-line"/>`;
+    }
+
+    // Build SVG
+    let svg = `<svg class="anx-chart-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">`;
+    svg += gridLines;
+
+    // Areas
+    svg += `<path d="${pointsToArea(posP)}" fill="var(--positive)" class="anx-chart-area"/>`;
+    svg += `<path d="${pointsToArea(neuP)}" fill="var(--neutral)" class="anx-chart-area"/>`;
+    svg += `<path d="${pointsToArea(negP)}" fill="var(--negative)" class="anx-chart-area"/>`;
+
+    // Lines
+    svg += `<path d="${pointsToPath(posP)}" stroke="var(--positive)" class="anx-chart-line"/>`;
+    svg += `<path d="${pointsToPath(neuP)}" stroke="var(--neutral)" class="anx-chart-line"/>`;
+    svg += `<path d="${pointsToPath(negP)}" stroke="var(--negative)" class="anx-chart-line"/>`;
+
+    // Dots
+    posP.forEach(p => { svg += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" stroke="var(--positive)" class="anx-chart-dot"/>`; });
+    neuP.forEach(p => { svg += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" stroke="var(--neutral)" class="anx-chart-dot"/>`; });
+    negP.forEach(p => { svg += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" stroke="var(--negative)" class="anx-chart-dot"/>`; });
+
+    svg += '</svg>';
+    wrap.innerHTML = svg;
+
+    // X-axis labels
+    if (xLabels) {
+        xLabels.innerHTML = trends.map(t => `<span>${t.label || t.day || ''}</span>`).join('');
+    }
+}
+
+/* ── Sentiment Donut ── */
+function _anxRenderDonut(sd) {
+    const el = document.getElementById('anxDonutSection');
+    if (!el) return;
+
+    const pos = sd.positive || 0, neu = sd.neutral || 0, neg = sd.negative || 0;
+    const total = pos + neu + neg || 1;
+    const pPct = sd.positive_pct ?? Math.round(pos / total * 100);
+    const nPct = sd.neutral_pct ?? Math.round(neu / total * 100);
+    const gPct = sd.negative_pct ?? (100 - pPct - nPct);
+
+    el.innerHTML = `
+        <div class="anx-donut" style="background: conic-gradient(var(--positive) 0% ${pPct}%, var(--neutral) ${pPct}% ${pPct + nPct}%, var(--negative) ${pPct + nPct}% 100%)">
+            <div class="anx-donut-center">
+                <span class="anx-donut-center-value">${total}</span>
+                <span class="anx-donut-center-label">Total</span>
+            </div>
+        </div>
+        <div class="anx-donut-legend">
+            <div class="anx-donut-legend-item"><span class="anx-donut-legend-dot" style="background:var(--positive)"></span>Positive<span class="anx-donut-legend-val">${pPct}%</span></div>
+            <div class="anx-donut-legend-item"><span class="anx-donut-legend-dot" style="background:var(--neutral)"></span>Neutral<span class="anx-donut-legend-val">${nPct}%</span></div>
+            <div class="anx-donut-legend-item"><span class="anx-donut-legend-dot" style="background:var(--negative)"></span>Negative<span class="anx-donut-legend-val">${gPct}%</span></div>
+        </div>`;
+}
+
+/* ── Conversation Status Breakdown ── */
+function _anxRenderConvStatus(statuses, totalConv) {
+    const el = document.getElementById('anxConvStatus');
+    if (!el) return;
+
+    const statusConfig = {
+        active:    { label: 'Active',    color: 'var(--positive)' },
+        pending:   { label: 'Pending',   color: 'var(--urgent)' },
+        escalated: { label: 'Escalated', color: 'var(--negative)' },
+        resolved:  { label: 'Resolved',  color: 'var(--primary-400)' },
+        closed:    { label: 'Closed',    color: 'var(--text-muted)' },
+    };
+
+    const total = Math.max(totalConv, 1);
+    const entries = Object.entries(statuses);
+
+    if (!entries.length) {
+        el.innerHTML = '<div class="anx-empty"><span>No conversations yet</span></div>';
+        return;
+    }
+
+    // Stacked bar
+    let barHtml = '<div class="anx-stacked-bar">';
+    entries.forEach(([status, count]) => {
+        const pct = (count / total * 100);
+        const cfg = statusConfig[status] || { label: status, color: 'var(--text-muted)' };
+        barHtml += `<div class="anx-stacked-seg" style="width:${pct}%;background:${cfg.color}" title="${cfg.label}: ${count}"></div>`;
+    });
+    barHtml += '</div>';
+
+    // Legend
+    let legendHtml = '<div class="anx-status-legend">';
+    entries.forEach(([status, count]) => {
+        const cfg = statusConfig[status] || { label: status, color: 'var(--text-muted)' };
+        legendHtml += `<div class="anx-status-legend-item"><span class="anx-status-legend-dot" style="background:${cfg.color}"></span>${cfg.label}<span class="anx-status-legend-count">${count}</span></div>`;
+    });
+    legendHtml += '</div>';
+
+    el.innerHTML = barHtml + legendHtml;
+}
+
+/* ── Order Pipeline ── */
+function _anxRenderOrderPipeline(pipeline) {
+    const el = document.getElementById('anxOrderPipeline');
+    if (!el) return;
+
+    const steps = [
+        { key: 'pending',    label: 'Pending',   color: 'var(--urgent)' },
+        { key: 'confirmed',  label: 'Confirmed', color: 'var(--primary-400)' },
+        { key: 'processing', label: 'Processing', color: 'var(--neutral)' },
+        { key: 'shipped',    label: 'Shipped',   color: 'var(--secondary-400)' },
+        { key: 'delivered',  label: 'Delivered', color: 'var(--positive)' },
+        { key: 'cancelled',  label: 'Cancelled', color: 'var(--negative)' },
+    ];
+
+    const maxCount = Math.max(...steps.map(s => pipeline[s.key] || 0), 1);
+    const totalOrders = Object.values(pipeline).reduce((a, b) => a + b, 0);
+
+    if (!totalOrders) {
+        el.innerHTML = '<div class="anx-empty" style="width:100%"><span>No orders yet</span></div>';
+        return;
+    }
+
+    el.innerHTML = steps
+        .filter(s => (pipeline[s.key] || 0) > 0)
+        .map(s => {
+            const count = pipeline[s.key] || 0;
+            const h = Math.max((count / maxCount) * 100, 12);
+            return `<div class="anx-pipeline-step">
+                <div class="anx-pipeline-count">${count}</div>
+                <div class="anx-pipeline-bar" style="height:${h}px;background:${s.color}"></div>
+                <div class="anx-pipeline-label">${s.label}</div>
+            </div>`;
+        }).join('');
+}
+
+/* ── Escalation Triggers ── */
+function _anxRenderTriggers(triggers, totalEsc) {
+    const el = document.getElementById('anxTriggers');
+    const countLabel = document.getElementById('anxTriggerCount');
+    if (!el) return;
+    if (countLabel) countLabel.textContent = totalEsc ? `${totalEsc} total` : '';
+
+    if (!triggers.length) {
+        el.innerHTML = '<div class="anx-empty"><span>No escalations recorded</span></div>';
+        return;
+    }
+
+    const maxPct = Math.max(...triggers.map(t => t.percent || 0), 1);
+    el.innerHTML = triggers.map((t, i) => {
+        const barW = Math.max((t.percent / maxPct) * 100, 4);
+        return `<div class="anx-hbar-item">
+            <span class="anx-hbar-rank">${i + 1}</span>
+            <span class="anx-hbar-label" title="${esc(t.name)}">${esc(t.name)}</span>
+            <div class="anx-hbar-track"><div class="anx-hbar-fill anx-hbar-fill--orange" style="width:${barW}%"></div></div>
+            <span class="anx-hbar-value">${t.count}</span>
         </div>`;
     }).join('');
 }
 
+/* ── Language Distribution ── */
+function _anxRenderLanguages(languages) {
+    const el = document.getElementById('anxLanguages');
+    if (!el) return;
+
+    if (!languages.length) {
+        el.innerHTML = '<div class="anx-empty"><span>No language data yet</span></div>';
+        return;
+    }
+
+    const maxPct = Math.max(...languages.map(l => l.percent || 0), 1);
+    el.innerHTML = languages.map((l, i) => {
+        const barW = Math.max((l.percent / maxPct) * 100, 4);
+        return `<div class="anx-hbar-item anx-lang-item">
+            <span class="anx-lang-flag">${l.flag || '🌐'}</span>
+            <span class="anx-lang-name">${esc(l.name || 'Unknown')}</span>
+            <div class="anx-hbar-track"><div class="anx-hbar-fill anx-hbar-fill--blue" style="width:${barW}%"></div></div>
+            <span class="anx-hbar-value">${l.percent}%</span>
+        </div>`;
+    }).join('');
+}
 
 
 

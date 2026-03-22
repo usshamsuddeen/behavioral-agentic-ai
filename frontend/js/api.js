@@ -287,6 +287,10 @@ const API = {
         return this.request('/analytics/sentiment-by-language');
     },
 
+    async getComprehensiveAnalytics(period = '7d') {
+        return this.request(`/analytics/comprehensive?period=${period}`);
+    },
+
     // ==========================================
     // SETTINGS (Tenant-Scoped, FR-3.6)
     // ==========================================

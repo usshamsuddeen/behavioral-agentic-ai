@@ -12,6 +12,7 @@
         rel="stylesheet">
     <link rel="stylesheet" href="../css/design-system.css">
     <link rel="stylesheet" href="../css/client-dashboard.css">
+    <link rel="stylesheet" href="../css/analytics.css">
     <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
 </head>
 
@@ -623,98 +624,117 @@
                     </div>
                 </div>
 
-                <!-- ═══════════ TAB: ANALYTICS ═══════════ -->
+                <!-- ═══════════ TAB: ANALYTICS (Redesigned) ═══════════ -->
                 <div class="tab-panel" id="panel-analytics">
-                    <div class="metrics-grid">
-                        <div class="metric-card">
-                            <div class="metric-icon metric-icon--blue"><svg width="20" height="20" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-                                </svg></div>
-                            <div class="metric-value" id="analyticsTotal">&mdash;</div>
-                            <div class="metric-label">Total Conversations</div>
+                    <!-- Period Selector -->
+                    <div class="anx-period-bar">
+                        <div class="anx-period-pills" id="anxPeriodPills">
+                            <button class="anx-period-pill" data-period="today">Today</button>
+                            <button class="anx-period-pill" data-period="7d">7 Days</button>
+                            <button class="anx-period-pill active" data-period="30d">30 Days</button>
+                            <button class="anx-period-pill" data-period="all">All Time</button>
                         </div>
-                        <div class="metric-card">
-                            <div class="metric-icon metric-icon--green"><svg width="20" height="20" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="12" cy="12" r="10" />
-                                    <path d="M8 14s1.5 2 4 2 4-2 4-2" />
-                                </svg></div>
-                            <div class="metric-value" id="analyticsAvgSent">&mdash;</div>
-                            <div class="metric-label">Avg Sentiment</div>
+                        <span class="anx-period-label" id="anxPeriodLabel">Last updated just now</span>
+                    </div>
+
+                    <!-- 6 KPI Hero Cards -->
+                    <div class="anx-kpi-grid" id="anxKpiGrid">
+                        <div class="anx-kpi">
+                            <div class="anx-kpi-icon anx-kpi-icon--blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+                            <div class="anx-kpi-body">
+                                <div class="anx-kpi-value" id="anxKpiConversations">&mdash;</div>
+                                <div class="anx-kpi-label">Total Conversations</div>
+                            </div>
                         </div>
-                        <div class="metric-card">
-                            <div class="metric-icon metric-icon--purple"><svg width="20" height="20" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="12" cy="12" r="10" />
-                                    <polyline points="12 6 12 12 16 14" />
-                                </svg></div>
-                            <div class="metric-value" id="analyticsAvgResp">&mdash;</div>
-                            <div class="metric-label">Avg Response Time</div>
+                        <div class="anx-kpi">
+                            <div class="anx-kpi-icon anx-kpi-icon--purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg></div>
+                            <div class="anx-kpi-body">
+                                <div class="anx-kpi-value" id="anxKpiMessages">&mdash;</div>
+                                <div class="anx-kpi-label">Messages Exchanged</div>
+                            </div>
                         </div>
-                        <div class="metric-card">
-                            <div class="metric-icon metric-icon--orange"><svg width="20" height="20" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2">
-                                    <path
-                                        d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-                                </svg></div>
-                            <div class="metric-value" id="analyticsEscRate">&mdash;</div>
-                            <div class="metric-label">Escalation Rate</div>
+                        <div class="anx-kpi">
+                            <div class="anx-kpi-icon anx-kpi-icon--green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg></div>
+                            <div class="anx-kpi-body">
+                                <div class="anx-kpi-value" id="anxKpiSentiment">&mdash;</div>
+                                <div class="anx-kpi-label">Avg Sentiment</div>
+                            </div>
+                        </div>
+                        <div class="anx-kpi">
+                            <div class="anx-kpi-icon anx-kpi-icon--orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+                            <div class="anx-kpi-body">
+                                <div class="anx-kpi-value" id="anxKpiEscalation">&mdash;</div>
+                                <div class="anx-kpi-label">Escalation Rate</div>
+                            </div>
+                        </div>
+                        <div class="anx-kpi">
+                            <div class="anx-kpi-icon anx-kpi-icon--cyan"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div>
+                            <div class="anx-kpi-body">
+                                <div class="anx-kpi-value" id="anxKpiOrders">&mdash;</div>
+                                <div class="anx-kpi-label">Total Orders</div>
+                            </div>
+                        </div>
+                        <div class="anx-kpi">
+                            <div class="anx-kpi-icon anx-kpi-icon--red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
+                            <div class="anx-kpi-body">
+                                <div class="anx-kpi-value" id="anxKpiRevenue">&mdash;</div>
+                                <div class="anx-kpi-label">Total Revenue</div>
+                            </div>
                         </div>
                     </div>
-                    <div class="analytics-grid">
-                        <div class="chart-card">
-                            <div class="chart-card-header"><span class="chart-card-title">Sentiment Trends (7
-                                    Days)</span></div>
-                            <div class="bar-chart" id="sentimentTrendsChart">
-                                <div class="loading-state">
-                                    <div class="spinner"></div>
-                                </div>
+
+                    <!-- Row 1: Sentiment Trend + Sentiment Donut -->
+                    <div class="anx-grid">
+                        <div class="anx-card">
+                            <div class="anx-card-header">
+                                <span class="anx-card-title">Sentiment Trend</span>
+                            </div>
+                            <div class="anx-chart-wrap" id="anxSentimentChart"></div>
+                            <div class="anx-chart-x-labels" id="anxChartXLabels"></div>
+                            <div class="anx-chart-legend">
+                                <span class="anx-chart-legend-item"><span class="anx-chart-legend-dot" style="background:var(--positive)"></span>Positive</span>
+                                <span class="anx-chart-legend-item"><span class="anx-chart-legend-dot" style="background:var(--neutral)"></span>Neutral</span>
+                                <span class="anx-chart-legend-item"><span class="anx-chart-legend-dot" style="background:var(--negative)"></span>Negative</span>
                             </div>
                         </div>
-                        <div class="chart-card">
-                            <div class="chart-card-header"><span class="chart-card-title">Hourly Activity</span></div>
-                            <div class="bar-chart" id="hourlyActivityChart">
-                                <div class="loading-state">
-                                    <div class="spinner"></div>
-                                </div>
+                        <div class="anx-card">
+                            <div class="anx-card-header">
+                                <span class="anx-card-title">Sentiment Distribution</span>
                             </div>
+                            <div class="anx-donut-row" id="anxDonutSection"></div>
                         </div>
-                        <div class="chart-card">
-                            <div class="chart-card-header"><span class="chart-card-title">Escalation Triggers</span>
+                    </div>
+
+                    <!-- Row 2: Conversation Status + Order Pipeline -->
+                    <div class="anx-grid">
+                        <div class="anx-card">
+                            <div class="anx-card-header">
+                                <span class="anx-card-title">Conversation Status</span>
                             </div>
-                            <table class="data-table">
-                                <thead>
-                                    <tr>
-                                        <th>Trigger</th>
-                                        <th>Count</th>
-                                        <th>%</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="triggersBody">
-                                    <tr>
-                                        <td colspan="3" style="text-align:center;color:var(--text-muted)">Loading…</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                            <div class="anx-status-bar-wrap" id="anxConvStatus"></div>
                         </div>
-                        <div class="chart-card">
-                            <div class="chart-card-header"><span class="chart-card-title">Sentiment by Language</span>
+                        <div class="anx-card">
+                            <div class="anx-card-header">
+                                <span class="anx-card-title">Order Pipeline</span>
                             </div>
-                            <table class="data-table">
-                                <thead>
-                                    <tr>
-                                        <th>Language</th>
-                                        <th>Avg Sentiment</th>
-                                        <th>Messages</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="langBody">
-                                    <tr>
-                                        <td colspan="3" style="text-align:center;color:var(--text-muted)">Loading…</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                            <div class="anx-pipeline" id="anxOrderPipeline"></div>
+                        </div>
+                    </div>
+
+                    <!-- Row 3: Escalation Triggers + Language Distribution -->
+                    <div class="anx-grid">
+                        <div class="anx-card">
+                            <div class="anx-card-header">
+                                <span class="anx-card-title">Top Escalation Triggers</span>
+                                <span class="anx-card-subtitle" id="anxTriggerCount"></span>
+                            </div>
+                            <div class="anx-hbar-list" id="anxTriggers"></div>
+                        </div>
+                        <div class="anx-card">
+                            <div class="anx-card-header">
+                                <span class="anx-card-title">Language Distribution</span>
+                            </div>
+                            <div class="anx-hbar-list" id="anxLanguages"></div>
                         </div>
                     </div>
                 </div>

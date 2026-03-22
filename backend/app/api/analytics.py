@@ -17,6 +17,10 @@ from app.models.message import Message
 from app.models.user import User
 from app.models.tenant import Tenant
 from app.models.widget_config import WidgetConfig
+from app.models.order import CustomerOrder
+from app.models.product_listing import ProductListing
+from app.models.knowledge_document import KnowledgeDocument
+from app.models.escalation import Escalation
 from app.middleware.jwt import get_current_user, get_tenant_for_user
 
 router = APIRouter()
@@ -395,3 +399,299 @@ async def get_sentiment_by_language(
     
     formatted_data.sort(key=lambda x: x["total_conversations"], reverse=True)
     return {"breakdown": formatted_data}
+
+
+# ═══════════════════════════════════════════════════════════════════
+# COMPREHENSIVE ANALYTICS — Single endpoint for Analytics Tab
+# ═══════════════════════════════════════════════════════════════════
+
+@router.get("/analytics/comprehensive")
+async def get_comprehensive_analytics(
+    period: str = Query("7d", description="Period: today, 7d, 30d, all"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Single comprehensive analytics endpoint for the redesigned Analytics tab.
+    Returns all KPIs, charts, and tables in one response.
+    """
+    tenant = get_tenant_for_user(current_user, db)
+    tenant_id = tenant.id if tenant else None
+
+    # ── Tenant filters ──
+    conv_tf = Conversation.tenant_id == tenant_id if tenant_id else True
+    msg_tf = Message.tenant_id == tenant_id if tenant_id else True
+    order_tf = CustomerOrder.tenant_id == tenant_id if tenant_id else True
+
+    # ── Period filter ──
+    now = datetime.utcnow()
+    if period == "today":
+        period_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    elif period == "30d":
+        period_start = now - timedelta(days=30)
+    elif period == "all":
+        period_start = datetime(2000, 1, 1)
+    else:  # 7d default
+        period_start = now - timedelta(days=7)
+
+    conv_pf = Conversation.created_at >= period_start
+    msg_pf = Message.created_at >= period_start
+    order_pf = CustomerOrder.created_at >= period_start
+
+    # ════════════════════════════════════════
+    # SECTION 1: KPI METRICS
+    # ════════════════════════════════════════
+
+    total_conversations = db.query(func.count(Conversation.id)).filter(
+        conv_tf, conv_pf
+    ).scalar() or 0
+
+    active_conversations = db.query(func.count(Conversation.id)).filter(
+        conv_tf, Conversation.status == "active"
+    ).scalar() or 0
+
+    total_messages = db.query(func.count(Message.id)).filter(
+        msg_tf, msg_pf
+    ).scalar() or 0
+
+    avg_sentiment = db.query(func.avg(Conversation.sentiment_score)).filter(
+        conv_tf, conv_pf
+    ).scalar()
+    avg_sentiment = round(float(avg_sentiment), 3) if avg_sentiment else 0.5
+
+    escalated_count = db.query(func.count(Conversation.id)).filter(
+        conv_tf, Conversation.is_escalated == True, conv_pf
+    ).scalar() or 0
+
+    escalation_rate = round(
+        (escalated_count / max(total_conversations, 1)) * 100, 1
+    )
+
+    # Sentiment distribution
+    positive_count = db.query(func.count(Conversation.id)).filter(
+        conv_tf, conv_pf, Conversation.current_sentiment == "positive"
+    ).scalar() or 0
+    neutral_count = db.query(func.count(Conversation.id)).filter(
+        conv_tf, conv_pf, Conversation.current_sentiment == "neutral"
+    ).scalar() or 0
+    negative_count = db.query(func.count(Conversation.id)).filter(
+        conv_tf, conv_pf, Conversation.current_sentiment == "negative"
+    ).scalar() or 0
+    total_sentiment = positive_count + neutral_count + negative_count
+
+    satisfaction_pct = round((positive_count / max(total_sentiment, 1)) * 100)
+
+    # ── Order KPIs ──
+    total_orders = db.query(func.count(CustomerOrder.id)).filter(
+        order_tf, order_pf
+    ).scalar() or 0
+
+    total_revenue = db.query(func.sum(CustomerOrder.total_amount)).filter(
+        order_tf, order_pf
+    ).scalar() or 0
+    total_revenue = round(float(total_revenue), 2)
+
+    # Average order value
+    avg_order_value = round(total_revenue / max(total_orders, 1), 2)
+
+    # ── Avg response time (real calculation from message pairs) ──
+    avg_response_time_str = "< 2s"
+    try:
+        # Get conversations in period with at least 2 messages
+        conv_ids = [c.id for c in db.query(Conversation.id).filter(
+            conv_tf, conv_pf
+        ).all()]
+
+        if conv_ids:
+            response_times = []
+            for cid in conv_ids[:50]:  # Sample up to 50 conversations
+                msgs = db.query(Message).filter(
+                    Message.conversation_id == cid
+                ).order_by(Message.created_at).limit(20).all()
+
+                for i in range(1, len(msgs)):
+                    prev = msgs[i - 1]
+                    curr = msgs[i]
+                    if prev.sender_type == "customer" and curr.sender_type == "ai":
+                        if prev.created_at and curr.created_at:
+                            diff = (curr.created_at - prev.created_at).total_seconds()
+                            if 0 < diff < 300:  # Under 5 min
+                                response_times.append(diff)
+
+            if response_times:
+                avg_rt = sum(response_times) / len(response_times)
+                if avg_rt < 60:
+                    avg_response_time_str = f"{avg_rt:.1f}s"
+                else:
+                    avg_response_time_str = f"{avg_rt / 60:.1f}m"
+    except Exception:
+        pass
+
+    # ════════════════════════════════════════
+    # SECTION 2: SENTIMENT TREND (daily)
+    # ════════════════════════════════════════
+
+    trend_days = 7 if period in ("7d", "today") else 30 if period == "30d" else 14
+    sentiment_trends = []
+    for i in range(trend_days):
+        date = now - timedelta(days=(trend_days - 1 - i))
+        day_start = date.replace(hour=0, minute=0, second=0, microsecond=0)
+        day_end = day_start + timedelta(days=1)
+
+        day_filter = and_(
+            Conversation.created_at >= day_start,
+            Conversation.created_at < day_end
+        )
+
+        pos = db.query(func.count(Conversation.id)).filter(
+            conv_tf, day_filter, Conversation.current_sentiment == "positive"
+        ).scalar() or 0
+        neu = db.query(func.count(Conversation.id)).filter(
+            conv_tf, day_filter, Conversation.current_sentiment == "neutral"
+        ).scalar() or 0
+        neg = db.query(func.count(Conversation.id)).filter(
+            conv_tf, day_filter, Conversation.current_sentiment == "negative"
+        ).scalar() or 0
+
+        avg_s = db.query(func.avg(Conversation.sentiment_score)).filter(
+            conv_tf, day_filter
+        ).scalar()
+
+        sentiment_trends.append({
+            "date": date.strftime("%Y-%m-%d"),
+            "label": date.strftime("%b %d"),
+            "day": date.strftime("%a"),
+            "positive": pos,
+            "neutral": neu,
+            "negative": neg,
+            "total": pos + neu + neg,
+            "avg_score": round(float(avg_s), 3) if avg_s else 0.5
+        })
+
+    # ════════════════════════════════════════
+    # SECTION 3: CONVERSATION STATUS BREAKDOWN
+    # ════════════════════════════════════════
+
+    status_rows = db.query(
+        Conversation.status,
+        func.count(Conversation.id).label("count")
+    ).filter(conv_tf, conv_pf).group_by(Conversation.status).all()
+
+    conversation_statuses = {}
+    for row in status_rows:
+        conversation_statuses[row.status or "unknown"] = row.count
+
+    # ════════════════════════════════════════
+    # SECTION 4: ORDER PIPELINE
+    # ════════════════════════════════════════
+
+    order_status_rows = db.query(
+        CustomerOrder.status,
+        func.count(CustomerOrder.id).label("count")
+    ).filter(order_tf, order_pf).group_by(CustomerOrder.status).all()
+
+    order_pipeline = {}
+    for row in order_status_rows:
+        order_pipeline[row.status or "unknown"] = row.count
+
+    # ════════════════════════════════════════
+    # SECTION 5: TOP ESCALATION TRIGGERS
+    # ════════════════════════════════════════
+
+    escalated_convs = db.query(Conversation).filter(
+        conv_tf, Conversation.is_escalated == True, conv_pf
+    ).all()
+
+    trigger_counts = {}
+    for conv in escalated_convs:
+        if conv.escalation_reason:
+            reasons = conv.escalation_reason.split(",")
+            for reason in reasons:
+                reason = reason.strip()
+                if reason:
+                    trigger_counts[reason] = trigger_counts.get(reason, 0) + 1
+
+    sorted_triggers = sorted(trigger_counts.items(), key=lambda x: x[1], reverse=True)[:8]
+    escalation_triggers = [
+        {"name": name, "count": count, "percent": round((count / max(escalated_count, 1)) * 100)}
+        for name, count in sorted_triggers
+    ]
+
+    # ════════════════════════════════════════
+    # SECTION 6: LANGUAGE DISTRIBUTION
+    # ════════════════════════════════════════
+
+    lang_rows = db.query(
+        Conversation.detected_language,
+        Conversation.language_name,
+        Conversation.language_flag,
+        func.count(Conversation.id).label("count")
+    ).filter(conv_tf, conv_pf).group_by(
+        Conversation.detected_language,
+        Conversation.language_name,
+        Conversation.language_flag
+    ).order_by(func.count(Conversation.id).desc()).all()
+
+    languages = [
+        {
+            "code": row.detected_language or "unknown",
+            "name": row.language_name or "Unknown",
+            "flag": row.language_flag or "🌐",
+            "count": row.count,
+            "percent": round((row.count / max(total_conversations, 1)) * 100, 1)
+        }
+        for row in lang_rows
+    ]
+
+    # ════════════════════════════════════════
+    # SECTION 7: KB & PRODUCT COUNTS
+    # ════════════════════════════════════════
+
+    kb_doc_count = 0
+    product_count = 0
+    if tenant_id:
+        kb_doc_count = db.query(func.count(KnowledgeDocument.id)).filter(
+            KnowledgeDocument.tenant_id == tenant_id,
+            KnowledgeDocument.status == "indexed"
+        ).scalar() or 0
+
+        product_count = db.query(func.count(ProductListing.id)).filter(
+            ProductListing.tenant_id == tenant_id
+        ).scalar() or 0
+
+    # ════════════════════════════════════════
+    # ASSEMBLE RESPONSE
+    # ════════════════════════════════════════
+
+    return {
+        "period": period,
+        "generated_at": now.isoformat(),
+        "kpis": {
+            "total_conversations": total_conversations,
+            "active_conversations": active_conversations,
+            "total_messages": total_messages,
+            "avg_sentiment": avg_sentiment,
+            "satisfaction_pct": satisfaction_pct,
+            "escalation_rate": escalation_rate,
+            "escalated_count": escalated_count,
+            "total_orders": total_orders,
+            "total_revenue": total_revenue,
+            "avg_order_value": avg_order_value,
+            "avg_response_time": avg_response_time_str,
+            "kb_documents": kb_doc_count,
+            "products": product_count,
+        },
+        "sentiment_distribution": {
+            "positive": positive_count,
+            "neutral": neutral_count,
+            "negative": negative_count,
+            "positive_pct": round((positive_count / max(total_sentiment, 1)) * 100),
+            "neutral_pct": round((neutral_count / max(total_sentiment, 1)) * 100),
+            "negative_pct": round((negative_count / max(total_sentiment, 1)) * 100),
+        },
+        "sentiment_trends": sentiment_trends,
+        "conversation_statuses": conversation_statuses,
+        "order_pipeline": order_pipeline,
+        "escalation_triggers": escalation_triggers,
+        "languages": languages,
+    }
