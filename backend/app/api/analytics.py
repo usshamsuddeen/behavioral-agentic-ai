@@ -17,6 +17,8 @@ from app.models.message import Message
 from app.models.user import User
 from app.models.tenant import Tenant
 from app.models.widget_config import WidgetConfig
+from app.models.order import CustomerOrder
+from app.models.escalation import Escalation
 from app.middleware.jwt import get_current_user, get_tenant_for_user
 
 router = APIRouter()
@@ -395,3 +397,204 @@ async def get_sentiment_by_language(
     
     formatted_data.sort(key=lambda x: x["total_conversations"], reverse=True)
     return {"breakdown": formatted_data}
+
+
+# ═══════════════════════════════════════════════════════════════════
+# COMPREHENSIVE ANALYTICS — Single endpoint for redesigned tab
+# ═══════════════════════════════════════════════════════════════════
+
+@router.get("/analytics/comprehensive")
+async def get_comprehensive_analytics(
+    days: int = Query(7, ge=1, le=90),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Single comprehensive analytics endpoint.
+    Returns all metrics needed for the redesigned analytics dashboard.
+    """
+    tenant = get_tenant_for_user(current_user, db)
+    tenant_id = tenant.id if tenant else None
+
+    conv_filter = Conversation.tenant_id == tenant_id if tenant_id else True
+    msg_filter = Message.tenant_id == tenant_id if tenant_id else True
+    order_filter = CustomerOrder.tenant_id == tenant_id if tenant_id else True
+    esc_filter = Escalation.tenant_id == tenant_id if tenant_id else True
+
+    now = datetime.utcnow()
+    period_start = now - timedelta(days=days)
+    prev_period_start = period_start - timedelta(days=days)
+
+    period_conv_filter = and_(conv_filter, Conversation.created_at >= period_start)
+    prev_conv_filter = and_(conv_filter, Conversation.created_at >= prev_period_start, Conversation.created_at < period_start)
+
+    # ────────── CONVERSATION KPIs ──────────
+    total_convs = db.query(func.count(Conversation.id)).filter(period_conv_filter).scalar() or 0
+    prev_convs = db.query(func.count(Conversation.id)).filter(prev_conv_filter).scalar() or 0
+    conv_change = round(((total_convs - prev_convs) / max(prev_convs, 1)) * 100, 1)
+
+    active_convs = db.query(func.count(Conversation.id)).filter(
+        conv_filter, Conversation.status == "active"
+    ).scalar() or 0
+
+    escalated_convs = db.query(func.count(Conversation.id)).filter(
+        period_conv_filter, Conversation.is_escalated == True
+    ).scalar() or 0
+    prev_escalated = db.query(func.count(Conversation.id)).filter(
+        prev_conv_filter, Conversation.is_escalated == True
+    ).scalar() or 0
+    esc_rate = round((escalated_convs / max(total_convs, 1)) * 100, 1)
+    prev_esc_rate = round((prev_escalated / max(prev_convs, 1)) * 100, 1)
+
+    avg_sentiment = db.query(func.avg(Conversation.sentiment_score)).filter(period_conv_filter).scalar()
+    avg_sentiment = round(float(avg_sentiment), 3) if avg_sentiment else 0.5
+    prev_sentiment = db.query(func.avg(Conversation.sentiment_score)).filter(prev_conv_filter).scalar()
+    prev_sentiment = round(float(prev_sentiment), 3) if prev_sentiment else 0.5
+
+    # Sentiment distribution
+    pos_count = db.query(func.count(Conversation.id)).filter(period_conv_filter, Conversation.current_sentiment == "positive").scalar() or 0
+    neu_count = db.query(func.count(Conversation.id)).filter(period_conv_filter, Conversation.current_sentiment == "neutral").scalar() or 0
+    neg_count = db.query(func.count(Conversation.id)).filter(period_conv_filter, Conversation.current_sentiment == "negative").scalar() or 0
+    total_sent = pos_count + neu_count + neg_count or 1
+    satisfaction = round((pos_count / total_sent) * 100)
+
+    # ────────── MESSAGE ANALYTICS ──────────
+    total_msgs = db.query(func.count(Message.id)).filter(
+        msg_filter, Message.created_at >= period_start
+    ).scalar() or 0
+    ai_msgs = db.query(func.count(Message.id)).filter(
+        msg_filter, Message.created_at >= period_start, Message.sender_type == "ai"
+    ).scalar() or 0
+    customer_msgs = db.query(func.count(Message.id)).filter(
+        msg_filter, Message.created_at >= period_start, Message.sender_type == "customer"
+    ).scalar() or 0
+    agent_msgs = db.query(func.count(Message.id)).filter(
+        msg_filter, Message.created_at >= period_start, Message.sender_type == "agent"
+    ).scalar() or 0
+    avg_msgs_per_conv = round(total_msgs / max(total_convs, 1), 1)
+
+    # ────────── ORDER ANALYTICS ──────────
+    total_orders = db.query(func.count(CustomerOrder.id)).filter(
+        order_filter, CustomerOrder.created_at >= period_start
+    ).scalar() or 0
+    prev_orders = db.query(func.count(CustomerOrder.id)).filter(
+        order_filter, CustomerOrder.created_at >= prev_period_start, CustomerOrder.created_at < period_start
+    ).scalar() or 0
+    order_change = round(((total_orders - prev_orders) / max(prev_orders, 1)) * 100, 1)
+
+    total_revenue = db.query(func.sum(CustomerOrder.total_amount)).filter(
+        order_filter, CustomerOrder.created_at >= period_start
+    ).scalar() or 0
+    prev_revenue = db.query(func.sum(CustomerOrder.total_amount)).filter(
+        order_filter, CustomerOrder.created_at >= prev_period_start, CustomerOrder.created_at < period_start
+    ).scalar() or 0
+    revenue_change = round(((total_revenue - prev_revenue) / max(prev_revenue, 1)) * 100, 1)
+    avg_order_value = round(total_revenue / max(total_orders, 1), 2)
+
+    # Order status breakdown
+    order_statuses = db.query(
+        CustomerOrder.status, func.count(CustomerOrder.id)
+    ).filter(order_filter, CustomerOrder.created_at >= period_start).group_by(
+        CustomerOrder.status
+    ).all()
+    order_status_map = {s: c for s, c in order_statuses}
+
+    # ────────── ESCALATION ANALYTICS ──────────
+    esc_by_priority = db.query(
+        Escalation.priority, func.count(Escalation.id)
+    ).filter(esc_filter, Escalation.created_at >= period_start).group_by(
+        Escalation.priority
+    ).all()
+    esc_priority_map = {p: c for p, c in esc_by_priority}
+
+    resolved_escs = db.query(func.count(Escalation.id)).filter(
+        esc_filter, Escalation.created_at >= period_start, Escalation.status == "resolved"
+    ).scalar() or 0
+    open_escs = db.query(func.count(Escalation.id)).filter(
+        esc_filter, Escalation.created_at >= period_start, Escalation.status == "open"
+    ).scalar() or 0
+
+    # ────────── DAILY VOLUME TRENDS ──────────
+    daily_trends = []
+    for i in range(days):
+        date = now - timedelta(days=(days - 1 - i))
+        day_start = date.replace(hour=0, minute=0, second=0, microsecond=0)
+        day_end = day_start + timedelta(days=1)
+        day_filter = and_(Conversation.created_at >= day_start, Conversation.created_at < day_end)
+
+        d_convs = db.query(func.count(Conversation.id)).filter(conv_filter, day_filter).scalar() or 0
+        d_pos = db.query(func.count(Conversation.id)).filter(conv_filter, day_filter, Conversation.current_sentiment == "positive").scalar() or 0
+        d_neu = db.query(func.count(Conversation.id)).filter(conv_filter, day_filter, Conversation.current_sentiment == "neutral").scalar() or 0
+        d_neg = db.query(func.count(Conversation.id)).filter(conv_filter, day_filter, Conversation.current_sentiment == "negative").scalar() or 0
+        d_esc = db.query(func.count(Conversation.id)).filter(conv_filter, day_filter, Conversation.is_escalated == True).scalar() or 0
+        d_avg = db.query(func.avg(Conversation.sentiment_score)).filter(conv_filter, day_filter).scalar()
+
+        # Daily orders
+        ord_day_filter = and_(CustomerOrder.created_at >= day_start, CustomerOrder.created_at < day_end)
+        d_orders = db.query(func.count(CustomerOrder.id)).filter(order_filter, ord_day_filter).scalar() or 0
+        d_revenue = db.query(func.sum(CustomerOrder.total_amount)).filter(order_filter, ord_day_filter).scalar() or 0
+
+        daily_trends.append({
+            "date": date.strftime("%Y-%m-%d"),
+            "day": date.strftime("%a"),
+            "conversations": d_convs,
+            "positive": d_pos,
+            "neutral": d_neu,
+            "negative": d_neg,
+            "escalated": d_esc,
+            "avg_sentiment": round(float(d_avg), 3) if d_avg else 0.5,
+            "orders": d_orders,
+            "revenue": round(float(d_revenue), 2),
+        })
+
+    # ────────── PEAK HOURS ──────────
+    conversations_all = db.query(Conversation).filter(conv_filter, Conversation.created_at >= period_start).all()
+    hour_counts = [0] * 24
+    for conv in conversations_all:
+        if conv.created_at:
+            hour_counts[conv.created_at.hour] += 1
+    peak_hour = hour_counts.index(max(hour_counts)) if any(hour_counts) else 12
+
+    # ────────── ASSEMBLE RESPONSE ──────────
+    return {
+        "period_days": days,
+        "kpis": {
+            "total_conversations": total_convs,
+            "conv_change_pct": conv_change,
+            "active_conversations": active_convs,
+            "total_messages": total_msgs,
+            "avg_messages_per_conv": avg_msgs_per_conv,
+            "avg_sentiment": avg_sentiment,
+            "sentiment_change": round((avg_sentiment - prev_sentiment) * 100, 1),
+            "satisfaction_score": satisfaction,
+            "escalation_rate": esc_rate,
+            "esc_rate_change": round(esc_rate - prev_esc_rate, 1),
+            "escalated_count": escalated_convs,
+            "total_orders": total_orders,
+            "order_change_pct": order_change,
+            "total_revenue": round(float(total_revenue), 2),
+            "revenue_change_pct": revenue_change,
+            "avg_order_value": avg_order_value,
+            "peak_hour": peak_hour,
+        },
+        "sentiment_distribution": {
+            "positive": pos_count,
+            "neutral": neu_count,
+            "negative": neg_count,
+        },
+        "message_breakdown": {
+            "total": total_msgs,
+            "ai": ai_msgs,
+            "customer": customer_msgs,
+            "agent": agent_msgs,
+        },
+        "order_status": order_status_map,
+        "escalation_priority": esc_priority_map,
+        "escalation_summary": {
+            "resolved": resolved_escs,
+            "open": open_escs,
+        },
+        "daily_trends": daily_trends,
+        "hourly_distribution": [{"hour": h, "count": c} for h, c in enumerate(hour_counts)],
+    }
+
