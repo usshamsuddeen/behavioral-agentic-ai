@@ -291,6 +291,10 @@ const API = {
         return this.request(`/analytics/comprehensive?period=${period}`);
     },
 
+    async getOverviewDashboard() {
+        return this.request('/dashboard/overview');
+    },
+
     // ==========================================
     // SETTINGS (Tenant-Scoped, FR-3.6)
     // ==========================================

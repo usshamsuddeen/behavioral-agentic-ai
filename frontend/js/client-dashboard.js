@@ -177,64 +177,88 @@ function loadTabData(tab) {
    *********************************************************** */
 async function loadOverview() {
     try {
-        const data = await API.getDashboardMetrics();
-        // /analytics/dashboard returns { overview, sentiment_distribution, recent_escalations, widget_status, language_distribution }
-        const ov = data.overview || {};
-        const sd = data.sentiment_distribution || {};
+        const data = await API.getOverviewDashboard();
+        const k = data.kpis || {};
 
-        // Metrics cards
-        document.getElementById('metricConversations').textContent =
-            (ov.total_conversations ?? 0).toLocaleString();
-        document.getElementById('metricSentiment').textContent =
-            ov.avg_sentiment_score != null ? (ov.avg_sentiment_score * 100).toFixed(0) + '%'
-                : ov.satisfaction_score != null ? ov.satisfaction_score + '%' : 'N/A';
-        document.getElementById('metricEscalations').textContent =
-            ov.escalation_rate != null ? ov.escalation_rate.toFixed(1) + '%' : '0%';
+        // ── 6 KPI Cards ──
+        _ovSetKpi('ovKpiConversations', (k.total_conversations ?? 0).toLocaleString(),
+            `${k.active_conversations ?? 0} active · ${k.resolved_conversations ?? 0} resolved`);
+        _ovSetKpi('ovKpiMessages', (k.total_messages ?? 0).toLocaleString(),
+            `~${k.avg_msgs_per_conv ?? 0} per conversation`);
+        _ovSetKpi('ovKpiSentiment',
+            k.satisfaction_pct != null ? k.satisfaction_pct + '%' : ((k.avg_sentiment ?? 0.5) * 100).toFixed(0) + '%',
+            `Avg score: ${((k.avg_sentiment ?? 0.5) * 100).toFixed(0)}%`);
+        _ovSetKpi('ovKpiEscalation',
+            k.escalation_rate != null ? k.escalation_rate.toFixed(1) + '%' : '0%',
+            `${k.escalated_count ?? 0} escalated total`);
+        _ovSetKpi('ovKpiOrders', (k.total_orders ?? 0).toLocaleString(), '');
+        _ovSetKpi('ovKpiRevenue',
+            '$' + (k.total_revenue ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+            '');
 
-        // Widget status from analytics/dashboard response
-        const ws = data.widget_status || 'inactive';
-        const isActive = ws === 'active';
-        document.getElementById('metricWidgetStatus').innerHTML = isActive
-            ? '<span class="widget-status widget-status--active"><span class="widget-status-dot"></span>Active</span>'
-            : '<span class="widget-status widget-status--inactive"><span class="widget-status-dot"></span>Inactive</span>';
-
-        // Sentiment donut
-        renderSentimentDonut(sd);
-
-        // Recent escalations from API data
+        // ── Recent Escalations (SIDE-BY-SIDE) ──
         renderRecentEscalations(data.recent_escalations || []);
 
-        // Conversation badge
-        try {
-            const convs = await API.getConversations('active');
-            const activeCount = (convs.conversations || convs || []).length;
-            const badge = document.getElementById('convBadge');
-            if (activeCount > 0) {
-                badge.textContent = activeCount;
-                badge.style.display = '';
-            }
-        } catch { }
+        // ── Recent Conversations (SIDE-BY-SIDE) ──
+        renderOvRecentConvs(data.recent_conversations || []);
+
+        // ── System Health Strip ──
+        renderOvSystemHealth(data.system_health || {});
+
+        // ── Sync Toggle Widget State ──
+        ovSyncWidgetToggleState(data.system_health?.widget_active);
+
+        // ── Conversation badge ──
+        const badge = document.getElementById('convBadge');
+        if (k.active_conversations > 0) {
+            badge.textContent = k.active_conversations;
+            badge.style.display = '';
+        }
     } catch (err) {
         console.error('Overview load error:', err);
+        // Fallback: minimalist KPI set
+        try {
+            const data = await API.getDashboardMetrics();
+            const ov = data.overview || {};
+            _ovSetKpi('ovKpiConversations', (ov.total_conversations ?? 0).toLocaleString(), '');
+            _ovSetKpi('ovKpiEscalation',
+                ov.escalation_rate != null ? ov.escalation_rate.toFixed(1) + '%' : '0%', '');
+            renderRecentEscalations(data.recent_escalations || []);
+        } catch (e2) {
+            console.error('Fallback overview also failed:', e2);
+        }
+    }
+
+
+function _ovSetKpi(id, value, sub) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+    const subEl = document.getElementById(id.replace('ovKpi', 'ovKpi').replace(/[A-Z][a-z]+$/, '') + 'Sub')
+        || document.getElementById(id + 'Sub');
+    // More reliable: find sibling with class ov-kpi-sub
+    if (el) {
+        const card = el.closest('.ov-kpi-card');
+        if (card) {
+            const subNode = card.querySelector('.ov-kpi-sub');
+            if (subNode && sub) subNode.textContent = sub;
+        }
     }
 }
 
 function renderSentimentDonut(sd) {
-    // sd = { positive, neutral, negative, positive_percent, neutral_percent, negative_percent }
     const pos = sd.positive || 0;
     const neu = sd.neutral || 0;
     const neg = sd.negative || 0;
     const total = pos + neu + neg || 1;
 
-    const pPct = sd.positive_percent != null ? sd.positive_percent : Math.round(pos / total * 100);
-    const nPct = sd.neutral_percent != null ? sd.neutral_percent : Math.round(neu / total * 100);
-    const gPct = sd.negative_percent != null ? sd.negative_percent : (100 - pPct - nPct);
+    const pPct = sd.positive_pct != null ? sd.positive_pct : Math.round(pos / total * 100);
+    const nPct = sd.neutral_pct != null ? sd.neutral_pct : Math.round(neu / total * 100);
+    const gPct = sd.negative_pct != null ? sd.negative_pct : (100 - pPct - nPct);
 
     document.getElementById('donutPositive').textContent = pPct + '%';
     document.getElementById('donutNeutral').textContent = nPct + '%';
     document.getElementById('donutNegative').textContent = gPct + '%';
 
-    // CSS conic-gradient donut
     const chart = document.getElementById('donutChart');
     chart.style.background = `conic-gradient(
         var(--positive) 0% ${pPct}%,
@@ -269,6 +293,265 @@ function renderRecentEscalations(escalations) {
         </div>`;
     }).join('');
 }
+
+/* ──────────────────────────────────────────────────────────
+   OVERVIEW QUICK ACTIONS LOGIC
+   ────────────────────────────────────────────────────────── */
+
+/** Toggles widget status directly from Overview */
+async function ovQuickToggleWidget() {
+    const btn = document.getElementById('ovQaToggleWidget');
+    if (btn) btn.style.opacity = '0.7';
+
+    try {
+        // Fetch current settings to get status
+        const settings = await API.getSettings();
+        const currentActive = settings.widget?.is_active || false;
+        
+        // Update to opposite
+        const newStatus = !currentActive;
+        await API.updateSettings({ widget: { is_active: newStatus } });
+        
+        showToast(`Widget ${newStatus ? 'enabled' : 'disabled'} successfully`, 'success');
+        ovSyncWidgetToggleState(newStatus);
+        
+        // Refresh health strip if visible
+        const data = await API.getOverviewDashboard();
+        renderOvSystemHealth(data.system_health || {});
+    } catch (err) {
+        console.error('Quick toggle error:', err);
+        showToast('Failed to toggle widget', 'error');
+    } finally {
+        if (btn) btn.style.opacity = '1';
+    }
+}
+
+/** Syncs the button UI state with the actual status */
+function ovSyncWidgetToggleState(isActive) {
+    const btn = document.getElementById('ovQaToggleWidget');
+    if (!btn) return;
+    
+    const label = btn.querySelector('.ov-qa-btn-label');
+    const desc = btn.querySelector('.ov-qa-btn-desc');
+    const iconWrap = btn.querySelector('.ov-qa-btn-icon');
+    
+    if (isActive) {
+        btn.classList.add('ov-qa-btn--teal-active');
+        if (label) label.textContent = 'Disable Widget';
+        if (desc) desc.textContent = 'Widget is currently ACTIVE';
+        if (iconWrap) iconWrap.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>`;
+    } else {
+        btn.classList.remove('ov-qa-btn--teal-active');
+        if (label) label.textContent = 'Enable Widget';
+        if (desc) desc.textContent = 'Widget is currently INACTIVE';
+        if (iconWrap) iconWrap.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="5" width="22" height="14" rx="7"/><circle cx="8" cy="12" r="3"/></svg>`;
+    }
+}
+
+/** Copies widget embed code to clipboard */
+async function ovQuickCopyEmbed() {
+    try {
+        const settings = await API.getSettings();
+        const tenantId = settings.tenant?.id || 'YOUR_TENANT_ID';
+        const script = `<script src="${window.location.origin}/widget.js?tenantId=${tenantId}"></script>`;
+        
+        await navigator.clipboard.writeText(script);
+        showToast('Embed code copied to clipboard!', 'success');
+    } catch (err) {
+        console.error('Copy error:', err);
+        showToast('Failed to copy code', 'error');
+    }
+}
+
+/* ── 7-Day Conversation Volume Sparkline ── */
+function renderOvSparkline(sparkline) {
+    const wrap = document.getElementById('ovSparklineWrap');
+    const labels = document.getElementById('ovSparklineLabels');
+    if (!wrap) return;
+
+    if (!sparkline.length) {
+        wrap.innerHTML = '<div class="anx-empty"><span>No conversation data yet</span></div>';
+        if (labels) labels.innerHTML = '';
+        return;
+    }
+
+    const W = 480, H = 140, PX = 10, PY = 16;
+    const chartW = W - 2 * PX, chartH = H - 2 * PY;
+    const n = sparkline.length;
+    const maxVal = Math.max(...sparkline.map(s => s.count), 1);
+
+    const pts = sparkline.map((s, i) => ({
+        x: PX + (i / Math.max(n - 1, 1)) * chartW,
+        y: PY + chartH - (s.count / maxVal) * chartH,
+        count: s.count
+    }));
+
+    // Smooth bezier
+    function smoothPath(points) {
+        if (points.length < 2) return points.length ? `M${points[0].x},${points[0].y}` : '';
+        let d = `M${points[0].x.toFixed(1)},${points[0].y.toFixed(1)}`;
+        for (let i = 1; i < points.length; i++) {
+            const prev = points[i - 1], curr = points[i];
+            const t = 0.3;
+            const dx = (curr.x - (points[i - 2] ? points[i - 2].x : prev.x)) * t;
+            const cp1x = prev.x + dx, cp1y = prev.y;
+            const dx2 = (curr.x - (points[i + 1] ? points[i + 1].x : curr.x)) * t;
+            const cp2x = curr.x + dx2, cp2y = curr.y;
+            d += ` C${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${curr.x.toFixed(1)},${curr.y.toFixed(1)}`;
+        }
+        return d;
+    }
+
+    const base = PY + chartH;
+    const linePath = smoothPath(pts);
+    const areaPath = linePath + ` L${pts[pts.length - 1].x.toFixed(1)},${base} L${pts[0].x.toFixed(1)},${base} Z`;
+
+    // Grid lines
+    let grid = '';
+    for (let i = 0; i <= 3; i++) {
+        const y = PY + (i / 3) * chartH;
+        grid += `<line x1="${PX}" y1="${y}" x2="${W - PX}" y2="${y}" stroke="var(--border-subtle)" stroke-width="0.5" stroke-dasharray="4 4" opacity="0.4"/>`;
+    }
+
+    let svg = `<svg class="ov-sparkline-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+        <defs>
+            <linearGradient id="ovSparkGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="var(--primary-500)" stop-opacity="0.3"/>
+                <stop offset="100%" stop-color="var(--primary-500)" stop-opacity="0.02"/>
+            </linearGradient>
+        </defs>
+        ${grid}
+        <path d="${areaPath}" fill="url(#ovSparkGrad)"/>
+        <path d="${linePath}" fill="none" stroke="var(--primary-500)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>`;
+
+    pts.forEach(p => {
+        svg += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4" fill="var(--bg-primary)" stroke="var(--primary-500)" stroke-width="2"/>`;
+        svg += `<text x="${p.x.toFixed(1)}" y="${p.y.toFixed(1) - 10}" text-anchor="middle" fill="var(--text-secondary)" font-size="10" font-weight="600" font-family="Inter,sans-serif">${p.count}</text>`;
+    });
+
+    svg += '</svg>';
+    wrap.innerHTML = svg;
+
+    if (labels) {
+        labels.innerHTML = sparkline.map(s => `<span>${s.label || ''}</span>`).join('');
+    }
+}
+
+/* ── Order Pipeline ── */
+function renderOvPipeline(pipeline, totalOrders) {
+    const el = document.getElementById('ovPipelineBody');
+    const totalLabel = document.getElementById('ovPipelineTotal');
+    if (!el) return;
+    if (totalLabel) totalLabel.textContent = totalOrders ? `${totalOrders} total` : '';
+
+    if (!totalOrders) {
+        el.innerHTML = `<div class="anx-empty" style="padding:24px 0">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:32px;height:32px;margin-bottom:8px;opacity:.4">
+                <rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+                <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+            </svg>
+            <span style="color:var(--text-muted);font-size:.8125rem">No orders yet</span>
+        </div>`;
+        return;
+    }
+
+    const steps = [
+        { key: 'pending',   label: 'Pending',   color: '#f59e0b', icon: '⏳' },
+        { key: 'confirmed', label: 'Confirmed', color: '#3b82f6', icon: '✓' },
+        { key: 'processing', label: 'Processing', color: '#8b5cf6', icon: '⚙' },
+        { key: 'shipped',   label: 'Shipped',   color: '#06b6d4', icon: '🚚' },
+        { key: 'delivered', label: 'Delivered', color: '#10b981', icon: '✅' },
+        { key: 'cancelled', label: 'Cancelled', color: '#ef4444', icon: '✗' },
+    ];
+
+    const maxCount = Math.max(...steps.map(s => pipeline[s.key] || 0), 1);
+
+    let html = '<div class="ov-pipeline-bars">';
+    steps.forEach(s => {
+        const count = pipeline[s.key] || 0;
+        const barW = Math.max((count / maxCount) * 100, count > 0 ? 8 : 2);
+        const opacity = count > 0 ? '1' : '0.3';
+        html += `<div class="ov-pipeline-row" style="opacity:${opacity}">
+            <span class="ov-pipeline-label">${s.icon} ${s.label}</span>
+            <div class="ov-pipeline-track">
+                <div class="ov-pipeline-fill" style="width:${barW}%;background:${s.color}"></div>
+            </div>
+            <span class="ov-pipeline-count">${count}</span>
+        </div>`;
+    });
+    html += '</div>';
+    el.innerHTML = html;
+}
+
+/* ── System Health ── */
+function renderOvSystemHealth(health) {
+    // Widget status
+    const widgetEl = document.getElementById('ovHealthWidgetVal');
+    const widgetItem = document.getElementById('ovHealthWidget');
+    if (widgetEl) {
+        const isActive = health.widget_status === 'active';
+        widgetEl.innerHTML = isActive
+            ? '<span class="ov-health-status ov-health-status--active"><span class="ov-health-dot"></span>Active</span>'
+            : '<span class="ov-health-status ov-health-status--inactive"><span class="ov-health-dot"></span>Inactive</span>';
+    }
+
+    // Products
+    const prodEl = document.getElementById('ovHealthProducts');
+    if (prodEl) prodEl.textContent = (health.products ?? 0).toLocaleString();
+
+    // KB docs
+    const kbEl = document.getElementById('ovHealthKB');
+    if (kbEl) kbEl.textContent = (health.kb_documents ?? 0).toLocaleString();
+
+    // Response time
+    const rtEl = document.getElementById('ovHealthResponseTime');
+    if (rtEl) rtEl.textContent = health.avg_response_time || '< 2s';
+}
+
+/* ── Recent Conversations ── */
+function renderOvRecentConvs(convs) {
+    const container = document.getElementById('ovRecentConvs');
+    if (!container) return;
+
+    if (!convs || convs.length === 0) {
+        container.innerHTML = `<div class="anx-empty" style="padding:20px 0">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:28px;height:28px;margin-bottom:6px;opacity:.4">
+                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+            </svg>
+            <span style="color:var(--text-muted);font-size:.8125rem">No conversations yet</span>
+        </div>`;
+        return;
+    }
+
+    container.innerHTML = convs.map(c => {
+        const initials = (c.customer_name || 'U').slice(0, 2).toUpperCase();
+        const preview = (c.last_message_preview || 'No messages yet').substring(0, 80);
+        const time = c.updated_at ? timeAgo(c.updated_at) : '';
+        const status = c.status || 'active';
+        const sentiment = c.current_sentiment || 'neutral';
+        const sentClass = sentiment === 'positive' ? 'ov-sent--pos' : sentiment === 'negative' ? 'ov-sent--neg' : 'ov-sent--neu';
+        const sentLabel = sentiment.charAt(0).toUpperCase() + sentiment.slice(1);
+        const score = c.sentiment_score != null ? Math.round(c.sentiment_score * 100) : 50;
+
+        return `<div class="ov-conv-row" onclick="switchTab('conversations')">
+            <div class="ov-conv-avatar">${initials}</div>
+            <div class="ov-conv-info">
+                <div class="ov-conv-top">
+                    <span class="ov-conv-name">${esc(c.customer_name || 'Unknown')}</span>
+                    <span class="ov-conv-status ov-conv-status--${status}">${status}</span>
+                    <span class="ov-conv-flag">${c.language_flag || '🌐'}</span>
+                </div>
+                <div class="ov-conv-preview">${esc(preview)}</div>
+            </div>
+            <div class="ov-conv-right">
+                <span class="ov-conv-sent ${sentClass}">${sentLabel} ${score}%</span>
+                <span class="ov-conv-time">${time}</span>
+                <span class="ov-conv-msgs">${c.message_count || 0} msgs</span>
+            </div>
+        </div>`;
+    }).join('');
+}
+
 
 /* ***********************************************************
    TAB 2: CONVERSATIONS

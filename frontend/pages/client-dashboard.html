@@ -163,133 +163,152 @@
             <div class="main-body">
                 <!-- ═══════════ TAB: OVERVIEW ═══════════ -->
                 <div class="tab-panel active" id="panel-overview">
-                    <div class="metrics-grid">
-                        <div class="metric-card">
-                            <div class="metric-icon metric-icon--blue"><svg width="20" height="20" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-                                </svg></div>
-                            <div class="metric-value" id="metricConversations">&mdash;</div>
-                            <div class="metric-label">Total Conversations</div>
+                    <!-- Row 1: 6 KPI Cards -->
+                    <div class="ov-kpi-grid">
+                        <div class="ov-kpi-card">
+                            <div class="ov-kpi-icon ov-kpi-icon--blue">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                            </div>
+                            <div class="ov-kpi-body">
+                                <div class="ov-kpi-value" id="ovKpiConversations">&mdash;</div>
+                                <div class="ov-kpi-label">Total Conversations</div>
+                                <div class="ov-kpi-sub" id="ovKpiConvSub"></div>
+                            </div>
                         </div>
-                        <div class="metric-card">
-                            <div class="metric-icon metric-icon--green"><svg width="20" height="20" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="12" cy="12" r="10" />
-                                    <path d="M8 14s1.5 2 4 2 4-2 4-2" />
-                                    <line x1="9" y1="9" x2="9.01" y2="9" />
-                                    <line x1="15" y1="9" x2="15.01" y2="9" />
-                                </svg></div>
-                            <div class="metric-value" id="metricSentiment">&mdash;</div>
-                            <div class="metric-label">Avg Sentiment</div>
+                        <div class="ov-kpi-card">
+                            <div class="ov-kpi-icon ov-kpi-icon--purple">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>
+                            </div>
+                            <div class="ov-kpi-body">
+                                <div class="ov-kpi-value" id="ovKpiMessages">&mdash;</div>
+                                <div class="ov-kpi-label">Messages Exchanged</div>
+                                <div class="ov-kpi-sub" id="ovKpiMsgSub"></div>
+                            </div>
                         </div>
-                        <div class="metric-card">
-                            <div class="metric-icon metric-icon--orange"><svg width="20" height="20" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2">
-                                    <path
-                                        d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-                                    <line x1="12" y1="9" x2="12" y2="13" />
-                                    <line x1="12" y1="17" x2="12.01" y2="17" />
-                                </svg></div>
-                            <div class="metric-value" id="metricEscalations">&mdash;</div>
-                            <div class="metric-label">Escalation Rate</div>
+                        <div class="ov-kpi-card">
+                            <div class="ov-kpi-icon ov-kpi-icon--green">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+                            </div>
+                            <div class="ov-kpi-body">
+                                <div class="ov-kpi-value" id="ovKpiSentiment">&mdash;</div>
+                                <div class="ov-kpi-label">Satisfaction Score</div>
+                                <div class="ov-kpi-sub" id="ovKpiSentSub"></div>
+                            </div>
                         </div>
-                        <div class="metric-card">
-                            <div class="metric-icon metric-icon--purple"><svg width="20" height="20" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2">
-                                    <rect x="2" y="3" width="20" height="14" rx="2" />
-                                    <line x1="8" y1="21" x2="16" y2="21" />
-                                    <line x1="12" y1="17" x2="12" y2="21" />
-                                </svg></div>
-                            <div class="metric-value" id="metricWidgetStatus"><span
-                                    class="widget-status widget-status--inactive"><span
-                                        class="widget-status-dot"></span>Checking…</span></div>
-                            <div class="metric-label">Widget Status</div>
+                        <div class="ov-kpi-card">
+                            <div class="ov-kpi-icon ov-kpi-icon--orange">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                            </div>
+                            <div class="ov-kpi-body">
+                                <div class="ov-kpi-value" id="ovKpiEscalation">&mdash;</div>
+                                <div class="ov-kpi-label">Escalation Rate</div>
+                                <div class="ov-kpi-sub" id="ovKpiEscSub"></div>
+                            </div>
+                        </div>
+                        <div class="ov-kpi-card">
+                            <div class="ov-kpi-icon ov-kpi-icon--cyan">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+                            </div>
+                            <div class="ov-kpi-body">
+                                <div class="ov-kpi-value" id="ovKpiOrders">&mdash;</div>
+                                <div class="ov-kpi-label">Total Orders</div>
+                                <div class="ov-kpi-sub" id="ovKpiOrdSub"></div>
+                            </div>
+                        </div>
+                        <div class="ov-kpi-card">
+                            <div class="ov-kpi-icon ov-kpi-icon--red">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+                            </div>
+                            <div class="ov-kpi-body">
+                                <div class="ov-kpi-value" id="ovKpiRevenue">&mdash;</div>
+                                <div class="ov-kpi-label">Total Revenue</div>
+                                <div class="ov-kpi-sub" id="ovKpiRevSub"></div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="overview-grid">
-                        <!-- Sentiment Donut -->
-                        <div class="overview-card">
-                            <div class="overview-card-header"><span class="overview-card-title">Sentiment
-                                    Distribution</span></div>
-                            <div class="donut-container">
-                                <div class="donut-chart" id="donutChart"></div>
-                                <div class="donut-legend">
-                                    <div class="donut-legend-item"><span
-                                            class="donut-legend-dot donut-legend-dot--positive"></span>Positive <strong
-                                            id="donutPositive">0%</strong></div>
-                                    <div class="donut-legend-item"><span
-                                            class="donut-legend-dot donut-legend-dot--neutral"></span>Neutral <strong
-                                            id="donutNeutral">0%</strong></div>
-                                    <div class="donut-legend-item"><span
-                                            class="donut-legend-dot donut-legend-dot--negative"></span>Negative <strong
-                                            id="donutNegative">0%</strong></div>
-                                </div>
-                            </div>
+                    <!-- Quick Actions -->
+                    <div class="ov-quick-actions">
+                        <div class="ov-qa-header">
+                            <span class="ov-qa-title">&#x26A1; Quick Actions</span>
+                            <span class="ov-qa-subtitle">Frequently used operations</span>
                         </div>
+                        <div class="ov-qa-grid">
+                            <button class="ov-qa-btn ov-qa-btn--green" onclick="switchTab('products'); setTimeout(function(){ var b=document.querySelector('#panel-products .btn-primary'); if(b) b.click(); }, 500)">
+                                <div class="ov-qa-btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
+                                <span class="ov-qa-btn-label">Add Product</span>
+                                <span class="ov-qa-btn-desc">Create new catalog item</span>
+                            </button>
+                            <button class="ov-qa-btn ov-qa-btn--cyan" onclick="switchTab('orders'); setTimeout(function(){ var b=document.querySelector('#panel-orders .btn-primary'); if(b) b.click(); }, 500)">
+                                <div class="ov-qa-btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+                                <span class="ov-qa-btn-label">Import Orders</span>
+                                <span class="ov-qa-btn-desc">Upload CSV file</span>
+                            </button>
+                            <button class="ov-qa-btn ov-qa-btn--purple" onclick="switchTab('knowledge'); setTimeout(function(){ var b=document.querySelector('#panel-knowledge .btn-primary'); if(b) b.click(); }, 500)">
+                                <div class="ov-qa-btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg></div>
+                                <span class="ov-qa-btn-label">Add KB Document</span>
+                                <span class="ov-qa-btn-desc">Train your AI agent</span>
+                            </button>
+                            <button class="ov-qa-btn ov-qa-btn--teal" id="ovQaToggleWidget" onclick="ovQuickToggleWidget()">
+                                <div class="ov-qa-btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="5" width="22" height="14" rx="7"/><circle cx="8" cy="12" r="3"/></svg></div>
+                                <span class="ov-qa-btn-label">Toggle Widget</span>
+                                <span class="ov-qa-btn-desc">Enable / disable chat</span>
+                            </button>
+                            <button class="ov-qa-btn ov-qa-btn--blue" onclick="ovQuickCopyEmbed()">
+                                <div class="ov-qa-btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div>
+                                <span class="ov-qa-btn-label">Copy Embed Code</span>
+                                <span class="ov-qa-btn-desc">Widget script snippet</span>
+                            </button>
+                            <button class="ov-qa-btn ov-qa-btn--orange" onclick="switchTab('escalations')">
+                                <div class="ov-qa-btn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+                                <span class="ov-qa-btn-label">View Escalations</span>
+                                <span class="ov-qa-btn-desc">Handle urgent cases</span>
+                            </button>
+                        </div>
+                    </div>
 
-                        <!-- Recent Escalations -->
+                    <!-- Escalations + Recent Conversations -->
+                    <div class="ov-grid-2col">
                         <div class="overview-card">
-                            <div class="overview-card-header"><span class="overview-card-title">Recent
-                                    Escalations</span></div>
+                            <div class="overview-card-header">
+                                <span class="overview-card-title">&#x1F534; Recent Escalations</span>
+                                <button class="ov-view-all-btn" onclick="switchTab('escalations')">Manage All &#x2192;</button>
+                            </div>
                             <div class="escalation-list" id="recentEscalations">
-                                <div class="loading-state">
-                                    <div class="spinner"></div>
-                                    <p>Loading…</p>
-                                </div>
+                                <div class="loading-state"><div class="spinner"></div><p>Loading&#x2026;</p></div>
                             </div>
                         </div>
-
-                        <!-- Hero Sentiment Card -->
-                        <div class="overview-card" style="grid-column:1/-1">
-                            <div class="overview-card-header"><span class="overview-card-title">Live Sentiment
-                                    Analysis</span></div>
-                            <div class="hero-sentiment-card">
-                                <div class="hero-sentiment-header">
-                                    <div class="hero-sentiment-dots"><span></span><span></span><span></span></div>
-                                    <span class="hero-sentiment-label">Sentiment Engine — Real-time</span>
-                                </div>
-                                <div class="hero-sentiment-body" id="heroSentimentBody">
-                                    <div class="hs-msg">
-                                        <div class="hs-avatar hs-avatar--user">C</div>
-                                        <div>
-                                            <div class="hs-bubble hs-bubble--user">This is the third time I'm asking
-                                                about my order! Very frustrated.</div><span
-                                                class="hs-badge hs-badge--neg"><span
-                                                    class="hs-badge-dot"></span>Frustrated — 92%</span>
-                                        </div>
-                                    </div>
-                                    <div class="hs-msg hs-msg--right">
-                                        <div class="hs-avatar hs-avatar--ai">AI</div>
-                                        <div>
-                                            <div class="hs-bubble hs-bubble--ai">🎯 Escalation Triggered — High
-                                                frustration detected</div>
-                                        </div>
-                                    </div>
-                                    <div class="hs-analysis" id="heroAnalysisPanel">
-                                        <div class="hs-analysis-row"><span class="hs-analysis-label">Emotion</span>
-                                            <div class="hs-analysis-bar">
-                                                <div class="hs-analysis-fill"
-                                                    style="width:92%;background:var(--negative)"></div>
-                                            </div><span class="hs-analysis-value">Frustrated</span>
-                                        </div>
-                                        <div class="hs-analysis-row"><span class="hs-analysis-label">Escalation
-                                                Risk</span>
-                                            <div class="hs-analysis-bar">
-                                                <div class="hs-analysis-fill"
-                                                    style="width:87%;background:var(--urgent)"></div>
-                                            </div><span class="hs-analysis-value">87%</span>
-                                        </div>
-                                        <div class="hs-analysis-row"><span class="hs-analysis-label">Language</span>
-                                            <div class="hs-analysis-bar">
-                                                <div class="hs-analysis-fill"
-                                                    style="width:100%;background:var(--primary-500)"></div>
-                                            </div><span class="hs-analysis-value">English</span>
-                                        </div>
-                                    </div>
-                                </div>
+                        <div class="overview-card">
+                            <div class="overview-card-header">
+                                <span class="overview-card-title">&#x1F4AC; Recent Conversations</span>
+                                <button class="ov-view-all-btn" onclick="switchTab('conversations')">View All &#x2192;</button>
                             </div>
+                            <div class="ov-recent-convs" id="ovRecentConvs">
+                                <div class="loading-state"><div class="spinner"></div><p>Loading&#x2026;</p></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- System Health Strip -->
+                    <div class="ov-health-strip">
+                        <div class="ov-health-item" id="ovHealthWidget">
+                            <div class="ov-health-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+                            <div class="ov-health-info"><div class="ov-health-value" id="ovHealthWidgetVal">Checking&#x2026;</div><div class="ov-health-label">Widget Status</div></div>
+                        </div>
+                        <div class="ov-health-divider"></div>
+                        <div class="ov-health-item">
+                            <div class="ov-health-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></div>
+                            <div class="ov-health-info"><div class="ov-health-value" id="ovHealthProducts">&mdash;</div><div class="ov-health-label">Products Cataloged</div></div>
+                        </div>
+                        <div class="ov-health-divider"></div>
+                        <div class="ov-health-item">
+                            <div class="ov-health-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+                            <div class="ov-health-info"><div class="ov-health-value" id="ovHealthKB">&mdash;</div><div class="ov-health-label">KB Documents</div></div>
+                        </div>
+                        <div class="ov-health-divider"></div>
+                        <div class="ov-health-item">
+                            <div class="ov-health-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+                            <div class="ov-health-info"><div class="ov-health-value" id="ovHealthResponseTime">&mdash;</div><div class="ov-health-label">Avg Response Time</div></div>
                         </div>
                     </div>
                 </div>
