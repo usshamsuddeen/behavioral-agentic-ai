@@ -756,27 +756,43 @@
   font-weight: 400;
 }
 
-/* ── System Status List ── */
-.ss-list {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+/* ── System Status — Authentic Ops Panel ── */
+.ss-body {
+  padding: 0 !important;
 }
 
-.ss-item {
+.ss-section {
+  padding: 14px 16px 10px;
+}
+
+.ss-section + .ss-section {
+  border-top: 1px solid var(--border-subtle);
+}
+
+.ss-section-label {
+  font-size: .625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--text-disabled);
+  margin-bottom: 8px;
+}
+
+.ss-last-checked {
+  margin-left: auto;
+  font-size: .625rem;
+  color: var(--text-disabled);
+  font-weight: 500;
+}
+
+.ss-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 12px;
-  border-radius: var(--radius-md);
-  transition: background .2s;
+  padding: 7px 0;
 }
 
-.ss-item:hover {
-  background: var(--bg-tertiary);
-}
-
-.ss-item-left {
+.ss-row-left {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -803,16 +819,100 @@
   50%      { opacity: .4; transform: scale(.7); }
 }
 
-.ss-item-label {
+.ss-row-label {
   font-size: .8125rem;
   font-weight: 500;
   color: var(--text-secondary);
 }
 
-.ss-item-value {
+.ss-row-value {
   font-size: .8125rem;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Status badges */
+.ss-row-badge {
+  font-size: .6875rem;
+  font-weight: 600;
+  padding: 2px 10px;
+  border-radius: var(--radius-full);
+  letter-spacing: .02em;
+}
+
+.ss-row-badge--ok {
+  background: rgba(16,185,129,.12);
+  color: #10b981;
+  border: 1px solid rgba(16,185,129,.25);
+}
+
+.ss-row-badge--warn {
+  background: rgba(245,158,11,.12);
+  color: #f59e0b;
+  border: 1px solid rgba(245,158,11,.25);
+}
+
+.ss-row-badge--err {
+  background: rgba(239,68,68,.12);
+  color: #ef4444;
+  border: 1px solid rgba(239,68,68,.25);
+}
+
+/* Gauge bars for quality metrics */
+.ss-gauge-track {
+  height: 4px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-full);
+  margin: 0 0 6px;
+  overflow: hidden;
+}
+
+.ss-gauge-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width .8s cubic-bezier(.4,0,.2,1);
+}
+
+.ss-gauge-fill--esc  { background: linear-gradient(90deg, #10b981, #f59e0b, #ef4444); }
+.ss-gauge-fill--sat  { background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981); }
+.ss-gauge-fill--sent { background: linear-gradient(90deg, #ef4444, #f59e0b, #10b981); }
+
+/* ── Order Pipeline — Enhanced ── */
+.pl-summary {
+  display: flex;
+  gap: 0;
+  margin-bottom: 14px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+}
+
+.pl-summary-item {
+  flex: 1;
+  text-align: center;
+  padding: 10px 4px;
+  background: var(--bg-tertiary);
+}
+
+.pl-summary-item + .pl-summary-item {
+  border-left: 1px solid var(--border-subtle);
+}
+
+.pl-summary-val {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -.02em;
+  display: block;
+}
+
+.pl-summary-label {
+  font-size: .625rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: .04em;
 }
 
 /* ── Order Pipeline ── */
@@ -865,6 +965,14 @@
   color: var(--text-primary);
   min-width: 30px;
   text-align: right;
+}
+
+.pipeline-pct {
+  font-size: .6875rem;
+  font-weight: 600;
+  min-width: 32px;
+  text-align: right;
+  opacity: .7;
 }
 
 .pipeline-empty {

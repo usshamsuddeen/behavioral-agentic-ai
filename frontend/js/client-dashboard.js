@@ -192,33 +192,52 @@ async function loadOverview() {
         _ovSet('ovKpiProducts', (k.products ?? 0).toLocaleString());
         _ovSet('ovKpiKbDocs', (k.kb_documents ?? 0).toLocaleString());
 
-        // ── System Status ──
+        // ── System Status — Infrastructure ──
+        // API health — if we got dashData, API is online
+        const apiDot = document.getElementById('ovSsDotApi');
+        const apiBadge = document.getElementById('ovSsApi');
+        if (apiDot) apiDot.className = 'ss-dot ss-dot--green';
+        if (apiBadge) { apiBadge.textContent = 'Online'; apiBadge.className = 'ss-row-badge ss-row-badge--ok'; }
+
+        // Widget status
         const ws = dashData.widget_status || 'inactive';
         const isActive = ws === 'active';
         const wDot = document.getElementById('ovSsDotWidget');
-        const wVal = document.getElementById('ovSsWidget');
-        if (wDot) {
-            wDot.className = 'ss-dot ' + (isActive ? 'ss-dot--green' : 'ss-dot--red');
+        const wBadge = document.getElementById('ovSsWidget');
+        if (wDot) wDot.className = 'ss-dot ' + (isActive ? 'ss-dot--green' : 'ss-dot--red');
+        if (wBadge) {
+            wBadge.textContent = isActive ? 'Active' : 'Inactive';
+            wBadge.className = 'ss-row-badge ' + (isActive ? 'ss-row-badge--ok' : 'ss-row-badge--err');
         }
-        if (wVal) wVal.textContent = isActive ? 'Active' : 'Inactive';
 
+        // Response time
         _ovSet('ovSsResponseTime', k.avg_response_time || '< 2s');
 
+        // ── System Status — Quality Metrics ──
         const escRate = k.escalation_rate ?? ov.escalation_rate ?? 0;
         const escDot = document.getElementById('ovSsDotEsc');
-        if (escDot) {
-            escDot.className = 'ss-dot ' + (escRate > 15 ? 'ss-dot--red' : escRate > 5 ? 'ss-dot--orange' : 'ss-dot--green');
-        }
+        if (escDot) escDot.className = 'ss-dot ' + (escRate > 15 ? 'ss-dot--red' : escRate > 5 ? 'ss-dot--orange' : 'ss-dot--green');
         _ovSet('ovSsEscalation', escRate.toFixed(1) + '%');
+        const escBar = document.getElementById('ovSsEscBar');
+        if (escBar) escBar.style.width = Math.min(escRate, 100) + '%';
 
         const satPct = k.satisfaction_pct ?? 0;
         _ovSet('ovSsSatisfaction', satPct + '%');
+        const satBar = document.getElementById('ovSsSatBar');
+        if (satBar) satBar.style.width = satPct + '%';
 
         const avgSent = k.avg_sentiment ?? ov.avg_sentiment_score ?? 0.5;
-        _ovSet('ovSsSentiment', (avgSent * 100).toFixed(0) + '%');
+        const sentPct = (avgSent * 100).toFixed(0);
+        _ovSet('ovSsSentiment', sentPct + '%');
+        const sentBar = document.getElementById('ovSsSentBar');
+        if (sentBar) sentBar.style.width = sentPct + '%';
+
+        // Last checked timestamp
+        const lcEl = document.getElementById('ovSsLastChecked');
+        if (lcEl) lcEl.textContent = 'Checked ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
         // ── Order Pipeline ──
-        _ovRenderPipeline(pipeline, k.total_orders || 0);
+        _ovRenderPipeline(pipeline, k.total_orders || 0, k.total_revenue || 0, k.avg_order_value || 0);
 
         // ── Recent Escalations (kept) ──
         renderRecentEscalations(dashData.recent_escalations || []);
@@ -243,19 +262,19 @@ function _ovSet(id, value) {
     if (el) el.textContent = value;
 }
 
-function _ovRenderPipeline(pipeline, totalOrders) {
+function _ovRenderPipeline(pipeline, totalOrders, totalRevenue, avgOrderValue) {
     const body = document.getElementById('ovPipelineBody');
     const badge = document.getElementById('ovPipelineTotal');
     if (!body) return;
-    if (badge) badge.textContent = totalOrders ? totalOrders + ' total' : '';
+    if (badge) badge.textContent = totalOrders ? totalOrders + ' orders' : '';
 
     const stages = [
-        { key: 'pending',    label: 'Pending',    color: '#f59e0b' },
-        { key: 'confirmed',  label: 'Confirmed',  color: '#3b82f6' },
-        { key: 'processing', label: 'Processing', color: '#8b5cf6' },
-        { key: 'shipped',    label: 'Shipped',    color: '#22d3ee' },
-        { key: 'delivered',  label: 'Delivered',  color: '#10b981' },
-        { key: 'cancelled',  label: 'Cancelled',  color: '#ef4444' },
+        { key: 'pending',    label: 'Pending',    color: '#f59e0b', icon: '⏳' },
+        { key: 'confirmed',  label: 'Confirmed',  color: '#3b82f6', icon: '✓' },
+        { key: 'processing', label: 'Processing', color: '#8b5cf6', icon: '⚙' },
+        { key: 'shipped',    label: 'Shipped',    color: '#22d3ee', icon: '📦' },
+        { key: 'delivered',  label: 'Delivered',  color: '#10b981', icon: '✅' },
+        { key: 'cancelled',  label: 'Cancelled',  color: '#ef4444', icon: '✕' },
     ];
 
     const maxCount = Math.max(...stages.map(s => pipeline[s.key] || 0), 1);
@@ -269,16 +288,28 @@ function _ovRenderPipeline(pipeline, totalOrders) {
         return;
     }
 
-    body.innerHTML = '<div class="pipeline-stages">' + stages.filter(s => (pipeline[s.key] || 0) > 0).map(s => {
+    // Summary strip
+    const summaryHTML = `<div class="pl-summary">
+        <div class="pl-summary-item"><span class="pl-summary-val">${totalOrders.toLocaleString()}</span><span class="pl-summary-label">Total</span></div>
+        <div class="pl-summary-item"><span class="pl-summary-val">$${totalRevenue.toLocaleString(undefined, {minimumFractionDigits:0, maximumFractionDigits:0})}</span><span class="pl-summary-label">Revenue</span></div>
+        <div class="pl-summary-item"><span class="pl-summary-val">$${avgOrderValue.toFixed(0)}</span><span class="pl-summary-label">Avg Order</span></div>
+    </div>`;
+
+    // Stage bars with percentage
+    const stagesHTML = stages.filter(s => (pipeline[s.key] || 0) > 0).map(s => {
         const count = pipeline[s.key] || 0;
         const pct = Math.max((count / maxCount) * 100, 4);
+        const pctOfTotal = ((count / totalOrders) * 100).toFixed(0);
         return `<div class="pipeline-stage">
             <span class="pipeline-dot" style="background:${s.color};color:${s.color}"></span>
             <span class="pipeline-label">${s.label}</span>
             <div class="pipeline-bar-track"><div class="pipeline-bar-fill" style="width:${pct}%;background:${s.color}"></div></div>
             <span class="pipeline-count">${count}</span>
+            <span class="pipeline-pct" style="color:${s.color}">${pctOfTotal}%</span>
         </div>`;
-    }).join('') + '</div>';
+    }).join('');
+
+    body.innerHTML = summaryHTML + '<div class="pipeline-stages">' + stagesHTML + '</div>';
 }
 
 

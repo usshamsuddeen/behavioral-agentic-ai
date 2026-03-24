@@ -10,9 +10,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="../css/design-system.css?v=10">
-    <link rel="stylesheet" href="../css/client-dashboard.css?v=10">
-    <link rel="stylesheet" href="../css/analytics.css?v=10">
+    <link rel="stylesheet" href="../css/design-system.css?v=11">
+    <link rel="stylesheet" href="../css/client-dashboard.css?v=11">
+    <link rel="stylesheet" href="../css/analytics.css?v=11">
     <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
 </head>
 
@@ -246,45 +246,62 @@
                         <div class="wg-card" id="ovSystemStatus">
                             <div class="wg-card-header">
                                 <div class="wg-card-dots"><span></span><span></span><span></span></div>
-                                <span class="wg-card-title">System Status</span>
+                                <span class="wg-card-title">System Health</span>
+                                <span class="ss-last-checked" id="ovSsLastChecked"></span>
                             </div>
-                            <div class="wg-card-body">
-                                <div class="ss-list">
-                                    <div class="ss-item">
-                                        <div class="ss-item-left">
+                            <div class="wg-card-body ss-body">
+                                <!-- Infrastructure Section -->
+                                <div class="ss-section">
+                                    <div class="ss-section-label">Infrastructure</div>
+                                    <div class="ss-row">
+                                        <div class="ss-row-left">
+                                            <span class="ss-dot ss-dot--checking" id="ovSsDotApi"></span>
+                                            <span class="ss-row-label">Backend API</span>
+                                        </div>
+                                        <span class="ss-row-badge ss-row-badge--ok" id="ovSsApi">Checking…</span>
+                                    </div>
+                                    <div class="ss-row">
+                                        <div class="ss-row-left">
                                             <span class="ss-dot ss-dot--checking" id="ovSsDotWidget"></span>
-                                            <span class="ss-item-label">Chat Widget</span>
+                                            <span class="ss-row-label">Chat Widget</span>
                                         </div>
-                                        <span class="ss-item-value" id="ovSsWidget">Checking…</span>
+                                        <span class="ss-row-badge ss-row-badge--ok" id="ovSsWidget">Checking…</span>
                                     </div>
-                                    <div class="ss-item">
-                                        <div class="ss-item-left">
+                                    <div class="ss-row">
+                                        <div class="ss-row-left">
                                             <span class="ss-dot ss-dot--green"></span>
-                                            <span class="ss-item-label">AI Response Time</span>
+                                            <span class="ss-row-label">AI Response Time</span>
                                         </div>
-                                        <span class="ss-item-value" id="ovSsResponseTime">&mdash;</span>
+                                        <span class="ss-row-value" id="ovSsResponseTime">&mdash;</span>
                                     </div>
-                                    <div class="ss-item">
-                                        <div class="ss-item-left">
+                                </div>
+                                <!-- Quality Section -->
+                                <div class="ss-section">
+                                    <div class="ss-section-label">Quality Metrics</div>
+                                    <div class="ss-row ss-row--bar">
+                                        <div class="ss-row-left">
                                             <span class="ss-dot" id="ovSsDotEsc"></span>
-                                            <span class="ss-item-label">Escalation Rate</span>
+                                            <span class="ss-row-label">Escalation Rate</span>
                                         </div>
-                                        <span class="ss-item-value" id="ovSsEscalation">&mdash;</span>
+                                        <span class="ss-row-value" id="ovSsEscalation">&mdash;</span>
                                     </div>
-                                    <div class="ss-item">
-                                        <div class="ss-item-left">
+                                    <div class="ss-gauge-track"><div class="ss-gauge-fill ss-gauge-fill--esc" id="ovSsEscBar" style="width:0%"></div></div>
+                                    <div class="ss-row ss-row--bar">
+                                        <div class="ss-row-left">
                                             <span class="ss-dot ss-dot--green"></span>
-                                            <span class="ss-item-label">Satisfaction</span>
+                                            <span class="ss-row-label">Satisfaction</span>
                                         </div>
-                                        <span class="ss-item-value" id="ovSsSatisfaction">&mdash;</span>
+                                        <span class="ss-row-value" id="ovSsSatisfaction">&mdash;</span>
                                     </div>
-                                    <div class="ss-item">
-                                        <div class="ss-item-left">
+                                    <div class="ss-gauge-track"><div class="ss-gauge-fill ss-gauge-fill--sat" id="ovSsSatBar" style="width:0%"></div></div>
+                                    <div class="ss-row ss-row--bar">
+                                        <div class="ss-row-left">
                                             <span class="ss-dot ss-dot--green"></span>
-                                            <span class="ss-item-label">Avg Sentiment</span>
+                                            <span class="ss-row-label">Avg Sentiment</span>
                                         </div>
-                                        <span class="ss-item-value" id="ovSsSentiment">&mdash;</span>
+                                        <span class="ss-row-value" id="ovSsSentiment">&mdash;</span>
                                     </div>
+                                    <div class="ss-gauge-track"><div class="ss-gauge-fill ss-gauge-fill--sent" id="ovSsSentBar" style="width:0%"></div></div>
                                 </div>
                             </div>
                         </div>
@@ -802,10 +819,10 @@
     </div>
 
     <!-- Scripts -->
-    <script src="../js/auth.js?v=10"></script>
-    <script src="../js/api.js?v=10"></script>
-    <script src="../js/app.js?v=10"></script>
-    <script src="../js/client-dashboard.js?v=10"></script>
+    <script src="../js/auth.js?v=11"></script>
+    <script src="../js/api.js?v=11"></script>
+    <script src="../js/app.js?v=11"></script>
+    <script src="../js/client-dashboard.js?v=11"></script>
 </body>
 
 </html>
