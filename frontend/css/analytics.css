@@ -500,6 +500,44 @@
     .anx-hbar-label { width: 100px; }
 }
 
+/* ── Sentiment Distribution (two-line layout) ── */
+.sd-row {
+    margin-bottom: 10px;
+}
+
+.sd-row:last-child {
+    margin-bottom: 0;
+}
+
+.sd-row-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sd-icon {
+    font-size: 1.1rem;
+    width: 24px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.sd-label {
+    width: 90px;
+    font-size: .8125rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+}
+
+.sd-row-sub {
+    font-size: .6875rem;
+    color: var(--text-muted);
+    padding-left: 34px;
+    margin-top: 3px;
+    font-variant-numeric: tabular-nums;
+}
+
 /* ══════════════════════════════════════
    wg-card integration overrides
    Prevents bottom gaps when anx-content

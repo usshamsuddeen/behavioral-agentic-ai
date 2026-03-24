@@ -314,7 +314,7 @@ function _ovRenderPipeline(pipeline, totalOrders, totalRevenue, avgOrderValue) {
     body.innerHTML = summaryHTML + '<div class="pipeline-stages">' + stagesHTML + '</div>';
 }
 
-function _renderRecentOrdersInto(containerId, orders) {
+function _renderRecentOrdersInto(containerId, orders, limit = 5) {
     const container = document.getElementById(containerId);
     if (!container) return;
 
@@ -330,7 +330,7 @@ function _renderRecentOrdersInto(containerId, orders) {
         shipped: '#22d3ee', delivered: '#10b981', cancelled: '#ef4444', refunded: '#ef4444'
     };
 
-    container.innerHTML = orders.slice(0, 5).map(o => {
+    container.innerHTML = orders.slice(0, limit).map(o => {
         const color = STATUS_COLORS[o.status] || '#8b5cf6';
         const amount = o.total_amount ? `${o.currency || '$'}${parseFloat(o.total_amount).toFixed(2)}` : '';
         return `<div class="ro-item" onclick="switchTab('orders')">
@@ -649,10 +649,10 @@ async function loadAnalytics() {
 
         // ── Recent Orders (in Orders Overview card) ──
         try {
-            const ordersData = await API.getOrders(1, 5);
+            const ordersData = await API.getOrders(1, 3);
             const orders = ordersData.orders || ordersData || [];
-            _renderRecentOrdersInto('anxRecentOrders', orders);
-        } catch { _renderRecentOrdersInto('anxRecentOrders', []); }
+            _renderRecentOrdersInto('anxRecentOrders', orders, 3);
+        } catch { _renderRecentOrdersInto('anxRecentOrders', [], 3); }
 
         // ── Language Detection ──
         _anxRenderLanguages(data.languages || [], k.total_conversations || 0);
@@ -766,7 +766,7 @@ function _anxRenderRichSentiment(sentiments, totalConvs) {
     if (!el) return;
 
     if (!sentiments.length || !totalConvs) {
-        // Show all 5 categories in dimmed state
+        // Show all 5 categories in dimmed state with two-line layout
         const placeholders = [
             { icon: '😊', label: 'Happy',      color: '#10b981' },
             { icon: '🙂', label: 'Satisfied',  color: '#22d3ee' },
@@ -775,11 +775,13 @@ function _anxRenderRichSentiment(sentiments, totalConvs) {
             { icon: '😡', label: 'Angry',      color: '#ef4444' },
         ];
         el.innerHTML = placeholders.map(s =>
-            `<div class="anx-hbar-item" style="margin-bottom:6px;opacity:.35">
-                <span style="font-size:1.1rem;width:24px;text-align:center;flex-shrink:0">${s.icon}</span>
-                <span class="anx-hbar-label" style="width:90px;font-weight:500">${s.label}</span>
-                <div class="anx-hbar-track"><div class="anx-hbar-fill" style="width:3%;background:${s.color}"></div></div>
-                <span class="anx-hbar-value">0 <span style="color:var(--text-muted);font-weight:400">(0%)</span></span>
+            `<div class="sd-row" style="opacity:.35">
+                <div class="sd-row-top">
+                    <span class="sd-icon">${s.icon}</span>
+                    <span class="sd-label">${s.label}</span>
+                    <div class="anx-hbar-track"><div class="anx-hbar-fill" style="width:3%;background:${s.color}"></div></div>
+                </div>
+                <div class="sd-row-sub">0 conversations · 0%</div>
             </div>`
         ).join('');
         return;
@@ -789,11 +791,14 @@ function _anxRenderRichSentiment(sentiments, totalConvs) {
 
     el.innerHTML = sentiments.map(s => {
         const barW = Math.max((s.percent / maxPct) * 100, 3);
-        return `<div class="anx-hbar-item" style="margin-bottom:6px">
-            <span style="font-size:1.1rem;width:24px;text-align:center;flex-shrink:0">${s.icon || '●'}</span>
-            <span class="anx-hbar-label" style="width:90px;font-weight:500">${esc(s.label)}</span>
-            <div class="anx-hbar-track"><div class="anx-hbar-fill" style="width:${barW}%;background:${s.color}"></div></div>
-            <span class="anx-hbar-value">${s.count} <span style="color:var(--text-muted);font-weight:400">(${s.percent}%)</span></span>
+        const convWord = s.count === 1 ? 'conversation' : 'conversations';
+        return `<div class="sd-row">
+            <div class="sd-row-top">
+                <span class="sd-icon">${s.icon || '●'}</span>
+                <span class="sd-label">${esc(s.label)}</span>
+                <div class="anx-hbar-track"><div class="anx-hbar-fill" style="width:${barW}%;background:${s.color}"></div></div>
+            </div>
+            <div class="sd-row-sub">${s.count} ${convWord} · ${s.percent}%</div>
         </div>`;
     }).join('');
 }
@@ -842,28 +847,6 @@ function _anxRenderOrders(sources, pipeline, totalOrders) {
         </div>`;
     });
     html += '</div>';
-
-    // Status pipeline row
-    const steps = [
-        { key: 'pending',    label: 'Pending',   color: 'var(--urgent)' },
-        { key: 'confirmed',  label: 'Confirmed', color: 'var(--primary-400)' },
-        { key: 'shipped',    label: 'Shipped',   color: 'var(--secondary-400)' },
-        { key: 'delivered',  label: 'Delivered', color: 'var(--positive)' },
-        { key: 'cancelled',  label: 'Cancelled', color: 'var(--negative)' },
-    ];
-    const activeSteps = steps.filter(s => (pipeline[s.key] || 0) > 0);
-    if (activeSteps.length) {
-        html += '<div style="display:flex;gap:6px;flex-wrap:wrap">';
-        activeSteps.forEach(s => {
-            const count = pipeline[s.key] || 0;
-            html += `<div style="display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:var(--radius-full);background:var(--bg-tertiary);border:1px solid var(--border-subtle);font-size:.75rem">
-                <span style="width:7px;height:7px;border-radius:50%;background:${s.color};flex-shrink:0"></span>
-                <span style="color:var(--text-secondary)">${s.label}</span>
-                <span style="font-weight:600;color:var(--text-primary)">${count}</span>
-            </div>`;
-        });
-        html += '</div>';
-    }
 
     el.innerHTML = html;
 }
