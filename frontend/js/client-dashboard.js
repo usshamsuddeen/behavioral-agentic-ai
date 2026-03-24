@@ -627,7 +627,7 @@ async function loadAnalytics() {
         // ── 8 KPI Cards ──
         _anxSetKpi('anxKpiConversations', (k.total_conversations ?? 0).toLocaleString());
         _anxSetKpi('anxKpiMessages', (k.total_messages ?? 0).toLocaleString());
-        _anxSetKpi('anxKpiSentiment', k.avg_sentiment != null ? (k.avg_sentiment * 100).toFixed(0) + '%' : 'N/A');
+        _anxSetKpi('anxKpiSentiment', (k.avg_sentiment != null && (k.total_conversations ?? 0) > 0) ? (k.avg_sentiment * 100).toFixed(0) + '%' : 'N/A');
         _anxSetKpi('anxKpiEscalation', k.escalation_rate != null ? k.escalation_rate.toFixed(1) + '%' : '0%');
         _anxSetKpi('anxKpiOrders', (k.total_orders ?? 0).toLocaleString());
         _anxSetKpi('anxKpiRevenue', '$' + (k.total_revenue ?? 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}));
