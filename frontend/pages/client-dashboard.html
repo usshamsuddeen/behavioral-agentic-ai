@@ -10,9 +10,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="../css/design-system.css?v=11">
-    <link rel="stylesheet" href="../css/client-dashboard.css?v=11">
-    <link rel="stylesheet" href="../css/analytics.css?v=11">
+    <link rel="stylesheet" href="../css/design-system.css?v=12">
+    <link rel="stylesheet" href="../css/client-dashboard.css?v=12">
+    <link rel="stylesheet" href="../css/analytics.css?v=12">
     <link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
 </head>
 
@@ -286,22 +286,6 @@
                                         <span class="ss-row-value" id="ovSsEscalation">&mdash;</span>
                                     </div>
                                     <div class="ss-gauge-track"><div class="ss-gauge-fill ss-gauge-fill--esc" id="ovSsEscBar" style="width:0%"></div></div>
-                                    <div class="ss-row ss-row--bar">
-                                        <div class="ss-row-left">
-                                            <span class="ss-dot ss-dot--green"></span>
-                                            <span class="ss-row-label">Satisfaction</span>
-                                        </div>
-                                        <span class="ss-row-value" id="ovSsSatisfaction">&mdash;</span>
-                                    </div>
-                                    <div class="ss-gauge-track"><div class="ss-gauge-fill ss-gauge-fill--sat" id="ovSsSatBar" style="width:0%"></div></div>
-                                    <div class="ss-row ss-row--bar">
-                                        <div class="ss-row-left">
-                                            <span class="ss-dot ss-dot--green"></span>
-                                            <span class="ss-row-label">Avg Sentiment</span>
-                                        </div>
-                                        <span class="ss-row-value" id="ovSsSentiment">&mdash;</span>
-                                    </div>
-                                    <div class="ss-gauge-track"><div class="ss-gauge-fill ss-gauge-fill--sent" id="ovSsSentBar" style="width:0%"></div></div>
                                 </div>
                             </div>
                         </div>
@@ -315,6 +299,13 @@
                             </div>
                             <div class="wg-card-body" id="ovPipelineBody">
                                 <div class="loading-state"><div class="spinner"></div><p>Loading…</p></div>
+                            </div>
+                            <!-- Recent Orders List -->
+                            <div class="wg-card-footer" id="ovRecentOrdersWrap">
+                                <div class="ss-section-label" style="padding:12px 16px 6px">Recent Orders</div>
+                                <div id="ovRecentOrders">
+                                    <div class="loading-state"><div class="spinner"></div><p>Loading…</p></div>
+                                </div>
                             </div>
                         </div>
 
@@ -819,10 +810,10 @@
     </div>
 
     <!-- Scripts -->
-    <script src="../js/auth.js?v=11"></script>
-    <script src="../js/api.js?v=11"></script>
-    <script src="../js/app.js?v=11"></script>
-    <script src="../js/client-dashboard.js?v=11"></script>
+    <script src="../js/auth.js?v=12"></script>
+    <script src="../js/api.js?v=12"></script>
+    <script src="../js/app.js?v=12"></script>
+    <script src="../js/client-dashboard.js?v=12"></script>
 </body>
 
 </html>

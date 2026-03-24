@@ -989,6 +989,76 @@
   opacity: .4;
 }
 
+/* ── Card Footer / Recent Orders ── */
+.wg-card-footer {
+  border-top: 1px solid var(--border-subtle);
+}
+
+.ro-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 16px;
+  cursor: pointer;
+  transition: background .2s;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.ro-item:first-child {
+  border-top: none;
+}
+
+.ro-item:hover {
+  background: var(--bg-tertiary);
+}
+
+.ro-item-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.ro-item-id {
+  font-size: .75rem;
+  font-weight: 700;
+  color: var(--primary-400);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.ro-item-customer {
+  font-size: .75rem;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ro-item-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.ro-item-amount {
+  font-size: .75rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.ro-item-status {
+  font-size: .5625rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  white-space: nowrap;
+}
+
 .overview-card {
   background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);

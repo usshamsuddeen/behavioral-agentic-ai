@@ -193,11 +193,17 @@ async function loadOverview() {
         _ovSet('ovKpiKbDocs', (k.kb_documents ?? 0).toLocaleString());
 
         // ── System Status — Infrastructure ──
-        // API health — if we got dashData, API is online
+        // API health check
         const apiDot = document.getElementById('ovSsDotApi');
         const apiBadge = document.getElementById('ovSsApi');
-        if (apiDot) apiDot.className = 'ss-dot ss-dot--green';
-        if (apiBadge) { apiBadge.textContent = 'Online'; apiBadge.className = 'ss-row-badge ss-row-badge--ok'; }
+        try {
+            await API.healthCheck();
+            if (apiDot) apiDot.className = 'ss-dot ss-dot--green';
+            if (apiBadge) { apiBadge.textContent = 'Online'; apiBadge.className = 'ss-row-badge ss-row-badge--ok'; }
+        } catch {
+            if (apiDot) apiDot.className = 'ss-dot ss-dot--red';
+            if (apiBadge) { apiBadge.textContent = 'Offline'; apiBadge.className = 'ss-row-badge ss-row-badge--err'; }
+        }
 
         // Widget status
         const ws = dashData.widget_status || 'inactive';
@@ -221,23 +227,19 @@ async function loadOverview() {
         const escBar = document.getElementById('ovSsEscBar');
         if (escBar) escBar.style.width = Math.min(escRate, 100) + '%';
 
-        const satPct = k.satisfaction_pct ?? 0;
-        _ovSet('ovSsSatisfaction', satPct + '%');
-        const satBar = document.getElementById('ovSsSatBar');
-        if (satBar) satBar.style.width = satPct + '%';
-
-        const avgSent = k.avg_sentiment ?? ov.avg_sentiment_score ?? 0.5;
-        const sentPct = (avgSent * 100).toFixed(0);
-        _ovSet('ovSsSentiment', sentPct + '%');
-        const sentBar = document.getElementById('ovSsSentBar');
-        if (sentBar) sentBar.style.width = sentPct + '%';
-
         // Last checked timestamp
         const lcEl = document.getElementById('ovSsLastChecked');
         if (lcEl) lcEl.textContent = 'Checked ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
         // ── Order Pipeline ──
         _ovRenderPipeline(pipeline, k.total_orders || 0, k.total_revenue || 0, k.avg_order_value || 0);
+
+        // ── Recent Orders (inside Pipeline card) ──
+        try {
+            const ordersData = await API.getOrders(1, 5);
+            const orders = ordersData.orders || ordersData || [];
+            _ovRenderRecentOrders(orders);
+        } catch { _ovRenderRecentOrders([]); }
 
         // ── Recent Escalations (kept) ──
         renderRecentEscalations(dashData.recent_escalations || []);
@@ -312,7 +314,38 @@ function _ovRenderPipeline(pipeline, totalOrders, totalRevenue, avgOrderValue) {
     body.innerHTML = summaryHTML + '<div class="pipeline-stages">' + stagesHTML + '</div>';
 }
 
+function _ovRenderRecentOrders(orders) {
+    const container = document.getElementById('ovRecentOrders');
+    if (!container) return;
 
+    if (!orders || orders.length === 0) {
+        container.innerHTML = `<div class="pipeline-empty" style="padding:12px 16px">
+            <div style="font-size:.8125rem;color:var(--text-muted)">No recent orders</div>
+        </div>`;
+        return;
+    }
+
+    const STATUS_COLORS = {
+        pending: '#f59e0b', confirmed: '#3b82f6', processing: '#8b5cf6',
+        shipped: '#22d3ee', delivered: '#10b981', cancelled: '#ef4444', refunded: '#ef4444'
+    };
+
+    container.innerHTML = orders.slice(0, 5).map(o => {
+        const color = STATUS_COLORS[o.status] || '#8b5cf6';
+        const amount = o.total_amount ? `${o.currency || '$'}${parseFloat(o.total_amount).toFixed(2)}` : '';
+        const time = o.created_at ? timeAgo(o.created_at) : '';
+        return `<div class="ro-item" onclick="switchTab('orders')">
+            <div class="ro-item-left">
+                <span class="ro-item-id">#${esc(o.order_id)}</span>
+                <span class="ro-item-customer">${esc(o.customer_name || 'Guest')}</span>
+            </div>
+            <div class="ro-item-right">
+                <span class="ro-item-amount">${amount}</span>
+                <span class="ro-item-status" style="background:${color}20;color:${color};border:1px solid ${color}40">${o.status}</span>
+            </div>
+        </div>`;
+    }).join('');
+}
 function renderRecentEscalations(escalations) {
     const container = document.getElementById('recentEscalations');
     if (!escalations || escalations.length === 0) {
