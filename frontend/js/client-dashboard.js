@@ -238,8 +238,8 @@ async function loadOverview() {
         try {
             const ordersData = await API.getOrders(1, 5);
             const orders = ordersData.orders || ordersData || [];
-            _ovRenderRecentOrders(orders);
-        } catch { _ovRenderRecentOrders([]); }
+            _renderRecentOrdersInto('ovRecentOrders', orders);
+        } catch { _renderRecentOrdersInto('ovRecentOrders', []); }
 
         // ── Recent Escalations (kept) ──
         renderRecentEscalations(dashData.recent_escalations || []);
@@ -314,8 +314,8 @@ function _ovRenderPipeline(pipeline, totalOrders, totalRevenue, avgOrderValue) {
     body.innerHTML = summaryHTML + '<div class="pipeline-stages">' + stagesHTML + '</div>';
 }
 
-function _ovRenderRecentOrders(orders) {
-    const container = document.getElementById('ovRecentOrders');
+function _renderRecentOrdersInto(containerId, orders) {
+    const container = document.getElementById(containerId);
     if (!container) return;
 
     if (!orders || orders.length === 0) {
@@ -333,7 +333,6 @@ function _ovRenderRecentOrders(orders) {
     container.innerHTML = orders.slice(0, 5).map(o => {
         const color = STATUS_COLORS[o.status] || '#8b5cf6';
         const amount = o.total_amount ? `${o.currency || '$'}${parseFloat(o.total_amount).toFixed(2)}` : '';
-        const time = o.created_at ? timeAgo(o.created_at) : '';
         return `<div class="ro-item" onclick="switchTab('orders')">
             <div class="ro-item-left">
                 <span class="ro-item-id">#${esc(o.order_id)}</span>
@@ -648,6 +647,13 @@ async function loadAnalytics() {
         // ── Orders Overview ──
         _anxRenderOrders(data.order_sources || {}, data.order_pipeline || {}, k.total_orders || 0);
 
+        // ── Recent Orders (in Orders Overview card) ──
+        try {
+            const ordersData = await API.getOrders(1, 5);
+            const orders = ordersData.orders || ordersData || [];
+            _renderRecentOrdersInto('anxRecentOrders', orders);
+        } catch { _renderRecentOrdersInto('anxRecentOrders', []); }
+
         // ── Language Detection ──
         _anxRenderLanguages(data.languages || [], k.total_conversations || 0);
 
@@ -760,7 +766,22 @@ function _anxRenderRichSentiment(sentiments, totalConvs) {
     if (!el) return;
 
     if (!sentiments.length || !totalConvs) {
-        el.innerHTML = '<div class="anx-empty"><span>No sentiment data yet</span></div>';
+        // Show all 5 categories in dimmed state
+        const placeholders = [
+            { icon: '😊', label: 'Happy',      color: '#10b981' },
+            { icon: '🙂', label: 'Satisfied',  color: '#22d3ee' },
+            { icon: '😐', label: 'Neutral',    color: '#8b5cf6' },
+            { icon: '😤', label: 'Frustrated', color: '#f59e0b' },
+            { icon: '😡', label: 'Angry',      color: '#ef4444' },
+        ];
+        el.innerHTML = placeholders.map(s =>
+            `<div class="anx-hbar-item" style="margin-bottom:6px;opacity:.35">
+                <span style="font-size:1.1rem;width:24px;text-align:center;flex-shrink:0">${s.icon}</span>
+                <span class="anx-hbar-label" style="width:90px;font-weight:500">${s.label}</span>
+                <div class="anx-hbar-track"><div class="anx-hbar-fill" style="width:3%;background:${s.color}"></div></div>
+                <span class="anx-hbar-value">0 <span style="color:var(--text-muted);font-weight:400">(0%)</span></span>
+            </div>`
+        ).join('');
         return;
     }
 
