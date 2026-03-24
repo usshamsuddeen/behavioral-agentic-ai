@@ -172,39 +172,58 @@ function loadTabData(tab) {
     }
 }
 
-/* ***********************************************************
-   TAB 1: OVERVIEW
-   *********************************************************** */
 async function loadOverview() {
     try {
-        const data = await API.getDashboardMetrics();
-        // /analytics/dashboard returns { overview, sentiment_distribution, recent_escalations, widget_status, language_distribution }
-        const ov = data.overview || {};
-        const sd = data.sentiment_distribution || {};
+        // Fetch comprehensive data (gives us KPIs, pipeline, etc.)
+        const [dashData, compData] = await Promise.all([
+            API.getDashboardMetrics(),
+            API.getComprehensiveAnalytics('7d')
+        ]);
 
-        // Metrics cards
-        document.getElementById('metricConversations').textContent =
-            (ov.total_conversations ?? 0).toLocaleString();
-        document.getElementById('metricSentiment').textContent =
-            ov.avg_sentiment_score != null ? (ov.avg_sentiment_score * 100).toFixed(0) + '%'
-                : ov.satisfaction_score != null ? ov.satisfaction_score + '%' : 'N/A';
-        document.getElementById('metricEscalations').textContent =
-            ov.escalation_rate != null ? ov.escalation_rate.toFixed(1) + '%' : '0%';
+        const ov = dashData.overview || {};
+        const k = compData.kpis || {};
+        const pipeline = compData.order_pipeline || {};
 
-        // Widget status from analytics/dashboard response
-        const ws = data.widget_status || 'inactive';
+        // ── 6 KPI Cards ──
+        _ovSet('ovKpiConversations', (k.total_conversations ?? ov.total_conversations ?? 0).toLocaleString());
+        _ovSet('ovKpiActive', (k.active_conversations ?? ov.active_conversations ?? 0).toLocaleString());
+        _ovSet('ovKpiOrders', (k.total_orders ?? 0).toLocaleString());
+        _ovSet('ovKpiRevenue', '$' + (k.total_revenue ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+        _ovSet('ovKpiProducts', (k.products ?? 0).toLocaleString());
+        _ovSet('ovKpiKbDocs', (k.kb_documents ?? 0).toLocaleString());
+
+        // ── System Status ──
+        const ws = dashData.widget_status || 'inactive';
         const isActive = ws === 'active';
-        document.getElementById('metricWidgetStatus').innerHTML = isActive
-            ? '<span class="widget-status widget-status--active"><span class="widget-status-dot"></span>Active</span>'
-            : '<span class="widget-status widget-status--inactive"><span class="widget-status-dot"></span>Inactive</span>';
+        const wDot = document.getElementById('ovSsDotWidget');
+        const wVal = document.getElementById('ovSsWidget');
+        if (wDot) {
+            wDot.className = 'ss-dot ' + (isActive ? 'ss-dot--green' : 'ss-dot--red');
+        }
+        if (wVal) wVal.textContent = isActive ? 'Active' : 'Inactive';
 
-        // Sentiment donut
-        renderSentimentDonut(sd);
+        _ovSet('ovSsResponseTime', k.avg_response_time || '< 2s');
 
-        // Recent escalations from API data
-        renderRecentEscalations(data.recent_escalations || []);
+        const escRate = k.escalation_rate ?? ov.escalation_rate ?? 0;
+        const escDot = document.getElementById('ovSsDotEsc');
+        if (escDot) {
+            escDot.className = 'ss-dot ' + (escRate > 15 ? 'ss-dot--red' : escRate > 5 ? 'ss-dot--orange' : 'ss-dot--green');
+        }
+        _ovSet('ovSsEscalation', escRate.toFixed(1) + '%');
 
-        // Conversation badge
+        const satPct = k.satisfaction_pct ?? 0;
+        _ovSet('ovSsSatisfaction', satPct + '%');
+
+        const avgSent = k.avg_sentiment ?? ov.avg_sentiment_score ?? 0.5;
+        _ovSet('ovSsSentiment', (avgSent * 100).toFixed(0) + '%');
+
+        // ── Order Pipeline ──
+        _ovRenderPipeline(pipeline, k.total_orders || 0);
+
+        // ── Recent Escalations (kept) ──
+        renderRecentEscalations(dashData.recent_escalations || []);
+
+        // ── Conversation badge ──
         try {
             const convs = await API.getConversations('active');
             const activeCount = (convs.conversations || convs || []).length;
@@ -219,33 +238,49 @@ async function loadOverview() {
     }
 }
 
-function renderSentimentDonut(sd) {
-    // sd = { positive, neutral, negative, positive_percent, neutral_percent, negative_percent }
-    const pos = sd.positive || 0;
-    const neu = sd.neutral || 0;
-    const neg = sd.negative || 0;
-    const total = pos + neu + neg || 1;
-
-    const pPct = sd.positive_percent != null ? sd.positive_percent : Math.round(pos / total * 100);
-    const nPct = sd.neutral_percent != null ? sd.neutral_percent : Math.round(neu / total * 100);
-    const gPct = sd.negative_percent != null ? sd.negative_percent : (100 - pPct - nPct);
-
-    document.getElementById('donutPositive').textContent = pPct + '%';
-    document.getElementById('donutNeutral').textContent = nPct + '%';
-    document.getElementById('donutNegative').textContent = gPct + '%';
-
-    // CSS conic-gradient donut
-    const chart = document.getElementById('donutChart');
-    chart.style.background = `conic-gradient(
-        var(--positive) 0% ${pPct}%,
-        var(--neutral) ${pPct}% ${pPct + nPct}%,
-        var(--negative) ${pPct + nPct}% 100%
-    )`;
-    chart.innerHTML = `<div class="donut-center">
-        <span class="donut-center-value">${total}</span>
-        <span class="donut-center-label">total</span>
-    </div>`;
+function _ovSet(id, value) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
 }
+
+function _ovRenderPipeline(pipeline, totalOrders) {
+    const body = document.getElementById('ovPipelineBody');
+    const badge = document.getElementById('ovPipelineTotal');
+    if (!body) return;
+    if (badge) badge.textContent = totalOrders ? totalOrders + ' total' : '';
+
+    const stages = [
+        { key: 'pending',    label: 'Pending',    color: '#f59e0b' },
+        { key: 'confirmed',  label: 'Confirmed',  color: '#3b82f6' },
+        { key: 'processing', label: 'Processing', color: '#8b5cf6' },
+        { key: 'shipped',    label: 'Shipped',    color: '#22d3ee' },
+        { key: 'delivered',  label: 'Delivered',  color: '#10b981' },
+        { key: 'cancelled',  label: 'Cancelled',  color: '#ef4444' },
+    ];
+
+    const maxCount = Math.max(...stages.map(s => pipeline[s.key] || 0), 1);
+    const hasData = stages.some(s => (pipeline[s.key] || 0) > 0);
+
+    if (!hasData) {
+        body.innerHTML = `<div class="pipeline-empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+            <div>No orders in pipeline yet</div>
+        </div>`;
+        return;
+    }
+
+    body.innerHTML = '<div class="pipeline-stages">' + stages.filter(s => (pipeline[s.key] || 0) > 0).map(s => {
+        const count = pipeline[s.key] || 0;
+        const pct = Math.max((count / maxCount) * 100, 4);
+        return `<div class="pipeline-stage">
+            <span class="pipeline-dot" style="background:${s.color};color:${s.color}"></span>
+            <span class="pipeline-label">${s.label}</span>
+            <div class="pipeline-bar-track"><div class="pipeline-bar-fill" style="width:${pct}%;background:${s.color}"></div></div>
+            <span class="pipeline-count">${count}</span>
+        </div>`;
+    }).join('') + '</div>';
+}
+
 
 function renderRecentEscalations(escalations) {
     const container = document.getElementById('recentEscalations');

@@ -163,134 +163,157 @@
             <div class="main-body">
                 <!-- ═══════════ TAB: OVERVIEW ═══════════ -->
                 <div class="tab-panel active" id="panel-overview">
-                    <div class="metrics-grid">
+                    <!-- ── 6 KPI Metric Cards ── -->
+                    <div class="ov-kpi-grid">
                         <div class="metric-card">
-                            <div class="metric-icon metric-icon--blue"><svg width="20" height="20" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" />
-                                </svg></div>
-                            <div class="metric-value" id="metricConversations">&mdash;</div>
+                            <div class="metric-icon metric-icon--blue"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+                            <div class="metric-value" id="ovKpiConversations">&mdash;</div>
                             <div class="metric-label">Total Conversations</div>
                         </div>
                         <div class="metric-card">
-                            <div class="metric-icon metric-icon--green"><svg width="20" height="20" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2">
-                                    <circle cx="12" cy="12" r="10" />
-                                    <path d="M8 14s1.5 2 4 2 4-2 4-2" />
-                                    <line x1="9" y1="9" x2="9.01" y2="9" />
-                                    <line x1="15" y1="9" x2="15.01" y2="9" />
-                                </svg></div>
-                            <div class="metric-value" id="metricSentiment">&mdash;</div>
-                            <div class="metric-label">Avg Sentiment</div>
+                            <div class="metric-icon metric-icon--green"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg></div>
+                            <div class="metric-value" id="ovKpiActive">&mdash;</div>
+                            <div class="metric-label">Active Conversations</div>
                         </div>
                         <div class="metric-card">
-                            <div class="metric-icon metric-icon--orange"><svg width="20" height="20" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2">
-                                    <path
-                                        d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-                                    <line x1="12" y1="9" x2="12" y2="13" />
-                                    <line x1="12" y1="17" x2="12.01" y2="17" />
-                                </svg></div>
-                            <div class="metric-value" id="metricEscalations">&mdash;</div>
-                            <div class="metric-label">Escalation Rate</div>
+                            <div class="metric-icon metric-icon--cyan"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div>
+                            <div class="metric-value" id="ovKpiOrders">&mdash;</div>
+                            <div class="metric-label">Total Orders</div>
                         </div>
                         <div class="metric-card">
-                            <div class="metric-icon metric-icon--purple"><svg width="20" height="20" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2">
-                                    <rect x="2" y="3" width="20" height="14" rx="2" />
-                                    <line x1="8" y1="21" x2="16" y2="21" />
-                                    <line x1="12" y1="17" x2="12" y2="21" />
-                                </svg></div>
-                            <div class="metric-value" id="metricWidgetStatus"><span
-                                    class="widget-status widget-status--inactive"><span
-                                        class="widget-status-dot"></span>Checking…</span></div>
-                            <div class="metric-label">Widget Status</div>
+                            <div class="metric-icon metric-icon--red"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
+                            <div class="metric-value" id="ovKpiRevenue">&mdash;</div>
+                            <div class="metric-label">Total Revenue</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon metric-icon--purple"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></div>
+                            <div class="metric-value" id="ovKpiProducts">&mdash;</div>
+                            <div class="metric-label">Products</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-icon metric-icon--blue"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+                            <div class="metric-value" id="ovKpiKbDocs">&mdash;</div>
+                            <div class="metric-label">KB Documents</div>
                         </div>
                     </div>
 
-                    <div class="overview-grid">
-                        <!-- Sentiment Donut -->
-                        <div class="overview-card">
-                            <div class="overview-card-header"><span class="overview-card-title">Sentiment
-                                    Distribution</span></div>
-                            <div class="donut-container">
-                                <div class="donut-chart" id="donutChart"></div>
-                                <div class="donut-legend">
-                                    <div class="donut-legend-item"><span
-                                            class="donut-legend-dot donut-legend-dot--positive"></span>Positive <strong
-                                            id="donutPositive">0%</strong></div>
-                                    <div class="donut-legend-item"><span
-                                            class="donut-legend-dot donut-legend-dot--neutral"></span>Neutral <strong
-                                            id="donutNeutral">0%</strong></div>
-                                    <div class="donut-legend-item"><span
-                                            class="donut-legend-dot donut-legend-dot--negative"></span>Negative <strong
-                                            id="donutNegative">0%</strong></div>
+                    <!-- ── Widget Cards Grid ── -->
+                    <div class="ov-widgets-grid">
+
+                        <!-- Quick Actions Card -->
+                        <div class="wg-card" id="ovQuickActions">
+                            <div class="wg-card-header">
+                                <div class="wg-card-dots"><span></span><span></span><span></span></div>
+                                <span class="wg-card-title">Quick Actions</span>
+                            </div>
+                            <div class="wg-card-body">
+                                <div class="qa-grid">
+                                    <button class="qa-btn" onclick="switchTab('products'); setTimeout(()=>document.getElementById('addProductBtn')?.click(),200)">
+                                        <div class="qa-btn-icon qa-btn-icon--green"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div>
+                                        <span class="qa-btn-label">Add Product</span>
+                                        <span class="qa-btn-sub">Add to catalog</span>
+                                    </button>
+                                    <button class="qa-btn" onclick="switchTab('orders')">
+                                        <div class="qa-btn-icon qa-btn-icon--blue"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+                                        <span class="qa-btn-label">Upload Orders</span>
+                                        <span class="qa-btn-sub">CSV import</span>
+                                    </button>
+                                    <button class="qa-btn" onclick="switchTab('kb-custom')">
+                                        <div class="qa-btn-icon qa-btn-icon--purple"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg></div>
+                                        <span class="qa-btn-label">Add KB Doc</span>
+                                        <span class="qa-btn-sub">Knowledge base</span>
+                                    </button>
+                                    <button class="qa-btn" onclick="switchTab('widget')">
+                                        <div class="qa-btn-icon qa-btn-icon--cyan"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+                                        <span class="qa-btn-label">Widget Config</span>
+                                        <span class="qa-btn-sub">Setup &amp; deploy</span>
+                                    </button>
+                                    <button class="qa-btn" onclick="switchTab('conversations'); setTimeout(()=>{const b=document.querySelector('.conv-filter-btn[data-status=escalated]'); if(b) b.click();},200)">
+                                        <div class="qa-btn-icon qa-btn-icon--red"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+                                        <span class="qa-btn-label">Escalations</span>
+                                        <span class="qa-btn-sub">View flagged</span>
+                                    </button>
+                                    <button class="qa-btn" onclick="switchTab('analytics')">
+                                        <div class="qa-btn-icon qa-btn-icon--orange"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+                                        <span class="qa-btn-label">Analytics</span>
+                                        <span class="qa-btn-sub">Full insights</span>
+                                    </button>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Recent Escalations -->
-                        <div class="overview-card">
-                            <div class="overview-card-header"><span class="overview-card-title">Recent
-                                    Escalations</span></div>
-                            <div class="escalation-list" id="recentEscalations">
-                                <div class="loading-state">
-                                    <div class="spinner"></div>
-                                    <p>Loading…</p>
+                        <!-- System Status Card -->
+                        <div class="wg-card" id="ovSystemStatus">
+                            <div class="wg-card-header">
+                                <div class="wg-card-dots"><span></span><span></span><span></span></div>
+                                <span class="wg-card-title">System Status</span>
+                            </div>
+                            <div class="wg-card-body">
+                                <div class="ss-list">
+                                    <div class="ss-item">
+                                        <div class="ss-item-left">
+                                            <span class="ss-dot ss-dot--checking" id="ovSsDotWidget"></span>
+                                            <span class="ss-item-label">Chat Widget</span>
+                                        </div>
+                                        <span class="ss-item-value" id="ovSsWidget">Checking…</span>
+                                    </div>
+                                    <div class="ss-item">
+                                        <div class="ss-item-left">
+                                            <span class="ss-dot ss-dot--green"></span>
+                                            <span class="ss-item-label">AI Response Time</span>
+                                        </div>
+                                        <span class="ss-item-value" id="ovSsResponseTime">&mdash;</span>
+                                    </div>
+                                    <div class="ss-item">
+                                        <div class="ss-item-left">
+                                            <span class="ss-dot" id="ovSsDotEsc"></span>
+                                            <span class="ss-item-label">Escalation Rate</span>
+                                        </div>
+                                        <span class="ss-item-value" id="ovSsEscalation">&mdash;</span>
+                                    </div>
+                                    <div class="ss-item">
+                                        <div class="ss-item-left">
+                                            <span class="ss-dot ss-dot--green"></span>
+                                            <span class="ss-item-label">Satisfaction</span>
+                                        </div>
+                                        <span class="ss-item-value" id="ovSsSatisfaction">&mdash;</span>
+                                    </div>
+                                    <div class="ss-item">
+                                        <div class="ss-item-left">
+                                            <span class="ss-dot ss-dot--green"></span>
+                                            <span class="ss-item-label">Avg Sentiment</span>
+                                        </div>
+                                        <span class="ss-item-value" id="ovSsSentiment">&mdash;</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Hero Sentiment Card -->
-                        <div class="overview-card" style="grid-column:1/-1">
-                            <div class="overview-card-header"><span class="overview-card-title">Live Sentiment
-                                    Analysis</span></div>
-                            <div class="hero-sentiment-card">
-                                <div class="hero-sentiment-header">
-                                    <div class="hero-sentiment-dots"><span></span><span></span><span></span></div>
-                                    <span class="hero-sentiment-label">Sentiment Engine — Real-time</span>
-                                </div>
-                                <div class="hero-sentiment-body" id="heroSentimentBody">
-                                    <div class="hs-msg">
-                                        <div class="hs-avatar hs-avatar--user">C</div>
-                                        <div>
-                                            <div class="hs-bubble hs-bubble--user">This is the third time I'm asking
-                                                about my order! Very frustrated.</div><span
-                                                class="hs-badge hs-badge--neg"><span
-                                                    class="hs-badge-dot"></span>Frustrated — 92%</span>
-                                        </div>
-                                    </div>
-                                    <div class="hs-msg hs-msg--right">
-                                        <div class="hs-avatar hs-avatar--ai">AI</div>
-                                        <div>
-                                            <div class="hs-bubble hs-bubble--ai">🎯 Escalation Triggered — High
-                                                frustration detected</div>
-                                        </div>
-                                    </div>
-                                    <div class="hs-analysis" id="heroAnalysisPanel">
-                                        <div class="hs-analysis-row"><span class="hs-analysis-label">Emotion</span>
-                                            <div class="hs-analysis-bar">
-                                                <div class="hs-analysis-fill"
-                                                    style="width:92%;background:var(--negative)"></div>
-                                            </div><span class="hs-analysis-value">Frustrated</span>
-                                        </div>
-                                        <div class="hs-analysis-row"><span class="hs-analysis-label">Escalation
-                                                Risk</span>
-                                            <div class="hs-analysis-bar">
-                                                <div class="hs-analysis-fill"
-                                                    style="width:87%;background:var(--urgent)"></div>
-                                            </div><span class="hs-analysis-value">87%</span>
-                                        </div>
-                                        <div class="hs-analysis-row"><span class="hs-analysis-label">Language</span>
-                                            <div class="hs-analysis-bar">
-                                                <div class="hs-analysis-fill"
-                                                    style="width:100%;background:var(--primary-500)"></div>
-                                            </div><span class="hs-analysis-value">English</span>
-                                        </div>
-                                    </div>
+                        <!-- Order Pipeline Card -->
+                        <div class="wg-card" id="ovOrderPipeline">
+                            <div class="wg-card-header">
+                                <div class="wg-card-dots"><span></span><span></span><span></span></div>
+                                <span class="wg-card-title">Order Pipeline</span>
+                                <span class="wg-card-badge" id="ovPipelineTotal"></span>
+                            </div>
+                            <div class="wg-card-body" id="ovPipelineBody">
+                                <div class="loading-state"><div class="spinner"></div><p>Loading…</p></div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Escalations Card (kept) -->
+                        <div class="wg-card" id="ovRecentEscalations">
+                            <div class="wg-card-header">
+                                <div class="wg-card-dots"><span></span><span></span><span></span></div>
+                                <span class="wg-card-title">Recent Escalations</span>
+                            </div>
+                            <div class="wg-card-body">
+                                <div class="escalation-list" id="recentEscalations">
+                                    <div class="loading-state"><div class="spinner"></div><p>Loading…</p></div>
                                 </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
 
