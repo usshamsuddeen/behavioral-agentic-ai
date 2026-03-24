@@ -502,16 +502,21 @@
 
 /* ══════════════════════════════════════
    wg-card integration overrides
-   Removes double-padding when anx-content
+   Prevents bottom gaps when anx-content
    lives inside .wg-card containers.
    ══════════════════════════════════════ */
 
-/* Card body padding is handled by .wg-card-body — strip inner padding */
-.anx-grid .wg-card .wg-card-body {
-    padding: 16px 16px 12px;
+/* KEY FIX: Don't stretch cards to match sibling height */
+.anx-grid {
+    align-items: start;
 }
 
-/* Chart wrap already handles its own spacing */
+/* wg-card inside analytics grid — full width */
+.anx-grid .wg-card {
+    width: 100%;
+}
+
+/* Chart wrap spacing inside wg-card */
 .anx-grid .wg-card .anx-chart-wrap {
     padding: 12px 16px 0;
 }
@@ -524,23 +529,13 @@
     padding: 8px 16px 4px;
 }
 
-/* Empty state — less vertical padding inside wg-card */
+/* Empty state — compact inside wg-card */
 .anx-grid .wg-card .anx-empty {
-    padding: 24px 16px;
-    min-height: 80px;
+    padding: 20px 16px;
+    min-height: 60px;
 }
 
-/* Hbar items (sentiment distribution) — tighter inside wg-card */
+/* Hbar items — no extra padding inside wg-card */
 .anx-grid .wg-card .anx-hbar-item {
     padding: 0 2px;
-}
-
-/* Grid alignment */
-.anx-grid .wg-card {
-    display: flex;
-    flex-direction: column;
-}
-
-.anx-grid .wg-card .wg-card-body {
-    flex: 1;
 }
