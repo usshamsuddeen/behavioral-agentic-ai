@@ -292,15 +292,14 @@ function renderRecentEscalations(escalations) {
         return;
     }
     container.innerHTML = escalations.map(c => {
-        const initials = (c.customer_name || 'U').slice(0, 2).toUpperCase();
         const time = c.escalated_at ? timeAgo(c.escalated_at) : '';
         return `<div class="escalation-item" onclick="switchTab('conversations')">
-            <div class="escalation-avatar">${initials}</div>
-            <div class="escalation-info">
-                <div class="escalation-name">${esc(c.customer_name || 'Unknown')}</div>
-                <div class="escalation-reason">${esc(c.escalation_reason || 'High negative sentiment')}</div>
+            <div class="escalation-item-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+            <div class="escalation-item-info">
+                <div class="escalation-item-name">${esc(c.customer_name || 'Unknown')}</div>
+                <div class="escalation-item-reason">${esc(c.escalation_reason || 'High negative sentiment')}</div>
             </div>
-            <div class="escalation-time">${time}</div>
+            <div class="escalation-item-time">${time}</div>
         </div>`;
     }).join('');
 }

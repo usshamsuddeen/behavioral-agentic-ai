@@ -568,12 +568,38 @@
    OVERVIEW — OPERATIONAL DASHBOARD v2
    ═══════════════════════════════════════════════════ */
 
-/* 6-col KPI grid */
+/* 6-col KPI grid — compact cards */
 .ov-kpi-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: 14px;
+  gap: 12px;
   margin-bottom: 20px;
+}
+
+.ov-kpi-grid .metric-card {
+  padding: 16px;
+}
+
+.ov-kpi-grid .metric-icon {
+  width: 36px;
+  height: 36px;
+  margin-bottom: 10px;
+}
+
+.ov-kpi-grid .metric-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.ov-kpi-grid .metric-value {
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -.03em;
+  margin-bottom: 2px;
+}
+
+.ov-kpi-grid .metric-label {
+  font-size: .6875rem;
 }
 
 @media (max-width: 1200px) {
