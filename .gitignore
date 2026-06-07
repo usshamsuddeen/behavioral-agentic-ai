@@ -2,9 +2,13 @@
 # Behavioral Agentic AI — .gitignore
 # ═══════════════════════════════════════════════════════════════════
 
+# ── Agentic Framework ────────────────────────────────────────────
+.agent/
+
 # ── Environment & Secrets ────────────────────────────────────────
 .env
 .env.local
+.env.development
 .env.production
 
 # ── Python ───────────────────────────────────────────────────────
@@ -28,10 +32,13 @@ ENV/
 *.db
 *.db-journal
 *.sqlite3
+*.bak
 
 # ── Data Directories (generated at runtime) ──────────────────────
 data/vector_store/
 data/kb_uploads/
+data/knowledge_metadata/
+data/chroma_db/
 data/*.db
 data/*.db-journal
 
