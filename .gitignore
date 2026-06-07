@@ -10,6 +10,7 @@
 .env.local
 .env.development
 .env.production
+docker-compose.yml
 
 # ── Python ───────────────────────────────────────────────────────
 __pycache__/
