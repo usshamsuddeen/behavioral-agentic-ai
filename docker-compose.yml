@@ -1,0 +1,49 @@
+# ═══════════════════════════════════════════════════════════════════
+# Behavioral Agentic AI — Docker Compose (Coolify / Production)
+# Run: docker-compose up -d
+# ═══════════════════════════════════════════════════════════════════
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: behavioral-ai-backend
+    restart: unless-stopped
+    ports:
+      - "8001:8000"
+    environment:
+      # ── Database ────────────────
+      - DATABASE_URL=sqlite:///./data/app.db
+      # ── LLM — OpenRouter + Claude Sonnet 3.5 ────────────────
+      - LLM_API_KEY= YOUR API KEY HERE
+      - LLM_BASE_URL=https://openrouter.ai/api/v1
+      - LLM_MODEL=anthropic/claude-sonnet-4
+      - LLM_FALLBACK_MODEL=anthropic/claude-3-haiku
+      - OPENROUTER_API_KEY= YOUR API KEY HERE
+      # ── Vector Store ────────────
+      - VECTOR_STORE_DIR=/app/data/vector_store
+      - EMBEDDING_MODEL=paraphrase-multilingual-MiniLM-L12-v2
+      # ── Security ────────────────
+      - JWT_SECRET_KEY=bhai-production-jwt-secret-change-me-to-random-64-chars
+      # ── Application ─────────────
+      - ENVIRONMENT=production
+      - LOG_LEVEL=INFO
+      - DEBUG=false
+      - CORS_ORIGINS=*
+      - BACKEND_URL=https://sentimenta.snick.at
+    volumes:
+      - backend-data:/app/data
+      - backend-logs:/app/logs
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/" ]
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 3
+
+volumes:
+  backend-data:
+    driver: local
+  backend-logs:
+    driver: local
