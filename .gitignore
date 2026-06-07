@@ -4,6 +4,8 @@
 
 # ── Agentic Framework ────────────────────────────────────────────
 .agent/
+SYSTEM_FUNCTIONALITY.md
+FRD_v4.0_COMPLETE.md
 
 # ── Environment & Secrets ────────────────────────────────────────
 .env
